@@ -1,6 +1,7 @@
 import express from 'express';
 import { query } from '../config/dbHelper.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
+import { getSalesDashboard } from '../services/salesAnalyticsService.js';
 import { PACKAGES, MENU_CATALOG } from '../data/catalog.js';
 
 const router = express.Router();
@@ -245,6 +246,18 @@ router.get('/least-popular', authenticateToken, requireRole(['admin']), async (r
   } catch (error) {
     console.error('Analytics least-popular error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch least popular items' });
+  }
+});
+
+// Premium sales analytics dashboard — KPIs, monthly revenue vs costs,
+// booking pipeline, and upcoming high-value events (admin only)
+router.get('/sales-dashboard', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    const data = await getSalesDashboard(req.query.days);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Analytics sales-dashboard error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch sales dashboard' });
   }
 });
 

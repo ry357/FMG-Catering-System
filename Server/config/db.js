@@ -33,14 +33,29 @@ function currentDbType() {
 // (all / get / run / exec). This lets every existing route, helper and
 // script work unchanged whether DB_TYPE is 'sqlite' or 'turso'.
 function createTursoAdapter(client) {
+  // Turso's raw client returns rows as positional arrays plus a separate
+  // `columns` list. Map them into objects keyed by column name so the rest of
+  // the code can use `row.field`, exactly like the `sqlite` package.
+  const rowToObject = (row, columns) => {
+    if (row === null || row === undefined) return row;
+    if (!Array.isArray(row)) return row; // already an object
+    if (!Array.isArray(columns) || columns.length === 0) return row;
+    const obj = {};
+    columns.forEach((column, index) => {
+      obj[column] = row[index];
+    });
+    return obj;
+  };
+
   return {
     async all(sql, params = []) {
       const result = await client.execute({ sql, args: params });
-      return result.rows;
+      return (result.rows || []).map((row) => rowToObject(row, result.columns));
     },
     async get(sql, params = []) {
       const result = await client.execute({ sql, args: params });
-      return result.rows[0] ?? null;
+      const row = result.rows?.[0] ?? null;
+      return rowToObject(row, result.columns);
     },
     async run(sql, params = []) {
       const result = await client.execute({ sql, args: params });

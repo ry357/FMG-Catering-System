@@ -1,49 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
-
-const MONTH_LABELS = {
-  '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr',
-  '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Aug',
-  '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec',
-};
-
-const formatMonth = (monthKey) => {
-  if (!monthKey) return monthKey;
-  const [year, month] = monthKey.split('-');
-  return `${MONTH_LABELS[month] || month} ${year}`;
-};
-
-const EmptyChart = () => (
-  <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
-    No data available yet
-  </div>
-);
+import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -150,16 +108,7 @@ const reportBadgeClass = (type) =>
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [users, setUsers] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [sales, setSales] = useState([]);
-  const [analytics, setAnalytics] = useState({
-    overview: null,
-    revenue: [],
-    packages: [],
-    services: [],
-    bookingPeriods: { byMonth: [] },
-    leastPopular: { packages: [], foods: [], sides: [], drinks: [] },
-  });
+  const [leastPopular, setLeastPopular] = useState({ packages: [], foods: [], sides: [], drinks: [] });
   const [reports, setReports] = useState([]);
   const [monthlySummary, setMonthlySummary] = useState(null);
   const [reportBusy, setReportBusy] = useState(false);
@@ -192,42 +141,19 @@ const AdminDashboard = () => {
     try {
       const [
         usersRes,
-        bookingsRes,
-        salesRes,
-        overviewRes,
-        revenueRes,
-        packagesRes,
-        servicesRes,
-        periodsRes,
         leastPopularRes,
         reportListRes,
         monthlySummaryRes,
         googleDocsConfigRes
       ] = await Promise.all([
         axios.get('/api/users', authHeader()),
-        axios.get('/api/bookings', authHeader()),
-        axios.get('/api/sales', authHeader()),
-        axios.get('/api/analytics/overview', authHeader()),
-        axios.get('/api/analytics/revenue', authHeader()),
-        axios.get('/api/analytics/packages', authHeader()),
-        axios.get('/api/analytics/services', authHeader()),
-        axios.get('/api/analytics/booking-periods', authHeader()),
         axios.get('/api/analytics/least-popular', authHeader()),
         axios.get('/api/reports', authHeader()),
         axios.get('/api/reports/monthly-summary', authHeader()),
         axios.get('/api/reports/google-docs/config', authHeader())
       ]);
       setUsers(usersRes.data.users);
-      setBookings(bookingsRes.data.bookings);
-      setSales(salesRes.data.sales);
-      setAnalytics({
-        overview: overviewRes.data.data,
-        revenue: revenueRes.data.data,
-        packages: packagesRes.data.data,
-        services: servicesRes.data.data,
-        bookingPeriods: periodsRes.data.data,
-        leastPopular: leastPopularRes.data.data,
-      });
+      setLeastPopular(leastPopularRes.data.data);
       setReports(reportListRes.data.reports || []);
       setMonthlySummary(monthlySummaryRes.data.data || null);
       setGoogleDocsConfigured(Boolean(googleDocsConfigRes.data.configured));
@@ -338,106 +264,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const overview = analytics.overview || {};
-
-  const totalRevenue = overview.totalRevenue ??
-    sales
-      .filter(s => s.payment_status === 'completed')
-      .reduce((sum, s) => sum + parseFloat(s.amount), 0);
-
-  // Sales count per month (all recorded sales)
-  const salesByMonth = {};
-  sales.forEach(s => {
-    const key = s.sale_date ? String(s.sale_date).slice(0, 7) : 'unknown';
-    if (key === 'unknown') return;
-    salesByMonth[key] = (salesByMonth[key] || 0) + 1;
-  });
-  const salesMonths = Object.keys(salesByMonth).sort();
-
-  const revenueChartData = {
-    labels: analytics.revenue.map(r => formatMonth(r.month)),
-    datasets: [{
-      label: 'Revenue (₱)',
-      data: analytics.revenue.map(r => r.revenue),
-      borderColor: '#D97706',
-      backgroundColor: 'rgba(217, 119, 6, 0.15)',
-      fill: true,
-      tension: 0.3,
-    }]
-  };
-
-  const salesChartData = {
-    labels: salesMonths.map(formatMonth),
-    datasets: [{
-      label: 'Sales',
-      data: salesMonths.map(m => salesByMonth[m]),
-      backgroundColor: '#F59E0B',
-      borderRadius: 4,
-    }]
-  };
-
-  const bookingStatusData = {
-    labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
-    datasets: [{
-      data: [
-        overview.pendingBookings ?? bookings.filter(b => b.status === 'pending').length,
-        overview.approvedBookings ?? bookings.filter(b => b.status === 'approved').length,
-        overview.rejectedBookings ?? bookings.filter(b => b.status === 'rejected').length,
-        overview.completedBookings ?? bookings.filter(b => b.status === 'completed').length,
-      ],
-      backgroundColor: ['#FCD34D', '#34D399', '#F87171', '#60A5FA'],
-    }]
-  };
-
-  const topPackages = analytics.packages.slice(0, 5).reverse();
-  const packageChartData = {
-    labels: topPackages.map(p => p.packageName),
-    datasets: [{
-      label: 'Bookings',
-      data: topPackages.map(p => p.bookingsCount),
-      backgroundColor: '#D97706',
-      borderRadius: 4,
-    }]
-  };
-
-  const topServices = analytics.services.slice(0, 5);
-  const servicesChartData = {
-    labels: topServices.map(s => s.service),
-    datasets: [{
-      data: topServices.map(s => s.bookingsCount),
-      backgroundColor: ['#FCD34D', '#F59E0B', '#D97706', '#B45309', '#92400E'],
-    }]
-  };
-
-  const demandByMonth = analytics.bookingPeriods.byMonth || [];
-  const demandChartData = {
-    labels: demandByMonth.map(p => formatMonth(p.month)),
-    datasets: [{
-      label: 'Bookings',
-      data: demandByMonth.map(p => p.bookingsCount),
-      borderColor: '#92400E',
-      backgroundColor: 'rgba(146, 64, 14, 0.15)',
-      fill: true,
-      tension: 0.3,
-    }]
-  };
-
-  const leastPopularGroups = [
-    { key: 'packages', label: 'Package', badgeClass: 'bg-purple-100 text-purple-800' },
-    { key: 'foods', label: 'Food', badgeClass: 'bg-amber-100 text-amber-800' },
-    { key: 'sides', label: 'Side Dish', badgeClass: 'bg-green-100 text-green-800' },
-    { key: 'drinks', label: 'Drink', badgeClass: 'bg-blue-100 text-blue-800' },
-  ];
-
-  const leastPopularRows = leastPopularGroups.flatMap(group =>
-    (analytics.leastPopular[group.key] || []).map(item => ({
-      category: group.label,
-      badgeClass: group.badgeClass,
-      name: item.packageName || item.name,
-      bookingsCount: item.bookingsCount,
-    }))
-  );
-
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -464,25 +290,6 @@ const AdminDashboard = () => {
       </nav>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Revenue</h3>
-            <p className="text-2xl font-semibold text-gray-900 mt-2">₱{Number(totalRevenue).toLocaleString()}</p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Bookings</h3>
-            <p className="text-2xl font-semibold text-gray-900 mt-2">{overview.totalBookings ?? bookings.length}</p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Sales</h3>
-            <p className="text-2xl font-semibold text-gray-900 mt-2">{overview.totalSales ?? sales.length}</p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-5">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Customers</h3>
-            <p className="text-2xl font-semibold text-gray-900 mt-2">{overview.totalCustomers ?? '-'}</p>
-          </div>
-        </div>
-
         <div className="flex gap-1 mb-6 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('analytics')}
@@ -517,102 +324,7 @@ const AdminDashboard = () => {
         </div>
 
         {activeTab === 'analytics' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-sm font-semibold text-gray-700 mb-4">Revenue Trend</h2>
-                {analytics.revenue.length > 0 ? (
-                  <div className="h-64">
-                    <Line data={revenueChartData} options={{ maintainAspectRatio: false }} />
-                  </div>
-                ) : <EmptyChart />}
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-sm font-semibold text-gray-700 mb-4">Sales Per Month</h2>
-                {salesMonths.length > 0 ? (
-                  <div className="h-64">
-                    <Bar data={salesChartData} options={{ maintainAspectRatio: false }} />
-                  </div>
-                ) : <EmptyChart />}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-sm font-semibold text-gray-700 mb-4">Booking Status Distribution</h2>
-                <div className="h-64">
-                  <Doughnut data={bookingStatusData} />
-                </div>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-sm font-semibold text-gray-700 mb-4">Top Services by Event Type</h2>
-                {topServices.length > 0 ? (
-                  <div className="h-64">
-                    <Doughnut data={servicesChartData} />
-                  </div>
-                ) : <EmptyChart />}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-sm font-semibold text-gray-700 mb-4">Most Popular Packages</h2>
-                {topPackages.length > 0 ? (
-                  <div className="h-64">
-                    <Bar
-                      data={packageChartData}
-                      options={{ maintainAspectRatio: false, indexAxis: 'y' }}
-                    />
-                  </div>
-                ) : <EmptyChart />}
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-sm font-semibold text-gray-700 mb-4">Booking Demand by Month</h2>
-                {demandByMonth.length > 0 ? (
-                  <div className="h-64">
-                    <Line data={demandChartData} options={{ maintainAspectRatio: false }} />
-                  </div>
-                ) : <EmptyChart />}
-              </div>
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="mb-2">
-                <h2 className="text-sm font-semibold text-gray-700">Least Popular Menu Items</h2>
-                <p className="text-xs text-gray-500 mt-1">
-                  Packages, foods, side dishes, and drinks ranked from least to most booked.
-                </p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-2.5 px-4 font-medium text-gray-500">Category</th>
-                      <th className="text-left py-2.5 px-4 font-medium text-gray-500">Item</th>
-                      <th className="text-left py-2.5 px-4 font-medium text-gray-500">Times Booked</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leastPopularRows.map((item, index) => (
-                      <tr key={`${item.category}-${item.name}-${index}`} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-2.5 px-4">
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${item.badgeClass}`}>
-                            {item.category}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-4">{item.name}</td>
-                        <td className="py-2.5 px-4">
-                          <span className={`font-medium ${item.bookingsCount === 0 ? 'text-gray-400' : 'text-gray-800'}`}>
-                            {item.bookingsCount}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <SalesAnalyticsDashboard leastPopular={leastPopular} />
         )}
 
         {activeTab === 'reports' && (
