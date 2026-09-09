@@ -72,14 +72,14 @@ const icons = {
 
 const TrendBadge = ({ value, invert = false, className = '' }) => {
   if (value === null || value === undefined) {
-    return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-stone-200 text-stone-600 ${className}`}>Baseline</span>;
+    return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-700/50 text-slate-400 ${className}`}>Baseline</span>;
   }
   const isGood = invert ? value <= 0 : value >= 0;
   const arrow = value >= 0 ? '▲' : '▼';
   return (
     <span
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-        isGood ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+        isGood ? 'bg-emerald-400/10 text-emerald-300' : 'bg-red-400/10 text-red-300'
       } ${className}`}
     >
       {arrow} {Math.abs(value)}% {value >= 0 ? 'vs prev' : 'vs prev'}
@@ -90,9 +90,9 @@ const TrendBadge = ({ value, invert = false, className = '' }) => {
 const Skeleton = () => (
   <div className="animate-pulse grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
     {[0, 1, 2, 3].map((i) => (
-      <div key={i} className="bg-white rounded-xl border border-stone-200 p-5 h-32">
-        <div className="w-1/2 h-3 bg-stone-100 rounded mb-4" />
-        <div className="w-2/3 h-7 bg-stone-100 rounded" />
+      <div key={i} className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-5 h-32">
+        <div className="w-1/2 h-3 bg-slate-700/50 rounded mb-4" />
+        <div className="w-2/3 h-7 bg-slate-700/40 rounded" />
       </div>
     ))}
   </div>
@@ -115,18 +115,18 @@ const ChartTooltip = ({ active, payload, label }) => {
 };
 
 const KpiCard = ({ icon, title, value, trend, invert, note }) => (
-  <div className="bg-white rounded-xl border border-stone-200 shadow-card p-5 flex flex-col gap-3 hover:shadow-elevated transition-shadow">
+  <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-5 flex flex-col gap-3 shadow-[0_0_28px_-14px_rgba(34,211,238,0.25)] hover:border-cyan-400/40 hover:shadow-[0_0_34px_-10px_rgba(34,211,238,0.4)] transition-all">
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-2.5">
-        <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-gold-50 text-gold-600 shrink-0">{icon}</span>
-        <h3 className="text-xs font-medium uppercase tracking-wider text-stone-500">{title}</h3>
+        <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-cyan-400/10 text-cyan-300 shrink-0">{icon}</span>
+        <h3 className="text-xs font-medium uppercase tracking-wider text-slate-400">{title}</h3>
       </div>
     </div>
     <div>
-      <p className="font-display text-[28px] leading-none font-semibold text-charcoal">{value}</p>
+      <p className="font-display text-[28px] leading-none font-semibold text-white">{value}</p>
       <div className="mt-2.5 flex items-center gap-2">
         <TrendBadge value={trend} invert={invert} />
-        {note && <span className="text-[11px] text-stone-400">{note}</span>}
+        {note && <span className="text-[11px] text-slate-500">{note}</span>}
       </div>
     </div>
   </div>
@@ -144,17 +144,22 @@ const PipelineFunnel = ({ data }) => {
         return (
           <div key={stage.key}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[13px] font-medium text-charcoal">{stage.label}</span>
-              <span className="text-[13px] font-semibold text-charcoal">
-                {stage.count} <span className="text-stone-400 font-normal text-[11px]">( {(stage.count / total) * 100 || 0}% )</span>
+              <span className="text-[13px] font-medium text-slate-200">{stage.label}</span>
+              <span className="text-[13px] font-semibold text-white">
+                {stage.count} <span className="text-slate-500 font-normal text-[11px]">( {(stage.count / total) * 100 || 0}% )</span>
               </span>
             </div>
-            <div className="h-9 rounded-lg overflow-hidden" style={{ width: `${widthFor(stage.count)}%` }}>
+            <div className="h-9 rounded-lg overflow-hidden border border-white/5" style={{ width: `${widthFor(stage.count)}%` }}>
               <div
                 className="h-full flex items-center justify-end px-2.5 text-[11px] font-semibold text-white transition-all"
                 style={{
                   background:
-                    stage.key === 'pending' ? '#A8A29E' : stage.key === 'approved' ? '#C9A227' : '#4E8A5B',
+                    stage.key === 'pending'
+                      ? 'linear-gradient(90deg, rgba(100,116,139,0.6), #64748B)'
+                      : stage.key === 'approved'
+                        ? 'linear-gradient(90deg, rgba(34,211,238,0.4), #22D3EE)'
+                        : 'linear-gradient(90deg, rgba(255,45,120,0.4), #FF2D78)',
+                  boxShadow: `0 0 14px -4px ${stage.key === 'approved' ? 'rgba(34,211,238,0.6)' : stage.key === 'completed' ? 'rgba(255,45,120,0.6)' : 'rgba(100,116,139,0.5)'}`,
                 }}
               >
                 {stage.count > 0 && <span>{conversion}%</span>}
@@ -164,7 +169,7 @@ const PipelineFunnel = ({ data }) => {
         );
       })}
       {total === 0 && (
-        <p className="text-xs text-stone-400 py-4 text-center">No bookings in the selected range yet.</p>
+        <p className="text-xs text-slate-500 py-4 text-center">No bookings in the selected range yet.</p>
       )}
     </div>
   );
@@ -172,10 +177,10 @@ const PipelineFunnel = ({ data }) => {
 
 const paymentBadge = (status) => {
   const map = {
-    full: { label: 'Fully Paid', cls: 'bg-emerald-50 text-emerald-700' },
-    partial: { label: 'Balance Due', cls: 'bg-amber-50 text-amber-700' },
-    pending: { label: 'Pending', cls: 'bg-stone-100 text-stone-600' },
-    failed: { label: 'Failed', cls: 'bg-red-50 text-red-600' },
+    full: { label: 'Fully Paid', cls: 'bg-emerald-400/10 text-emerald-300 border border-emerald-400/30' },
+    partial: { label: 'Balance Due', cls: 'bg-cyan-400/10 text-cyan-300 border border-cyan-400/30' },
+    pending: { label: 'Pending', cls: 'bg-slate-700/40 text-slate-300 border border-slate-500/30' },
+    failed: { label: 'Failed', cls: 'bg-red-400/10 text-red-300 border border-red-400/30' },
   };
   const config = map[status] || map.pending;
   return (
@@ -186,10 +191,10 @@ const paymentBadge = (status) => {
 };
 
 const LEASY_POPULAR_GROUP = [
-  { key: 'packages', label: 'Package', badge: 'bg-purple-50 text-purple-700' },
-  { key: 'foods', label: 'Food', badge: 'bg-gold-50 text-gold-700' },
-  { key: 'sides', label: 'Side Dish', badge: 'bg-emerald-50 text-emerald-700' },
-  { key: 'drinks', label: 'Drink', badge: 'bg-blue-50 text-blue-700' },
+  { key: 'packages', label: 'Package', badge: 'bg-purple-400/10 text-purple-300 border border-purple-400/30' },
+  { key: 'foods', label: 'Food', badge: 'bg-cyan-400/10 text-cyan-300 border border-cyan-400/30' },
+  { key: 'sides', label: 'Side Dish', badge: 'bg-emerald-400/10 text-emerald-300 border border-emerald-400/30' },
+  { key: 'drinks', label: 'Drink', badge: 'bg-blue-400/10 text-blue-300 border border-blue-400/30' },
 ];
 
 const SalesAnalyticsDashboard = ({ leastPopular }) => {
@@ -282,24 +287,24 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
   const rangeLabel = RANGE_OPTIONS.find((r) => r.days === rangeDays)?.label || 'Next 90 Days';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#0B1220] rounded-2xl border border-[#1E2A45] p-6 shadow-[0_0_50px_-18px_rgba(34,211,238,0.35)]">
       {/* Sticky header */}
-      <div className="sticky top-0 z-10 -mx-6 px-6 py-4 bg-white/90 backdrop-blur border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
+      <div className="sticky top-0 z-10 -mx-6 px-6 py-4 bg-[#0B1220]/95 backdrop-blur border-b border-[#1E2A45] flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-xl font-semibold text-charcoal">Sales Analytics</h2>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <h2 className="font-display text-xl font-semibold text-white">Sales Analytics</h2>
+          <p className="text-xs text-slate-400 mt-0.5">
             {data ? `${data.range.label} · ${data.range.start} to ${data.range.end}` : 'Loading range…'}
           </p>
         </div>
-        <label className="flex items-center gap-2 text-xs text-stone-500">
+        <label className="flex items-center gap-2 text-xs text-slate-400">
           <span>Event date range</span>
           <select
             value={rangeDays}
             onChange={(e) => setRangeDays(Number(e.target.value))}
-            className="appearance-none bg-white border border-gold-300 text-charcoal text-sm font-medium pl-3 pr-8 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-300/60 cursor-pointer bg-no-repeat"
+            className="appearance-none bg-[#101A2E] border border-[#1E2A45] text-white text-sm font-medium pl-3 pr-8 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/60 cursor-pointer bg-no-repeat"
             style={{
               backgroundImage:
-                "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239A7819%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')",
+                "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2322D3EE%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')",
               backgroundPosition: 'right 0.75rem center',
             }}
           >
@@ -315,7 +320,7 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
       {loading ? (
         <Skeleton />
       ) : error ? (
-        <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl p-6">{error}</div>
+        <div className="bg-red-400/10 border border-red-400/30 text-red-300 text-sm rounded-xl p-6">{error}</div>
       ) : (
         <>
           {/* KPI cards */}
@@ -430,25 +435,25 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
               )}
             </div>
 
-            <div className="bg-white rounded-xl border border-stone-200 shadow-card p-6">
-              <h3 className="font-display text-lg font-semibold text-charcoal mb-1">Booking Pipeline</h3>
-              <p className="text-xs text-stone-500 mb-5">Inquiries → Confirmed → Closed Won · {rangeLabel}</p>
+            <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-6 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+              <h3 className="font-display text-lg font-semibold text-white mb-1">Booking Pipeline</h3>
+              <p className="text-xs text-slate-400 mb-5">Inquiries → Confirmed → Closed Won · {rangeLabel}</p>
               <PipelineFunnel data={data.pipeline} />
             </div>
           </div>
 
           {/* Upcoming high-value events */}
-          <div className="bg-white rounded-xl border border-stone-200 shadow-card">
-            <div className="p-6 pb-3 flex flex-wrap items-start justify-between gap-3 border-b border-stone-100">
+          <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)]">
+            <div className="p-6 pb-3 flex flex-wrap items-start justify-between gap-3 border-b border-[#1E2A45]">
               <div>
-                <h3 className="font-display text-lg font-semibold text-charcoal">Upcoming High-Value Events</h3>
-                <p className="text-xs text-stone-500 mt-0.5">Booked events in the selected range, ranked by invoice value</p>
+                <h3 className="font-display text-lg font-semibold text-white">Upcoming High-Value Events</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Booked events in the selected range, ranked by invoice value</p>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-[11px] uppercase tracking-wider text-stone-500">
+                  <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500">
                     <th className="py-3 px-6 font-medium">Event Date</th>
                     <th className="py-3 px-6 font-medium">Client / Event</th>
                     <th className="py-3 px-6 font-medium">Event Type</th>
@@ -460,14 +465,14 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                 <tbody>
                   {data.upcomingEvents.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-10 text-center text-stone-400 text-sm">
+                      <td colSpan={6} className="py-10 text-center text-slate-500 text-sm">
                         No upcoming events in the selected range.
                       </td>
                     </tr>
                   ) : (
                     data.upcomingEvents.map((ev) => (
-                      <tr key={ev.bookingId} className="border-t border-stone-100 hover:bg-gold-50/40">
-                        <td className="py-3.5 px-6 whitespace-nowrap text-charcoal font-medium">
+                      <tr key={ev.bookingId} className="border-t border-[#17233C] hover:bg-cyan-400/5">
+                        <td className="py-3.5 px-6 whitespace-nowrap text-white font-medium">
                           {new Date(`${ev.eventDate}T00:00:00`).toLocaleDateString(undefined, {
                             month: 'short',
                             day: 'numeric',
@@ -475,12 +480,12 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                           })}
                         </td>
                         <td className="py-3.5 px-6">
-                          <p className="text-charcoal font-medium">{ev.customerName}</p>
-                          <p className="text-[11px] text-stone-400">{ev.bookingRef || `Booking #${ev.bookingId}`}</p>
+                          <p className="text-white font-medium">{ev.customerName}</p>
+                          <p className="text-[11px] text-slate-500">{ev.bookingRef || `Booking #${ev.bookingId}`}</p>
                         </td>
-                        <td className="py-3.5 px-6 text-stone-600">{ev.eventType}</td>
-                        <td className="py-3.5 px-6 text-right text-stone-600">{ev.guests.toLocaleString()}</td>
-                        <td className="py-3.5 px-6 text-right font-semibold text-charcoal">{PESO(ev.invoiceValue)}</td>
+                        <td className="py-3.5 px-6 text-slate-300">{ev.eventType}</td>
+                        <td className="py-3.5 px-6 text-right text-slate-300">{ev.guests.toLocaleString()}</td>
+                        <td className="py-3.5 px-6 text-right font-semibold text-cyan-300">{PESO(ev.invoiceValue)}</td>
                         <td className="py-3.5 px-6">{paymentBadge(ev.paymentStatus)}</td>
                       </tr>
                     ))
@@ -492,17 +497,17 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
 
           {/* Least popular menu items */}
           {leastPopularRows.length > 0 && (
-            <div className="bg-white rounded-xl border border-stone-200 shadow-card">
-              <div className="p-6 pb-3 border-b border-stone-100">
-                <h3 className="font-display text-lg font-semibold text-charcoal">Least Popular Menu Items</h3>
-                <p className="text-xs text-stone-500 mt-0.5">
+            <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)]">
+              <div className="p-6 pb-3 border-b border-[#1E2A45]">
+                <h3 className="font-display text-lg font-semibold text-white">Least Popular Menu Items</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
                   Packages, foods, side dishes, and drinks ranked from least to most booked.
                 </p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-[11px] uppercase tracking-wider text-stone-500">
+                    <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500">
                       <th className="py-3 px-6 font-medium">Category</th>
                       <th className="py-3 px-6 font-medium">Item</th>
                       <th className="py-3 px-6 font-medium text-right">Times Booked</th>
@@ -510,14 +515,14 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                   </thead>
                   <tbody>
                     {leastPopularRows.map((item, index) => (
-                      <tr key={`${item.category}-${item.name}-${index}`} className="border-t border-stone-100 hover:bg-gold-50/40">
+                      <tr key={`${item.category}-${item.name}-${index}`} className="border-t border-[#17233C] hover:bg-cyan-400/5">
                         <td className="py-3 px-6">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${item.badge}`}>
                             {item.category}
                           </span>
                         </td>
-                        <td className="py-3 px-6 text-charcoal">{item.name}</td>
-                        <td className="py-3 px-6 text-right font-medium text-charcoal">{item.bookingsCount}</td>
+                        <td className="py-3 px-6 text-white">{item.name}</td>
+                        <td className="py-3 px-6 text-right font-medium text-cyan-300">{item.bookingsCount}</td>
                       </tr>
                     ))}
                   </tbody>
