@@ -101,12 +101,12 @@ const Skeleton = () => (
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
   return (
-    <div className="bg-charcoal text-white text-xs rounded-lg px-3 py-2 shadow-xl">
-      <p className="font-semibold mb-1 text-gold-200">{label}</p>
+    <div className="bg-[#0B1220] text-white text-xs rounded-lg px-3 py-2 shadow-xl border border-cyan-400/30">
+      <p className="font-semibold mb-1 text-cyan-300">{label}</p>
       {payload.map((entry) => (
         <p key={entry.dataKey} className="flex items-center gap-2 py-0.5">
           <span className="w-2 h-2 rounded-full" style={{ background: entry.color || entry.stroke }} />
-          <span className="text-stone-200">{entry.name}:</span>
+          <span className="text-slate-300">{entry.name}:</span>
           <span className="font-medium">{PESO_CENTS(entry.value)}</span>
         </p>
       ))}
@@ -256,9 +256,14 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
         cx={cx}
         cy={cy}
         r={peakPoint && Number(payload.revenue) === peakPoint.value ? 7 : 3.5}
-        fill={peakPoint && Number(payload.revenue) === peakPoint.value ? '#D64541' : '#B8921F'}
+        fill={peakPoint && Number(payload.revenue) === peakPoint.value ? '#FF2D78' : '#22D3EE'}
         stroke={peakPoint && Number(payload.revenue) === peakPoint.value ? '#fff' : 'none'}
         strokeWidth={2}
+        style={
+          peakPoint && Number(payload.revenue) === peakPoint.value
+            ? { filter: 'drop-shadow(0 0 6px rgba(255,45,120,0.95))' }
+            : undefined
+        }
       />
     );
 
@@ -347,26 +352,32 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
 
           {/* Middle charts */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="lg:col-span-2 bg-white rounded-xl border border-stone-200 shadow-card p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="font-display text-lg font-semibold text-charcoal">
-                    Monthly Sales Performance
-                  </h3>
-                  <p className="text-xs text-stone-500 mt-0.5">Illustrative sample · Jan–Dec jagged seasonal trend (slow Jan · wedding surge Jun · dip Aug · peak Dec) highlighted as Peak Season</p>
+            <div
+                className="lg:col-span-2 rounded-xl border border-[#1C2A44] p-6 shadow-[0_0_40px_-12px_rgba(34,211,238,0.35)] relative overflow-hidden"
+                style={{
+                  background:
+                    'radial-gradient(900px 450px at 85% -15%, rgba(34,211,238,0.16), transparent 60%), radial-gradient(700px 400px at 0% 110%, rgba(255,45,120,0.10), transparent 55%), #0B1220',
+                }}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-white">
+                      Monthly Sales Performance
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">Illustrative sample · Jan–Dec jagged seasonal trend (slow Jan · wedding surge Jun · dip Aug · peak Dec) highlighted as Peak Season</p>
+                  </div>
+                  <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 text-[11px] font-semibold tracking-wide uppercase text-cyan-300 border border-cyan-400/30 bg-cyan-400/10 rounded-full px-3 py-1">
+                    <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#22D3EE', boxShadow: '0 0 8px #22D3EE' }} />
+                    Sample Data · Jagged Trend
+                  </span>
                 </div>
-                <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 text-[11px] font-semibold tracking-wide uppercase text-gold border border-gold-300/60 bg-gold-50 rounded-full px-3 py-1">
-                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#B8921F' }} />
-                  Sample Data · Jagged Trend
-                </span>
-              </div>
               {hasActivity ? (
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={monthlyLineData} margin={{ top: 20, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#ECE7DB" vertical={false} />
-                      <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#E3DCCB' }} tick={{ fontSize: 12, fill: '#6B6B6B' }} interval={0} />
-                      <YAxis tickFormatter={COMPACT} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#6B6B6B' }} width={64} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1E2A45" vertical={false} />
+                      <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#2A3A5C' }} tick={{ fontSize: 12, fill: '#8FA3BF' }} interval={0} />
+                      <YAxis tickFormatter={COMPACT} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#8FA3BF' }} width={64} />
                       <Tooltip content={<ChartTooltip />} />
                       {peakPoint && leftmostLabel && (
                         <ReferenceLine
@@ -374,14 +385,15 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                             { x: peakPoint.label, y: peakPoint.value },
                             { x: leftmostLabel, y: peakPoint.value },
                           ]}
-                          stroke="#B8921F"
-                          strokeOpacity={0.85}
+                          stroke="#22D3EE"
+                          strokeOpacity={0.75}
                           strokeDasharray="2 5"
                           strokeWidth={1.5}
+                          style={{ filter: 'drop-shadow(0 0 4px rgba(34,211,238,0.8))' }}
                           label={{
                             value: PESO(peakPoint.value),
                             position: 'insideBottomLeft',
-                            fill: '#B8921F',
+                            fill: '#22D3EE',
                             fontSize: 11,
                             fontWeight: 700,
                           }}
@@ -389,7 +401,7 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                       )}
                       <Legend
                         iconType="plainline"
-                        formatter={(value) => <span className="text-xs text-stone-600">{value}</span>}
+                        formatter={(value) => <span className="text-xs text-slate-300">{value}</span>}
                       />
                       <Line
                         type="linear"
@@ -397,21 +409,22 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                         activeDot={{ r: 5 }}
                         dataKey="revenue"
                         name="Monthly Revenue"
-                        stroke="#B8921F"
+                        stroke="#22D3EE"
                         strokeWidth={2.5}
+                        style={{ filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.7))' }}
                       >
                         <LabelList
                           dataKey="revenue"
                           position="top"
                           formatter={peakSeasonLabel}
-                          style={{ fontSize: 12, fontWeight: 800, fill: '#D64541' }}
+                          style={{ fontSize: 12, fontWeight: 800, fill: '#FF2D78', filter: 'drop-shadow(0 0 4px rgba(255,45,120,0.9))' }}
                         />
                       </Line>
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-[300px] flex items-center justify-center text-stone-400 text-sm">
+                <div className="h-[300px] flex items-center justify-center text-slate-500 text-sm">
                   No recorded sales activity for the last 12 months.
                 </div>
               )}
