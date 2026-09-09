@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  LabelList,
 } from 'recharts';
 
 const PESO = (value) => `₱${Number(value || 0).toLocaleString(undefined, {
@@ -218,6 +219,39 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
     return [...(data.monthly || [])].sort((a, b) => b.events - a.events);
   }, [data]);
 
+  const maxRevenue = useMemo(
+    () => monthlyLineData.reduce((m, d) => Math.max(m, Number(d.revenue) || 0), 0),
+    [monthlyLineData]
+  );
+  const maxFoodCost = useMemo(
+    () => monthlyLineData.reduce((m, d) => Math.max(m, Number(d.foodCost) || 0), 0),
+    [monthlyLineData]
+  );
+
+  const payTopRevenueLabel = (v) => (Number(v) === maxRevenue && maxRevenue > 0 ? PESO(v) : '');
+  const revenuePeakDot = ({ cx, cy, value }) =>
+    cx == null ? null : (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={Number(value) === maxRevenue && maxRevenue > 0 ? 6 : 3}
+        fill="#B8921F"
+        stroke={Number(value) === maxRevenue && maxRevenue > 0 ? '#fff' : 'none'}
+        strokeWidth={2}
+      />
+    );
+  const foodCostPeakDot = ({ cx, cy, value }) =>
+    cx == null ? null : (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={Number(value) === maxFoodCost && maxFoodCost > 0 ? 5 : 3}
+        fill="#3D3D3D"
+        stroke={Number(value) === maxFoodCost && maxFoodCost > 0 ? '#fff' : 'none'}
+        strokeWidth={2}
+      />
+    );
+
   const leastPopularRows = useMemo(() => {
     if (!leastPopular) return [];
     return LEASY_POPULAR_GROUP.flatMap((group) =>
@@ -311,6 +345,10 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                   </h3>
                   <p className="text-xs text-stone-500 mt-0.5">Last 12 months · revenue from completed sales, food cost estimated by rule-based model · months ordered by bookings, highest to lowest</p>
                 </div>
+                <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 text-[11px] font-semibold tracking-wide uppercase text-gold border border-gold-300/60 bg-gold-50 rounded-full px-3 py-1">
+                  <span className="inline-block w-2 h-2 rounded-full gold-dot" style={{ background: '#B8921F' }} />
+                  Line Trend · Highest Bookings First
+                </span>
               </div>
               {hasActivity ? (
                 <div className="h-[300px]">
@@ -326,16 +364,23 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                       />
                       <Line
                         type="linear"
-                        dot={{ r: 3, fill: '#B8921F', strokeWidth: 0 }}
+                        dot={revenuePeakDot}
                         activeDot={{ r: 5 }}
                         dataKey="revenue"
                         name="Revenue"
                         stroke="#B8921F"
                         strokeWidth={2.5}
-                      />
+                      >
+                        <LabelList
+                          dataKey="revenue"
+                          position="top"
+                          formatter={payTopRevenueLabel}
+                          style={{ fontSize: 11, fontWeight: 600, fill: '#B8921F' }}
+                        />
+                      </Line>
                       <Line
                         type="linear"
-                        dot={{ r: 3, fill: '#3D3D3D', strokeWidth: 0 }}
+                        dot={foodCostPeakDot}
                         activeDot={{ r: 5 }}
                         dataKey="foodCost"
                         name="Food Cost (est.)"
