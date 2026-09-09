@@ -3,13 +3,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import logoImage from '../../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 import { NAV_LINKS } from '../../data/landingData';
 import { scrollToSection } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
+import AuthModal from '../landing/AuthModal';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { customer } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -33,7 +37,18 @@ export default function Navbar() {
     scrollToSection(href);
   };
 
+  const handleBookClick = (e) => {
+    e.preventDefault();
+    setIsOpen(false);
+    if (customer) {
+      navigate('/book');
+    } else {
+      setShowAuthModal(true);
+    }
+  };
+
   return (
+    <>
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled || isOpen ? 'bg-white/95 shadow-[0_8px_30px_rgba(28,28,28,0.08)] backdrop-blur-md' : 'bg-transparent'
@@ -68,7 +83,7 @@ export default function Navbar() {
         </ul>
 
         <div className="hidden lg:block">
-          <Button href="/book" size="sm">
+          <Button onClick={handleBookClick} size="sm">
             Book your event
           </Button>
         </div>
@@ -108,7 +123,7 @@ export default function Navbar() {
             ))}
             <li className="pt-2">
               <Button
-                href="/book"
+                onClick={handleBookClick}
                 className="w-full"
               >
                 Book Now
@@ -118,5 +133,7 @@ export default function Navbar() {
         </div>
       )}
     </header>
+    <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+    </>
   );
 }

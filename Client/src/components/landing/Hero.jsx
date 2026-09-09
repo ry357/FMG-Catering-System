@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import logoImage from '../../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 import serviceSetupImage from '../../assets/700419340_976158498532796_8998530075443807542_n.jpg';
 import serviceBuffetImage from '../../assets/700971173_976119165203396_8898856393885039178_n.jpg';
@@ -7,6 +8,8 @@ import serviceFoodImage from '../../assets/710781918_989007957247850_83600094013
 import serviceBuffetDetailImage from '../../assets/715413195_989007987247847_6053587252518028193_n.jpg';
 import Button from '../ui/Button';
 import { scrollToSection } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
+import AuthModal from './AuthModal';
 
 const SERVICE_DOCUMENTATION = [
   { src: logoImage, alt: 'FMG Catering Services logo', label: 'FMG Catering Services' },
@@ -19,6 +22,9 @@ const SERVICE_DOCUMENTATION = [
 
 export default function Hero() {
   const [documentationIndex, setDocumentationIndex] = useState(0);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { customer } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const slideshowTimer = window.setInterval(() => {
@@ -30,6 +36,15 @@ export default function Hero() {
   const handleClick = (e, href) => {
     e.preventDefault();
     scrollToSection(href);
+  };
+
+  const handleBookClick = (e) => {
+    e.preventDefault();
+    if (customer) {
+      navigate('/book');
+    } else {
+      setShowAuthModal(true);
+    }
   };
 
   return (
@@ -63,7 +78,7 @@ export default function Hero() {
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               <Button
-                href="/book"
+                onClick={handleBookClick}
                 size="lg"
               >
                 Book Your Event
@@ -123,6 +138,7 @@ export default function Hero() {
           </div>
         </div>
       </div>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </section>
   );
 }

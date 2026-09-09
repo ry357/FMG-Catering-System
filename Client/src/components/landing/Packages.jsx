@@ -1,9 +1,28 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PACKAGES } from '../../data/landingData';
 import { formatCurrency } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
+import AuthModal from './AuthModal';
 
 export default function Packages() {
+  const { customer } = useAuth();
+  const navigate = useNavigate();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingPackageId, setPendingPackageId] = useState(null);
+
+  const handleBookPackage = (e, packageId) => {
+    e.preventDefault();
+    if (customer) {
+      navigate(`/book?package=${packageId}`);
+    } else {
+      setPendingPackageId(packageId);
+      setShowAuthModal(true);
+    }
+  };
+
   return (
     <section id="packages" className="section-padding bg-white">
       <div className="section-container">
@@ -67,7 +86,7 @@ export default function Packages() {
               </ul>
 
               <Button
-                href={`/book?package=${pkg.id}`}
+                onClick={(e) => handleBookPackage(e, pkg.id)}
                 variant={pkg.featured ? 'primary' : 'secondary'}
                 className="mt-8 w-full"
               >
@@ -77,6 +96,11 @@ export default function Packages() {
           ))}
         </div>
       </div>
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => { setShowAuthModal(false); setPendingPackageId(null); }}
+        redirectTo={pendingPackageId ? `/book?package=${pendingPackageId}` : '/book'}
+      />
     </section>
   );
 }

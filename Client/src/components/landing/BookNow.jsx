@@ -9,7 +9,8 @@ import {
 } from '../../utils/paymentHelpers';
 import { formatCurrency } from '../../utils/helpers';
 import { getPaymentConfig } from '../../services/paymentService';
-import { googleAuthService } from '../../services/googleAuthService';
+import { useAuth } from '../../context/AuthContext';
+import AuthModal from './AuthModal';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
 import PaymentSummary from '../payment/PaymentSummary';
@@ -32,12 +33,11 @@ const INITIAL_FORM = {
 
 const STEPS = [
   { id: 'details', label: 'Event Details' },
-  { id: 'auth', label: 'Sign In' },
   { id: 'payment', label: 'Payment' },
   { id: 'confirmation', label: 'Confirmation' },
 ];
 
-const STEP_ORDER = ['details', 'auth', 'payment', 'confirmation'];
+const STEP_ORDER = ['details', 'payment', 'confirmation'];
 
 function FormField({ label, error, children, required }) {
   return (
@@ -149,6 +149,8 @@ function PaymentSuccessPanel({ paymentResult, onNewBooking }) {
 }
 
 export default function BookNow({ initialMenuBooking }) {
+  const { customer } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [step, setStep] = useState('details');
@@ -158,8 +160,16 @@ export default function BookNow({ initialMenuBooking }) {
   const [paymentError, setPaymentError] = useState(null);
   const [paymentResult, setPaymentResult] = useState(null);
   const [paymentConfig, setPaymentConfig] = useState({ gcashEnabled: false });
-  const [customer, setCustomer] = useState(null);
-  const [authError, setAuthError] = useState(null);
+
+  useEffect(() => {
+    if (customer) {
+      setForm((prev) => ({
+        ...prev,
+        name: prev.name || customer.name,
+        email: prev.email || customer.email,
+      }));
+    }
+  }, [customer]);
 
   useEffect(() => {
     if (!initialMenuBooking) return;
@@ -213,91 +223,6 @@ export default function BookNow({ initialMenuBooking }) {
     return () => window.removeEventListener('selectPackage', handleSelectPackage);
   }, []);
 
-  // Initialize Google Sign-In when auth step is active
-  useEffect(() => {
-    if (step !== 'auth') return;
-
-    let initialized = false;
-
-    const initGoogleSignIn = () => {
-      if (initialized) return;
-
-      const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-      console.log('🔐 Initializing Google Sign-In...');
-      console.log(`Client ID configured: ${googleClientId ? '✅' : '❌'}`);
-
-      if (!googleClientId) {
-        console.error('❌ VITE_GOOGLE_CLIENT_ID not found in environment');
-        setAuthError('Google Client ID is not configured. Please check environment variables.');
-        return;
-      }
-
-      if (window.google && window.google.accounts) {
-        console.log('✅ Google SDK already loaded');
-        try {
-          window.google.accounts.id.initialize({
-            client_id: googleClientId,
-            callback: handleGoogleSignIn,
-            auto_select: false,
-            cancel_on_tap_outside: true,
-          });
-
-          window.google.accounts.id.renderButton(
-            document.getElementById('google-signin-button'),
-            { theme: 'outline', size: 'large', width: '100%', type: 'standard', text: 'continue_with', shape: 'rectangular', logo_alignment: 'left' }
-          );
-          console.log('✅ Google Sign-In button rendered');
-          initialized = true;
-        } catch (error) {
-          console.error('❌ Error initializing Google Sign-In:', error);
-          setAuthError('Failed to initialize Google Sign-In. Please refresh the page.');
-        }
-      } else {
-        // Load Google Identity Services script
-        console.log('📥 Loading Google SDK script...');
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-        script.onload = () => {
-          if (initialized) return;
-          console.log('✅ Google SDK script loaded');
-          try {
-            window.google.accounts.id.initialize({
-              client_id: googleClientId,
-              callback: handleGoogleSignIn,
-              auto_select: false,
-              cancel_on_tap_outside: true,
-            });
-
-            window.google.accounts.id.renderButton(
-              document.getElementById('google-signin-button'),
-              { theme: 'outline', size: 'large', width: '100%', type: 'standard', text: 'continue_with', shape: 'rectangular', logo_alignment: 'left' }
-            );
-            console.log('✅ Google Sign-In button rendered');
-            initialized = true;
-          } catch (error) {
-            console.error('❌ Error rendering Google button:', error);
-            setAuthError('Failed to render Google Sign-In button. Please refresh the page.');
-          }
-        };
-        script.onerror = () => {
-          console.error('❌ Failed to load Google SDK script');
-          setAuthError('Failed to load Google Sign-In script. Please check your internet connection.');
-        };
-        document.head.appendChild(script);
-      }
-    };
-
-    initGoogleSignIn();
-
-    // Cleanup: reset initialized flag when leaving auth step
-    return () => {
-      initialized = false;
-    };
-  }, [step]);
-
   const bookingTotal = calculateBookingTotal(form);
   const depositAmount = calculateDepositAmount(bookingTotal);
   const packageName = form.menuPreference?.offer || getSelectedPackageName(form);
@@ -326,9 +251,8 @@ export default function BookNow({ initialMenuBooking }) {
 
     setErrors({});
     setPaymentError(null);
-    setAuthError(null);
     setBookingRef(generateBookingRef());
-    setStep('auth');
+    setStep('payment');
   };
 
   const handlePaymentSuccess = (result) => {
@@ -339,48 +263,6 @@ export default function BookNow({ initialMenuBooking }) {
     setPaymentError(null);
   };
 
-  const handleGoogleSignIn = async (credential) => {
-    try {
-      setAuthError(null);
-
-      if (!credential) {
-        setAuthError('Google sign-in failed. Please try again.');
-        return;
-      }
-
-      const response = await googleAuthService.verifyCredential(credential);
-
-      if (response.success) {
-        setCustomer(response.customer);
-        setForm(prev => ({
-          ...prev,
-          name: response.customer.name,
-          email: response.customer.email,
-        }));
-        setStep('payment');
-
-        if (paymentConfig.gcashEnabled) {
-          setPaymentMethod('gcash');
-        }
-      } else {
-        setAuthError(response.error || 'Failed to authenticate with Google. Please try again.');
-      }
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-
-      // Provide specific error messages based on error type
-      if (error.response?.status === 500) {
-        setAuthError('Server error: Google OAuth not configured. Please contact support.');
-      } else if (error.response?.data?.error) {
-        setAuthError(error.response.data.error);
-      } else if (error.message === 'Network Error') {
-        setAuthError('Network error. Please check your connection and try again.');
-      } else {
-        setAuthError('Failed to sign in with Google. Please try again.');
-      }
-    }
-  };
-
   const handleNewBooking = () => {
     setForm(INITIAL_FORM);
     setStep('details');
@@ -389,8 +271,6 @@ export default function BookNow({ initialMenuBooking }) {
     setPaymentResult(null);
     setPaymentError(null);
     setErrors({});
-    setCustomer(null);
-    setAuthError(null);
   };
 
   const tomorrow = new Date();
@@ -413,6 +293,18 @@ export default function BookNow({ initialMenuBooking }) {
 
         {step === 'confirmation' && paymentResult ? (
           <PaymentSuccessPanel paymentResult={paymentResult} onNewBooking={handleNewBooking} />
+        ) : !customer ? (
+          <div className="mx-auto max-w-lg rounded-2xl bg-white p-8 text-center shadow-elevated">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold-50">
+              <svg className="h-7 w-7 text-gold-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <h3 className="mt-4 font-display text-2xl font-semibold text-charcoal">Sign in to complete your booking</h3>
+            <p className="mt-2 text-sm text-charcoal-muted">Sign in with Google to proceed with your event details and secure your booking.</p>
+            <Button className="mt-6" onClick={() => setShowAuthModal(true)}>Sign In with Google</Button>
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+          </div>
         ) : (
           <div className="grid lg:grid-cols-5 gap-10">
             <div className="lg:col-span-3 bg-white rounded-2xl p-6 md:p-8 shadow-elevated">
@@ -456,32 +348,6 @@ export default function BookNow({ initialMenuBooking }) {
                     Continue to Payment
                   </Button>
                 </form>
-              )}
-
-              {step === 'auth' && (
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <h3 className="font-display text-2xl font-semibold text-charcoal">Sign in to Continue</h3>
-                    <p className="mt-2 text-sm text-charcoal-muted">Sign in with Google to securely proceed to payment</p>
-                  </div>
-
-                  {authError && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
-                      {authError}
-                    </div>
-                  )}
-
-                  <div id="google-signin-button" className="flex justify-center"></div>
-
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => setStep('details')}
-                    className="w-full"
-                  >
-                    Back to Event Details
-                  </Button>
-                </div>
               )}
 
               {step === 'payment' && (
