@@ -108,13 +108,24 @@ export const getSalesDashboard = async ({ month } = {}) => {
     if (!key) return;
     monthBookings[key] = (monthBookings[key] || 0) + 1;
   });
-  const months = [...new Set(Object.keys(monthBookings).concat(selectedMonthKey))]
+  // Every month of the selected month's year, plus any months in other
+  // years that actually have bookings — empty months still appear at 0.
+  const selectedYear = startDate.getFullYear();
+  const monthSet = {};
+  for (let m = 1; m <= 12; m += 1) {
+    const key = `${selectedYear}-${String(m).padStart(2, '0')}`;
+    monthSet[key] = monthBookings[key] || 0;
+  }
+  Object.entries(monthBookings).forEach(([key, count]) => {
+    if (!(key in monthSet)) monthSet[key] = count;
+  });
+  const months = Object.keys(monthSet)
     .sort()
     .map((key) => ({
       month: key,
       label: monthLabel(key),
       year: key.slice(0, 4),
-      events: monthBookings[key] || 0,
+      events: monthSet[key],
     }));
 
   const inWindow = (b) => b.event_date >= startStr && b.event_date <= endStr;
