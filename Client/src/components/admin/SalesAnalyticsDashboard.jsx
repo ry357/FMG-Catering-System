@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
   LabelList,
+  ReferenceLine,
 } from 'recharts';
 
 const PESO = (value) => `₱${Number(value || 0).toLocaleString(undefined, {
@@ -216,38 +217,35 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
 
   const monthlyLineData = useMemo(() => {
     if (!data) return [];
-    return [...(data.monthly || [])].sort((a, b) => b.events - a.events);
+    return [...(data.monthly || [])].sort((a, b) => a.month.localeCompare(b.month));
   }, [data]);
 
-  const maxRevenue = useMemo(
-    () => monthlyLineData.reduce((m, d) => Math.max(m, Number(d.revenue) || 0), 0),
-    [monthlyLineData]
-  );
-  const maxFoodCost = useMemo(
-    () => monthlyLineData.reduce((m, d) => Math.max(m, Number(d.foodCost) || 0), 0),
-    [monthlyLineData]
-  );
+  const peakPoint = useMemo(() => {
+    if (!monthlyLineData.length) return null;
+    let best = null;
+    let maxVal = -Infinity;
+    monthlyLineData.forEach((d) => {
+      const v = Number(d.revenue) || 0;
+      if (v > maxVal) {
+        maxVal = v;
+        best = { label: d.label, value: v };
+      }
+    });
+    return maxVal > 0 ? best : null;
+  }, [monthlyLineData]);
 
-  const payTopRevenueLabel = (v) => (Number(v) === maxRevenue && maxRevenue > 0 ? PESO(v) : '');
-  const revenuePeakDot = ({ cx, cy, value }) =>
+  const leftmostLabel = monthlyLineData[0]?.label || null;
+
+  const peakSeasonLabel = (v) =>
+    peakPoint && Number(v) === peakPoint.value ? 'Peak Season' : '';
+  const salesDot = ({ cx, cy, payload }) =>
     cx == null ? null : (
       <circle
         cx={cx}
         cy={cy}
-        r={Number(value) === maxRevenue && maxRevenue > 0 ? 6 : 3}
-        fill="#B8921F"
-        stroke={Number(value) === maxRevenue && maxRevenue > 0 ? '#fff' : 'none'}
-        strokeWidth={2}
-      />
-    );
-  const foodCostPeakDot = ({ cx, cy, value }) =>
-    cx == null ? null : (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={Number(value) === maxFoodCost && maxFoodCost > 0 ? 5 : 3}
-        fill="#3D3D3D"
-        stroke={Number(value) === maxFoodCost && maxFoodCost > 0 ? '#fff' : 'none'}
+        r={peakPoint && Number(payload.revenue) === peakPoint.value ? 7 : 3.5}
+        fill={peakPoint && Number(payload.revenue) === peakPoint.value ? '#D64541' : '#B8921F'}
+        stroke={peakPoint && Number(payload.revenue) === peakPoint.value ? '#fff' : 'none'}
         strokeWidth={2}
       />
     );
@@ -341,53 +339,62 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="font-display text-lg font-semibold text-charcoal">
-                    Monthly Catering Revenue vs Food Costs
+                    Monthly Sales Performance
                   </h3>
-                  <p className="text-xs text-stone-500 mt-0.5">Last 12 months · revenue from completed sales, food cost estimated by rule-based model · months ordered by bookings, highest to lowest</p>
+                  <p className="text-xs text-stone-500 mt-0.5">Last 12 months · revenue from completed sales · jagged seasonal trend with peak month highlighted</p>
                 </div>
                 <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 text-[11px] font-semibold tracking-wide uppercase text-gold border border-gold-300/60 bg-gold-50 rounded-full px-3 py-1">
-                  <span className="inline-block w-2 h-2 rounded-full gold-dot" style={{ background: '#B8921F' }} />
-                  Line Trend · Highest Bookings First
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#B8921F' }} />
+                  Sales Trend · Live Data
                 </span>
               </div>
               {hasActivity ? (
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={monthlyLineData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <LineChart data={monthlyLineData} margin={{ top: 20, right: 8, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#ECE7DB" vertical={false} />
-                      <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#E3DCCB' }} tick={{ fontSize: 12, fill: '#6B6B6B' }} />
+                      <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#E3DCCB' }} tick={{ fontSize: 12, fill: '#6B6B6B' }} interval={0} />
                       <YAxis tickFormatter={COMPACT} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#6B6B6B' }} width={64} />
                       <Tooltip content={<ChartTooltip />} />
+                      {peakPoint && leftmostLabel && (
+                        <ReferenceLine
+                          segment={[
+                            { x: peakPoint.label, y: peakPoint.value },
+                            { x: leftmostLabel, y: peakPoint.value },
+                          ]}
+                          stroke="#B8921F"
+                          strokeOpacity={0.85}
+                          strokeDasharray="2 5"
+                          strokeWidth={1.5}
+                          label={{
+                            value: PESO(peakPoint.value),
+                            position: 'insideBottomLeft',
+                            fill: '#B8921F',
+                            fontSize: 11,
+                            fontWeight: 700,
+                          }}
+                        />
+                      )}
                       <Legend
                         iconType="plainline"
                         formatter={(value) => <span className="text-xs text-stone-600">{value}</span>}
                       />
                       <Line
                         type="linear"
-                        dot={revenuePeakDot}
+                        dot={salesDot}
                         activeDot={{ r: 5 }}
                         dataKey="revenue"
-                        name="Revenue"
+                        name="Monthly Revenue"
                         stroke="#B8921F"
                         strokeWidth={2.5}
                       >
                         <LabelList
                           dataKey="revenue"
                           position="top"
-                          formatter={payTopRevenueLabel}
-                          style={{ fontSize: 11, fontWeight: 600, fill: '#B8921F' }}
+                          formatter={peakSeasonLabel}
+                          style={{ fontSize: 12, fontWeight: 800, fill: '#D64541' }}
                         />
                       </Line>
-                      <Line
-                        type="linear"
-                        dot={foodCostPeakDot}
-                        activeDot={{ r: 5 }}
-                        dataKey="foodCost"
-                        name="Food Cost (est.)"
-                        stroke="#3D3D3D"
-                        strokeWidth={2}
-                        strokeDasharray="4 3"
-                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
