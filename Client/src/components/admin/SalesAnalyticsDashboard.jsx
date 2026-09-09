@@ -37,6 +37,21 @@ const RANGE_OPTIONS = [
   { days: 0, label: 'All Time' },
 ];
 
+const MOCK_MONTHLY = [
+  { month: '2026-01', label: 'Jan', revenue: 42000, foodCost: 18000, events: 4 },
+  { month: '2026-02', label: 'Feb', revenue: 58000, foodCost: 24500, events: 5 },
+  { month: '2026-03', label: 'Mar', revenue: 46500, foodCost: 19500, events: 4 },
+  { month: '2026-04', label: 'Apr', revenue: 72000, foodCost: 30500, events: 6 },
+  { month: '2026-05', label: 'May', revenue: 93500, foodCost: 39800, events: 8 },
+  { month: '2026-06', label: 'Jun', revenue: 128000, foodCost: 54400, events: 11 },
+  { month: '2026-07', label: 'Jul', revenue: 88000, foodCost: 37400, events: 7 },
+  { month: '2026-08', label: 'Aug', revenue: 32000, foodCost: 13600, events: 3 },
+  { month: '2026-09', label: 'Sep', revenue: 76000, foodCost: 32300, events: 6 },
+  { month: '2026-10', label: 'Oct', revenue: 104500, foodCost: 44400, events: 9 },
+  { month: '2026-11', label: 'Nov', revenue: 139000, foodCost: 59100, events: 12 },
+  { month: '2026-12', label: 'Dec', revenue: 212000, foodCost: 90100, events: 15 },
+];
+
 const authHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
 });
@@ -215,10 +230,7 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
     );
   }, [data, kpis]);
 
-  const monthlyLineData = useMemo(() => {
-    if (!data) return [];
-    return [...(data.monthly || [])].sort((a, b) => a.month.localeCompare(b.month));
-  }, [data]);
+  const monthlyLineData = useMemo(() => [...MOCK_MONTHLY], []);
 
   const peakPoint = useMemo(() => {
     if (!monthlyLineData.length) return null;
@@ -341,11 +353,11 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                   <h3 className="font-display text-lg font-semibold text-charcoal">
                     Monthly Sales Performance
                   </h3>
-                  <p className="text-xs text-stone-500 mt-0.5">Last 12 months · revenue from completed sales · jagged seasonal trend with peak month highlighted</p>
+                  <p className="text-xs text-stone-500 mt-0.5">Illustrative sample · Jan–Dec jagged seasonal trend (slow Jan · wedding surge Jun · dip Aug · peak Dec) highlighted as Peak Season</p>
                 </div>
                 <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 text-[11px] font-semibold tracking-wide uppercase text-gold border border-gold-300/60 bg-gold-50 rounded-full px-3 py-1">
                   <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#B8921F' }} />
-                  Sales Trend · Live Data
+                  Sample Data · Jagged Trend
                 </span>
               </div>
               {hasActivity ? (
