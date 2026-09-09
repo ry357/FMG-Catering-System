@@ -275,18 +275,6 @@ const SalesAnalyticsDashboard = () => {
       />
     );
 
-  const leastPopularRows = useMemo(() => {
-    if (!leastPopular) return [];
-    return LEASY_POPULAR_GROUP.flatMap((group) =>
-      (leastPopular[group.key] || []).map((item) => ({
-        category: group.label,
-        badge: group.badge,
-        name: item.packageName || item.name,
-        bookingsCount: item.bookingsCount,
-      }))
-    );
-  }, [leastPopular]);
-
   const rangeLabel = data?.range?.label || fullMonthLabel(selectedMonth);
 
   return (
