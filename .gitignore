@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment / secrets (keep only example files)
+.env
+.env.*
+!.env.example
+
+# Local database & data
+database.sqlite
+database.sqlite-journal
+
+# Logs
+*.log
+npm-debug.log*
+
+# Generated report exports
+Server/reports-output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

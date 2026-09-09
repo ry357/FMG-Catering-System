@@ -1,0 +1,8 @@
+-NoCommand : The term '-NoCommand' is not recognized as the name of a cmdlet, function, script file, or operable 
+program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ -NoCommand -ExecutionPolicy Bypass -File .\server.js
++ ~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (-NoCommand:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 

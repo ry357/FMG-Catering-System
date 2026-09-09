@@ -1,0 +1,35 @@
+---
+description: React frontend patterns for FMG Catering client app
+globs: client/**/*.{tsx,jsx,css}
+alwaysApply: false
+---
+
+# Frontend Rules
+
+## Stack
+
+React + Vite + Tailwind CSS + Chart.js
+
+## Public Pages (no auth)
+
+Landing (hero, about, services, packages, testimonials, contact, book now), booking form, budget recommendations display.
+
+## Protected Pages (JWT required)
+
+Staff dashboard, admin dashboard, analytics, reports, user management.
+
+Use a route guard component that checks JWT and role before rendering.
+
+## Components
+
+- Extract reusable UI into `client/src/components/`
+- Page-level layouts in `client/src/pages/`
+- API calls in `client/src/services/` — never inline fetch in every component
+
+## Booking Form Fields
+
+Name, contact number, email, event type, event date, number of guests, budget, preferred package, additional requests. Validate before submit.
+
+## Charts
+
+Use Chart.js for analytics views (monthly revenue, peak periods, popular packages/services).

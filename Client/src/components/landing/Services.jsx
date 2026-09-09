@@ -1,0 +1,36 @@
+import { SERVICES } from '../../data/landingData';
+import SectionHeading from '../ui/SectionHeading';
+import ServiceIcon from '../ui/ServiceIcon';
+
+export default function Services() {
+  return (
+    <section id="services" className="section-padding bg-gold-50/50">
+      <div className="section-container">
+        <SectionHeading
+          label="Our Services"
+          title="Comprehensive Catering Solutions"
+          description="From intimate dinners to large-scale events, we provide end-to-end catering services tailored to your occasion."
+        />
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {SERVICES.map((service) => (
+            <article
+              key={service.id}
+              className="group bg-white rounded-2xl p-6 md:p-8 shadow-card hover:shadow-elevated transition-all duration-300 border border-transparent hover:border-gold-200"
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gold-100 text-gold-600 group-hover:bg-gold-400 group-hover:text-white transition-colors duration-300">
+                <ServiceIcon name={service.icon} />
+              </div>
+              <h3 className="mt-5 font-display text-xl font-semibold text-charcoal">
+                {service.title}
+              </h3>
+              <p className="mt-3 text-sm text-charcoal-muted leading-relaxed">
+                {service.description}
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

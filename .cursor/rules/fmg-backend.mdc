@@ -1,0 +1,44 @@
+---
+description: Express API conventions for FMG Catering backend
+globs: server/**/*.{js,ts}
+alwaysApply: false
+---
+
+# Backend Rules
+
+## Stack
+
+Node.js + Express.js + JWT + Nodemailer
+
+## Route Organization
+
+```
+/api/auth          — staff/admin login
+/api/bookings      — CRUD (public POST for new bookings; staff/admin for management)
+/api/sales         — staff/admin only
+/api/reports       — staff/admin only
+/api/analytics     — admin only
+/api/users         — admin only
+/api/recommendations — public (rule-based package suggestions)
+/api/email         — admin config; internal triggers for notifications
+```
+
+## Middleware
+
+- `authenticateToken` — verify JWT on protected routes
+- `requireRole('staff' | 'admin')` — enforce role access
+
+## Email (Nodemailer)
+
+Types: booking confirmation, booking approval, promotional campaigns, anniversary reminders (1 year before event date).
+
+Log every send to `EmailLogs` table.
+
+## Scheduled Jobs
+
+- Daily/weekly/monthly/annual report generation
+- Anniversary promotional emails (query completed bookings where event_date anniversary is ~30 days away)
+
+## Responses
+
+Use consistent JSON: `{ success, data, message }` or `{ success, error }`.

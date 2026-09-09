@@ -1,0 +1,34 @@
+---
+description: MySQL schema conventions for FMG Catering
+globs: database/**/*
+alwaysApply: false
+---
+
+# Database Rules
+
+## Tables
+
+`Users`, `Customers`, `Bookings`, `Sales`, `Reports`, `EmailLogs`
+
+## Conventions
+
+- Use `INT AUTO_INCREMENT` primary keys
+- `created_at`, `updated_at` timestamps on all tables
+- Foreign keys with `ON DELETE` behavior documented
+- Index columns used in analytics queries (event_date, status, package_id)
+
+## Key Relationships
+
+- `Bookings` → `Customers` (customer info)
+- `Sales` → `Bookings` (completed booking revenue)
+- `EmailLogs` → `Bookings` or `Customers` (notification audit trail)
+- `Reports` — stores generated report metadata and file paths
+
+## Booking Status Flow
+
+`pending` → `approved` / `rejected` → `completed` (triggers retention record + future anniversary email)
+
+## Security
+
+- Parameterized queries only — no string concatenation for SQL
+- Passwords hashed with bcrypt in `Users` table

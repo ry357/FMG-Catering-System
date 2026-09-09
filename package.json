@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "sqlite3": "^6.0.1"
+  },
+  "name": "fmg-catering-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "check_db.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

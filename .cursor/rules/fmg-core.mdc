@@ -1,0 +1,33 @@
+---
+description: FMG Catering core project constraints, users, and coding standards
+alwaysApply: true
+---
+
+# FMG Catering — Core Rules
+
+## Always
+
+- Use reusable components and proper folder structure (`client/`, `server/`, `database/`)
+- Validate all user inputs on client and server
+- Protect admin/staff routes with JWT middleware and role guards
+- Keep client-facing pages public (no login)
+- Use meaningful variable names; write maintainable code
+- Store credentials in environment variables (`.env`), never hardcode
+
+## Never
+
+- Use machine learning terminology or ML libraries
+- Create customer login functionality
+- Expose admin or staff routes without authentication
+- Hardcode database credentials
+
+## Terminology
+
+- "Rule-based recommendations" / "decision support" — not AI or ML
+- "Analytics" — predefined logic on historical data
+- Roles: `public`, `staff`, `admin`
+
+## UI Theme
+
+- White background, gold accents (`#C9A227` or similar)
+- Professional catering branding; responsive; accessible
