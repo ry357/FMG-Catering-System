@@ -298,8 +298,8 @@ const AdminDashboard = () => {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex gap-1 mb-6 border-b border-[#1E2A45]">
+      <div className="max-w-[1600px] mx-auto px-4 py-5">
+        <div className="flex gap-1 mb-4 border-b border-[#1E2A45]">
           <button
             onClick={() => setActiveTab('analytics')}
             className={`px-4 py-2.5 text-sm font-medium transition-colors ${
@@ -348,7 +348,7 @@ const AdminDashboard = () => {
 
         {activeTab === 'reports' && (
           <div className="space-y-4">
-            <div className="bg-[#101A2E] border border-[#1E2A45] rounded-xl p-6 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+            <div className="bg-[#101A2E] border border-[#1E2A45] rounded-xl p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
               <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
                 <div>
                   <div className="flex items-center gap-3">
@@ -442,7 +442,7 @@ const AdminDashboard = () => {
               )}
             </div>
 
-            <div className="bg-[#101A2E] border border-[#1E2A45] rounded-xl p-6 shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)]">
+            <div className="bg-[#101A2E] border border-[#1E2A45] rounded-xl p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)]">
               <h2 className="text-base font-semibold text-white mb-1">All Reports</h2>
               <p className="text-xs text-slate-400 mb-4">
                 Daily, weekly, monthly, and annual reports plus automated monthly summaries.
@@ -499,7 +499,7 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'users' && (
-          <div className="bg-[#101A2E] border border-[#1E2A45] rounded-xl p-6 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+          <div className="bg-[#101A2E] border border-[#1E2A45] rounded-xl p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-base font-semibold text-white">User Management</h2>
               <button

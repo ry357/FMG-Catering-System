@@ -118,7 +118,7 @@ const Trendnalytics = () => {
 
   return (
     <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)]">
-      <div className="p-6 pb-4 border-b border-[#1E2A45]">
+      <div className="p-4 pb-3 border-b border-[#1E2A45]">
         <h2 className="font-display text-lg font-semibold bg-gradient-to-r from-cyan-300 via-white to-pink-400 bg-clip-text text-transparent">
           Trendnalytics
         </h2>
@@ -127,8 +127,8 @@ const Trendnalytics = () => {
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3 p-6">
-        <div className="bg-[#0B1220] rounded-xl border border-[#1E2A45] p-5">
+      <div className="grid gap-4 lg:grid-cols-3 p-4">
+        <div className="bg-[#0B1220] rounded-xl border border-[#1E2A45] p-4">
           <h3 className="text-sm font-semibold text-white mb-1">Trend Packages</h3>
           <p className="text-[11px] text-slate-400 mb-4">Most booked packages across confirmed events.</p>
           <div className="space-y-3">
@@ -146,7 +146,7 @@ const Trendnalytics = () => {
           </div>
         </div>
 
-        <div className="bg-[#0B1220] rounded-xl border border-[#1E2A45] p-5">
+        <div className="bg-[#0B1220] rounded-xl border border-[#1E2A45] p-4">
           <h3 className="text-sm font-semibold text-white mb-1">Event Trends</h3>
           <p className="text-[11px] text-slate-400 mb-4">Trending event types and booking demand periods.</p>
           <div className="space-y-3 mb-5">
@@ -188,7 +188,7 @@ const Trendnalytics = () => {
           )}
         </div>
 
-        <div className="bg-[#0B1220] rounded-xl border border-[#1E2A45] p-5">
+        <div className="bg-[#0B1220] rounded-xl border border-[#1E2A45] p-4">
           <h3 className="text-sm font-semibold text-white mb-1">Food Trends</h3>
           <p className="text-[11px] text-slate-400 mb-4">Least booked packages, foods, sides & drinks — ranked ascending.</p>
           <div className="space-y-2">

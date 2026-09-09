@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import {
   ResponsiveContainer,
@@ -13,20 +13,20 @@ import {
   ReferenceLine,
 } from 'recharts';
 
-const PESO = (value) => `₱${Number(value || 0).toLocaleString(undefined, {
+const PESO = (value) => `â‚±${Number(value || 0).toLocaleString(undefined, {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 })}`;
 
-const PESO_CENTS = (value) => `₱${Number(value || 0).toLocaleString(undefined, {
+const PESO_CENTS = (value) => `â‚±${Number(value || 0).toLocaleString(undefined, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 })}`;
 
 const COMPACT = (value) => {
   const n = Number(value || 0);
-  if (Math.abs(n) >= 1000) return `₱${(n / 1000).toFixed(1)}k`;
-  return `₱${n}`;
+  if (Math.abs(n) >= 1000) return `â‚±${(n / 1000).toFixed(1)}k`;
+  return `â‚±${n}`;
 };
 
 const MONTH_NAMES = [
@@ -83,7 +83,7 @@ const TrendBadge = ({ value, invert = false, className = '' }) => {
     return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-700/50 text-slate-400 ${className}`}>Baseline</span>;
   }
   const isGood = invert ? value <= 0 : value >= 0;
-  const arrow = value >= 0 ? '▲' : '▼';
+  const arrow = value >= 0 ? 'â–²' : 'â–¼';
   return (
     <span
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
@@ -278,13 +278,13 @@ const SalesAnalyticsDashboard = () => {
   const rangeLabel = data?.range?.label || fullMonthLabel(selectedMonth);
 
   return (
-    <div className="space-y-6 bg-[#0B1220] rounded-2xl border border-[#1E2A45] p-6 shadow-[0_0_50px_-18px_rgba(34,211,238,0.35)]">
+    <div className="space-y-4 bg-[#0B1220] rounded-2xl border border-[#1E2A45] p-4 shadow-[0_0_50px_-18px_rgba(34,211,238,0.35)]">
       {/* Sticky header */}
-      <div className="sticky top-0 z-10 -mx-6 px-6 py-4 bg-[#0B1220]/95 backdrop-blur border-b border-[#1E2A45] flex flex-wrap items-center justify-between gap-3">
+      <div className="sticky top-0 z-10 -mx-4 px-4 py-3 bg-[#0B1220]/95 backdrop-blur border-b border-[#1E2A45] flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-xl font-semibold text-white">Sales Analytics</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            {data ? `${data.range.label} · ${data.range.start} to ${data.range.end}` : 'Loading range…'}
+            {data ? `${data.range.label} Â· ${data.range.start} to ${data.range.end}` : 'Loading rangeâ€¦'}
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-400">
@@ -345,7 +345,7 @@ const SalesAnalyticsDashboard = () => {
           {/* Middle charts */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div
-                className="lg:col-span-2 rounded-xl border border-[#1C2A44] p-6 shadow-[0_0_40px_-12px_rgba(34,211,238,0.35)] relative overflow-hidden"
+                className="lg:col-span-2 rounded-xl border border-[#1C2A44] p-4 shadow-[0_0_40px_-12px_rgba(34,211,238,0.35)] relative overflow-hidden"
                 style={{
                   background:
                     'radial-gradient(900px 450px at 85% -15%, rgba(34,211,238,0.16), transparent 60%), radial-gradient(700px 400px at 0% 110%, rgba(255,45,120,0.10), transparent 55%), #0B1220',
@@ -356,11 +356,11 @@ const SalesAnalyticsDashboard = () => {
                     <h3 className="font-display text-lg font-semibold text-white">
                       Monthly Sales Performance
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Illustrative sample · Jan–Dec jagged seasonal trend (slow Jan · wedding surge Jun · dip Aug · peak Dec) highlighted as Peak Season</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Illustrative sample Â· Janâ€“Dec jagged seasonal trend (slow Jan Â· wedding surge Jun Â· dip Aug Â· peak Dec) highlighted as Peak Season</p>
                   </div>
                   <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 text-[11px] font-semibold tracking-wide uppercase text-cyan-300 border border-cyan-400/30 bg-cyan-400/10 rounded-full px-3 py-1">
                     <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#22D3EE', boxShadow: '0 0 8px #22D3EE' }} />
-                    Sample Data · Jagged Trend
+                    Sample Data Â· Jagged Trend
                   </span>
                 </div>
               {hasActivity ? (
@@ -422,16 +422,16 @@ const SalesAnalyticsDashboard = () => {
               )}
             </div>
 
-            <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-6 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+            <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
               <h3 className="font-display text-lg font-semibold text-white mb-1">Booking Pipeline</h3>
-              <p className="text-xs text-slate-400 mb-5">Inquiries → Confirmed → Closed Won · {rangeLabel}</p>
+              <p className="text-xs text-slate-400 mb-5">Inquiries â†’ Confirmed â†’ Closed Won Â· {rangeLabel}</p>
               <PipelineFunnel data={data.pipeline} />
             </div>
           </div>
 
           {/* Upcoming high-value events */}
           <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)]">
-            <div className="p-6 pb-3 flex flex-wrap items-start justify-between gap-3 border-b border-[#1E2A45]">
+            <div className="p-4 pb-3 flex flex-wrap items-start justify-between gap-3 border-b border-[#1E2A45]">
               <div>
                 <h3 className="font-display text-lg font-semibold text-white">Upcoming High-Value Events</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Booked events in the selected range, ranked by invoice value</p>
@@ -441,12 +441,12 @@ const SalesAnalyticsDashboard = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500">
-                    <th className="py-3 px-6 font-medium">Event Date</th>
-                    <th className="py-3 px-6 font-medium">Client / Event</th>
-                    <th className="py-3 px-6 font-medium">Event Type</th>
-                    <th className="py-3 px-6 font-medium text-right">Guests</th>
-                    <th className="py-3 px-6 font-medium text-right">Invoice Value</th>
-                    <th className="py-3 px-6 font-medium">Payment Status</th>
+                    <th className="py-3 px-4 font-medium">Event Date</th>
+                    <th className="py-3 px-4 font-medium">Client / Event</th>
+                    <th className="py-3 px-4 font-medium">Event Type</th>
+                    <th className="py-3 px-4 font-medium text-right">Guests</th>
+                    <th className="py-3 px-4 font-medium text-right">Invoice Value</th>
+                    <th className="py-3 px-4 font-medium">Payment Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -459,21 +459,21 @@ const SalesAnalyticsDashboard = () => {
                   ) : (
                     data.upcomingEvents.map((ev) => (
                       <tr key={ev.bookingId} className="border-t border-[#17233C] hover:bg-cyan-400/5">
-                        <td className="py-3.5 px-6 whitespace-nowrap text-white font-medium">
+                        <td className="py-3.5 px-4 whitespace-nowrap text-white font-medium">
                           {new Date(`${ev.eventDate}T00:00:00`).toLocaleDateString(undefined, {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
                           })}
                         </td>
-                        <td className="py-3.5 px-6">
+                        <td className="py-3.5 px-4">
                           <p className="text-white font-medium">{ev.customerName}</p>
                           <p className="text-[11px] text-slate-500">{ev.bookingRef || `Booking #${ev.bookingId}`}</p>
                         </td>
-                        <td className="py-3.5 px-6 text-slate-300">{ev.eventType}</td>
-                        <td className="py-3.5 px-6 text-right text-slate-300">{ev.guests.toLocaleString()}</td>
-                        <td className="py-3.5 px-6 text-right font-semibold text-cyan-300">{PESO(ev.invoiceValue)}</td>
-                        <td className="py-3.5 px-6">{paymentBadge(ev.paymentStatus)}</td>
+                        <td className="py-3.5 px-4 text-slate-300">{ev.eventType}</td>
+                        <td className="py-3.5 px-4 text-right text-slate-300">{ev.guests.toLocaleString()}</td>
+                        <td className="py-3.5 px-4 text-right font-semibold text-cyan-300">{PESO(ev.invoiceValue)}</td>
+                        <td className="py-3.5 px-4">{paymentBadge(ev.paymentStatus)}</td>
                       </tr>
                     ))
                   )}
