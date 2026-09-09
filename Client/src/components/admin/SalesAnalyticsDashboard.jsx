@@ -325,7 +325,7 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
         <>
           {/* KPI cards */}
           {kpis && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <KpiCard
                 icon={icons.revenue}
                 title="Total Catering Revenue"
@@ -337,14 +337,6 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                 title="Average Event Value"
                 value={PESO(kpis.avgEventValue)}
                 trend={kpis.trends.avgEventValue}
-              />
-              <KpiCard
-                icon={icons.cogs}
-                title="Est. Food Cost of Sales"
-                value={kpis.cogsPercent === null ? '—' : `${kpis.cogsPercent}%`}
-                trend={kpis.trends.cogsPercent}
-                invert
-                note="rule-based"
               />
               <KpiCard
                 icon={icons.events}
