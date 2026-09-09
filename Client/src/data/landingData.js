@@ -203,39 +203,7 @@ export const MENU_OFFERS = [
 ];
 
 export const MENU_CHOICES = {
-  mains: [
-    { name: 'Pork Afritada', image: '/dishes/pork-afritada.svg' },
-    { name: 'Pork Steak', image: '/dishes/pork-steak.jpg' },
-    { name: 'Pork Sweet & Sour', image: '/dishes/pork-sweet-sour.jpg' },
-    { name: 'Pork Menudo', image: '/dishes/pork-menudo.jpg' },
-    { name: 'Pork Teriyaki', image: '/dishes/pork-teriyaki.svg' },
-    { name: 'Pinoy Humba', image: '/dishes/pinoy-humba.jpg' },
-    { name: 'Chicken Cordon Bleu', image: '/dishes/chicken-cordon-bleu.jpg' },
-    { name: 'Buttered Chicken', image: '/dishes/buttered-chicken.jpg' },
-    { name: 'Chicken Curry', image: '/dishes/chicken-curry.jpg' },
-    { name: 'Chicken Fillet', image: '/dishes/chicken-fillet.jpg' },
-    { name: 'Corn Shrimp', image: '/dishes/corn-shrimp.svg' },
-    { name: 'Sweet & Sour Fish', image: '/dishes/sweet-sour-fish.jpg' },
-    { name: 'Buttered Shrimp', image: '/dishes/buttered-shrimp.svg' },
-    { name: 'Beef Steak', image: '/dishes/beef-steak.jpg' },
-    { name: 'Beef Teriyaki', image: '/dishes/beef-teriyaki.jpg' },
-    { name: 'Beef Kare-Kare', image: '/dishes/beef-kare-kare.jpg' },
-  ],
-  sides: [
-    { name: 'Special Chopsuey', image: '/dishes/chopsuey.jpg' },
-    { name: 'Vegetable Lumpia', image: '/dishes/vegetable-lumpia.svg' },
-    { name: 'Corn Soup', image: '/dishes/corn-soup.jpg' },
-    { name: 'Mushroom Soup', image: '/dishes/mushroom-soup.jpg' },
-    { name: 'Pancit Guisado', image: '/dishes/pancit-guisado.jpg' },
-    { name: 'Bam-e', image: '/dishes/bam-e.jpg' },
-    { name: 'Pinoy Spaghetti', image: '/dishes/pinoy-spaghetti.jpg' },
-    { name: 'Carbonara', image: '/dishes/carbonara.jpg' },
-  ],
-  desserts: [
-    { name: 'Mango Tapioca', image: '/dishes/mango-tapioca.jpg' },
-    { name: 'Buko Pandan', image: '/dishes/buko-pandan.jpg' },
-    { name: 'Chicken Macaroni Salad', image: '/dishes/chicken-macaroni-salad.jpg' },
-    { name: 'Buko Mango Sago', image: '/dishes/buko-mango-sago.jpg' },
-    { name: 'Fresh Fruit Salad', image: '/dishes/fresh-fruit-salad.jpg' },
-  ],
+  mains: ['Pork Afritada', 'Pork Steak', 'Pork Sweet & Sour', 'Pork Menudo', 'Pork Teriyaki', 'Pinoy Humba', 'Chicken Cordon Bleu', 'Buttered Chicken', 'Chicken Curry', 'Chicken Fillet', 'Corn Shrimp', 'Sweet & Sour Fish', 'Buttered Shrimp', 'Beef Steak', 'Beef Teriyaki', 'Beef Kare-Kare'],
+  sides: ['Special Chopsuey', 'Vegetable Lumpia', 'Corn Soup', 'Mushroom Soup', 'Pancit Guisado', 'Bam-e', 'Pinoy Spaghetti', 'Carbonara'],
+  desserts: ['Mango Tapioca', 'Buko Pandan', 'Chicken Macaroni Salad', 'Buko Mango Sago', 'Fresh Fruit Salad'],
 };

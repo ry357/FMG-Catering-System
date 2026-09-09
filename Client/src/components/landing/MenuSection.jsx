@@ -41,42 +41,14 @@ function ChoiceGroup({ title, choices, selected, limit, onToggle }) {
         <span>{title}</span>
         <span className="text-gold-600">Choose {limit} · {selected.length}/{limit}</span>
       </legend>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {choices.map((dish) => {
-          const checked = selected.includes(dish.name);
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {choices.map((choice) => {
+          const checked = selected.includes(choice);
           const unavailable = !checked && selected.length >= limit;
           return (
-            <label
-              key={dish.name}
-              className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border-2 transition ${
-                checked
-                  ? 'border-gold-400 bg-gold-50 shadow-md ring-2 ring-gold-200'
-                  : 'border-gray-200 bg-white hover:border-gold-300 hover:shadow-sm'
-              } ${unavailable ? 'cursor-not-allowed opacity-40' : ''}`}
-            >
-              <input
-                type="checkbox"
-                checked={checked}
-                disabled={unavailable}
-                onChange={() => onToggle(dish.name)}
-                className="sr-only"
-              />
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-amber-50">
-                <img
-                  src={dish.image}
-                  alt={dish.name}
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
-                {checked && (
-                  <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gold-500 text-xs text-white shadow">
-                    ✓
-                  </div>
-                )}
-              </div>
-              <div className="px-3 py-2.5">
-                <span className="text-sm font-medium text-charcoal">{dish.name}</span>
-              </div>
+            <label key={choice} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition ${checked ? 'border-gold-400 bg-gold-50 text-charcoal' : 'border-gray-200 bg-white text-charcoal-light'} ${unavailable ? 'cursor-not-allowed opacity-45' : 'hover:border-gold-300'}`}>
+              <input type="checkbox" checked={checked} disabled={unavailable} onChange={() => onToggle(choice)} className="h-4 w-4 rounded border-gray-300 text-gold-500 focus:ring-gold-400" />
+              {choice}
             </label>
           );
         })}
