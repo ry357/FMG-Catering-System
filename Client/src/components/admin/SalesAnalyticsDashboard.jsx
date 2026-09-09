@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import {
   ResponsiveContainer,
-  ComposedChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -213,6 +213,11 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
     );
   }, [data, kpis]);
 
+  const monthlyLineData = useMemo(() => {
+    if (!data) return [];
+    return [...(data.monthly || [])].sort((a, b) => b.events - a.events);
+  }, [data]);
+
   const leastPopularRows = useMemo(() => {
     if (!leastPopular) return [];
     return LEASY_POPULAR_GROUP.flatMap((group) =>
@@ -304,23 +309,13 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                   <h3 className="font-display text-lg font-semibold text-charcoal">
                     Monthly Catering Revenue vs Food Costs
                   </h3>
-                  <p className="text-xs text-stone-500 mt-0.5">Last 12 months · revenue from completed sales, food cost estimated by rule-based model</p>
+                  <p className="text-xs text-stone-500 mt-0.5">Last 12 months · revenue from completed sales, food cost estimated by rule-based model · months ordered by bookings, highest to lowest</p>
                 </div>
               </div>
               {hasActivity ? (
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={data.monthly} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#C9A227" stopOpacity={0.35} />
-                          <stop offset="100%" stopColor="#C9A227" stopOpacity={0.02} />
-                        </linearGradient>
-                        <linearGradient id="gradCost" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#3D3D3D" stopOpacity={0.25} />
-                          <stop offset="100%" stopColor="#3D3D3D" stopOpacity={0.02} />
-                        </linearGradient>
-                      </defs>
+                    <LineChart data={monthlyLineData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#ECE7DB" vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#E3DCCB' }} tick={{ fontSize: 12, fill: '#6B6B6B' }} />
                       <YAxis tickFormatter={COMPACT} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#6B6B6B' }} width={64} />
@@ -329,24 +324,26 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
                         iconType="plainline"
                         formatter={(value) => <span className="text-xs text-stone-600">{value}</span>}
                       />
-                      <Area
-                        type="monotone"
+                      <Line
+                        type="linear"
+                        dot={{ r: 3, fill: '#B8921F', strokeWidth: 0 }}
+                        activeDot={{ r: 5 }}
                         dataKey="revenue"
                         name="Revenue"
                         stroke="#B8921F"
                         strokeWidth={2.5}
-                        fill="url(#gradRevenue)"
                       />
-                      <Area
-                        type="monotone"
+                      <Line
+                        type="linear"
+                        dot={{ r: 3, fill: '#3D3D3D', strokeWidth: 0 }}
+                        activeDot={{ r: 5 }}
                         dataKey="foodCost"
                         name="Food Cost (est.)"
                         stroke="#3D3D3D"
                         strokeWidth={2}
                         strokeDasharray="4 3"
-                        fill="url(#gradCost)"
                       />
-                    </ComposedChart>
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
