@@ -9,6 +9,11 @@ const MONTH_LABELS = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
+const FULL_MONTH_LABELS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
 const monthKey = (dateValue) => {
   const d = new Date(dateValue);
   if (Number.isNaN(d.getTime())) return null;
@@ -51,23 +56,26 @@ const decorateBooking = (row) => {
   };
 };
 
-export const getSalesDashboard = async (days) => {
-  const raw = Number(days);
-  const isAllTime = Number.isFinite(raw) && raw === 0;
-  const rangeDays = isAllTime
-    ? 7300 // effectively unlimited: ~20 years of event dates
-    : Math.max(1, Math.min(Number.isFinite(raw) ? raw || 90 : 90, 730));
+export const getSalesDashboard = async ({ month } = {}) => {
+  const now = new Date();
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const end = addDays(today, rangeDays);
-  const prevEnd = new Date(today.getTime());
-  const prevStart = addDays(today, -rangeDays);
+  let startDate;
+  if (typeof month === 'string' && /^\d{4}-\d{2}$/.test(month)) {
+    const [y, m] = month.split('-').map(Number);
+    startDate = new Date(y, m - 1, 1);
+  } else {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+  const prevStart = new Date(startDate.getFullYear(), startDate.getMonth() - 1, 1);
+  const prevEnd = new Date(startDate.getFullYear(), startDate.getMonth(), 0);
 
-  const startStr = toDateString(today);
-  const endStr = toDateString(end);
+  const startStr = toDateString(startDate);
+  const endStr = toDateString(endDate);
   const prevStartStr = toDateString(prevStart);
   const prevEndStr = toDateString(prevEnd);
+  const selectedMonthKey = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
 
   const rows = await query(`
     SELECT
@@ -90,6 +98,25 @@ export const getSalesDashboard = async (days) => {
   `);
 
   const bookings = rows.map(decorateBooking);
+
+  // Distinct months that have bookings (plus the selected month so the
+  // dropdown always includes the active selection).
+  const monthBookings = {};
+  bookings.forEach((b) => {
+    if (!b.event_date) return;
+    const key = monthKey(b.event_date);
+    if (!key) return;
+    monthBookings[key] = (monthBookings[key] || 0) + 1;
+  });
+  const months = [...new Set(Object.keys(monthBookings).concat(selectedMonthKey))]
+    .sort()
+    .map((key) => ({
+      month: key,
+      label: monthLabel(key),
+      year: key.slice(0, 4),
+      events: monthBookings[key] || 0,
+    }));
+
   const inWindow = (b) => b.event_date >= startStr && b.event_date <= endStr;
   const inPrev = (b) => b.event_date >= prevStartStr && b.event_date <= prevEndStr;
   const finalized = (b) => b.status === 'approved' || b.status === 'completed';
@@ -189,15 +216,16 @@ export const getSalesDashboard = async (days) => {
 
   return {
     range: {
-      days: rangeDays,
+      month: selectedMonthKey,
       start: startStr,
       end: endStr,
-      label: isAllTime ? 'All Time' : `Next ${rangeDays} Days`,
+      label: `${FULL_MONTH_LABELS[startDate.getMonth()]} ${startDate.getFullYear()}`,
     },
     kpis,
     monthly,
     pipeline,
     upcomingEvents,
+    months,
     totals: {
       invoiceTotal: Number(cur.invoiceTotal.toFixed(2)),
       foodCostTotal: Number(cur.foodCostTotal.toFixed(2)),

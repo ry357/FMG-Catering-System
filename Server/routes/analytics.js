@@ -253,7 +253,7 @@ router.get('/least-popular', authenticateToken, requireRole(['admin']), async (r
 // booking pipeline, and upcoming high-value events (admin only)
 router.get('/sales-dashboard', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
-    const data = await getSalesDashboard(req.query.days);
+    const data = await getSalesDashboard({ month: req.query.month });
     res.json({ success: true, data });
   } catch (error) {
     console.error('Analytics sales-dashboard error:', error);

@@ -29,13 +29,21 @@ const COMPACT = (value) => {
   return `₱${n}`;
 };
 
-const RANGE_OPTIONS = [
-  { days: 30, label: 'Next 30 Days' },
-  { days: 90, label: 'Next 90 Days' },
-  { days: 180, label: 'Next 180 Days' },
-  { days: 365, label: 'Next 365 Days' },
-  { days: 0, label: 'All Time' },
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
+
+const currentMonthKey = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
+const fullMonthLabel = (key) => {
+  const [y, m] = String(key || '').split('-');
+  const name = MONTH_NAMES[Number(m) - 1];
+  return name ? `${name} ${y}` : key;
+};
 
 const MOCK_MONTHLY = [
   { month: '2026-01', label: 'Jan', revenue: 42000, foodCost: 18000, events: 4 },
@@ -198,7 +206,8 @@ const LEASY_POPULAR_GROUP = [
 ];
 
 const SalesAnalyticsDashboard = ({ leastPopular }) => {
-  const [rangeDays, setRangeDays] = useState(90);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthKey());
+  const [months, setMonths] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -207,12 +216,13 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
     let cancelled = false;
     setLoading(true);
     setError('');
-    const days = rangeDays === 0 ? 0 : rangeDays;
 
     axios
-      .get('/api/analytics/sales-dashboard', { ...authHeader(), params: { days } })
+      .get('/api/analytics/sales-dashboard', { ...authHeader(), params: { month: selectedMonth } })
       .then((res) => {
-        if (!cancelled) setData(res.data.data);
+        if (cancelled) return;
+        setData(res.data.data);
+        setMonths(res.data.data.months || []);
       })
       .catch((err) => {
         if (!cancelled) setError(err.response?.data?.error || 'Failed to load analytics');
@@ -224,7 +234,7 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
     return () => {
       cancelled = true;
     };
-  }, [rangeDays]);
+  }, [selectedMonth]);
 
   const kpis = data?.kpis;
   const hasActivity = useMemo(() => {
@@ -284,7 +294,7 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
     );
   }, [leastPopular]);
 
-  const rangeLabel = RANGE_OPTIONS.find((r) => r.days === rangeDays)?.label || 'Next 90 Days';
+  const rangeLabel = data?.range?.label || fullMonthLabel(selectedMonth);
 
   return (
     <div className="space-y-6 bg-[#0B1220] rounded-2xl border border-[#1E2A45] p-6 shadow-[0_0_50px_-18px_rgba(34,211,238,0.35)]">
@@ -297,10 +307,10 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-400">
-          <span>Event date range</span>
+          <span>Event month</span>
           <select
-            value={rangeDays}
-            onChange={(e) => setRangeDays(Number(e.target.value))}
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
             className="appearance-none bg-[#101A2E] border border-[#1E2A45] text-white text-sm font-medium pl-3 pr-8 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/60 cursor-pointer bg-no-repeat"
             style={{
               backgroundImage:
@@ -308,9 +318,13 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
               backgroundPosition: 'right 0.75rem center',
             }}
           >
-            {RANGE_OPTIONS.map((r) => (
-              <option key={r.days} value={r.days}>
-                {r.label}
+            {months.length === 0 && (
+              <option value={selectedMonth}>{fullMonthLabel(selectedMonth)}</option>
+            )}
+            {months.map((m) => (
+              <option key={m.month} value={m.month}>
+                {fullMonthLabel(m.month)}
+                {m.events > 0 ? ` (${m.events} ${m.events === 1 ? 'booking' : 'bookings'})` : ''}
               </option>
             ))}
           </select>
