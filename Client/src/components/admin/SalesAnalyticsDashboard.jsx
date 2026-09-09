@@ -198,14 +198,7 @@ const paymentBadge = (status) => {
   );
 };
 
-const LEASY_POPULAR_GROUP = [
-  { key: 'packages', label: 'Package', badge: 'bg-purple-400/10 text-purple-300 border border-purple-400/30' },
-  { key: 'foods', label: 'Food', badge: 'bg-cyan-400/10 text-cyan-300 border border-cyan-400/30' },
-  { key: 'sides', label: 'Side Dish', badge: 'bg-emerald-400/10 text-emerald-300 border border-emerald-400/30' },
-  { key: 'drinks', label: 'Drink', badge: 'bg-blue-400/10 text-blue-300 border border-blue-400/30' },
-];
-
-const SalesAnalyticsDashboard = ({ leastPopular }) => {
+const SalesAnalyticsDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey());
   const [months, setMonths] = useState([]);
   const [data, setData] = useState(null);
@@ -500,42 +493,6 @@ const SalesAnalyticsDashboard = ({ leastPopular }) => {
               </table>
             </div>
           </div>
-
-          {/* Least popular menu items */}
-          {leastPopularRows.length > 0 && (
-            <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)]">
-              <div className="p-6 pb-3 border-b border-[#1E2A45]">
-                <h3 className="font-display text-lg font-semibold text-white">Least Popular Menu Items</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Packages, foods, side dishes, and drinks ranked from least to most booked.
-                </p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500">
-                      <th className="py-3 px-6 font-medium">Category</th>
-                      <th className="py-3 px-6 font-medium">Item</th>
-                      <th className="py-3 px-6 font-medium text-right">Times Booked</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leastPopularRows.map((item, index) => (
-                      <tr key={`${item.category}-${item.name}-${index}`} className="border-t border-[#17233C] hover:bg-cyan-400/5">
-                        <td className="py-3 px-6">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${item.badge}`}>
-                            {item.category}
-                          </span>
-                        </td>
-                        <td className="py-3 px-6 text-white">{item.name}</td>
-                        <td className="py-3 px-6 text-right font-medium text-cyan-300">{item.bookingsCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>

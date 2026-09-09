@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard';
+import Trendnalytics from '../components/admin/TrendAnalytics';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -108,7 +109,6 @@ const reportBadgeClass = (type) =>
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [users, setUsers] = useState([]);
-  const [leastPopular, setLeastPopular] = useState({ packages: [], foods: [], sides: [], drinks: [] });
   const [reports, setReports] = useState([]);
   const [monthlySummary, setMonthlySummary] = useState(null);
   const [reportBusy, setReportBusy] = useState(false);
@@ -141,19 +141,16 @@ const AdminDashboard = () => {
     try {
       const [
         usersRes,
-        leastPopularRes,
         reportListRes,
         monthlySummaryRes,
         googleDocsConfigRes
       ] = await Promise.all([
         axios.get('/api/users', authHeader()),
-        axios.get('/api/analytics/least-popular', authHeader()),
         axios.get('/api/reports', authHeader()),
         axios.get('/api/reports/monthly-summary', authHeader()),
         axios.get('/api/reports/google-docs/config', authHeader())
       ]);
       setUsers(usersRes.data.users);
-      setLeastPopular(leastPopularRes.data.data);
       setReports(reportListRes.data.reports || []);
       setMonthlySummary(monthlySummaryRes.data.data || null);
       setGoogleDocsConfigured(Boolean(googleDocsConfigRes.data.configured));
@@ -333,10 +330,20 @@ const AdminDashboard = () => {
           >
             Reports
           </button>
+          <button
+            onClick={() => setActiveTab('trendnalytics')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === 'trendnalytics'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Trendnalytics
+          </button>
         </div>
 
         {activeTab === 'analytics' && (
-          <SalesAnalyticsDashboard leastPopular={leastPopular} />
+          <SalesAnalyticsDashboard />
         )}
 
         {activeTab === 'reports' && (
@@ -485,6 +492,10 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'trendnalytics' && (
+          <Trendnalytics />
         )}
 
         {activeTab === 'users' && (
