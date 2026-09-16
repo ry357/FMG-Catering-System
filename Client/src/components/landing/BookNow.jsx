@@ -355,14 +355,17 @@ export default function BookNow({ initialMenuBooking }) {
     if (plCategory) setCategory(plCategory);
     setForm((prev) => ({
       ...prev,
-      budget: String(budget),
-      numberOfGuests: String(guests),
+      budget: plCategory === 'drop-off' ? '' : String(budget ?? ''),
+      numberOfGuests: plCategory === 'drop-off' ? '' : String(guests ?? ''),
       preferredPackageId: packageId ? String(packageId) : prev.preferredPackageId,
       packageBooking: Boolean(packageId),
     }));
     if (offerTier && plCategory !== 'drop-off') setTier(offerTier);
     if (offer) setSelectedOffer(offer);
-    setStep((prev) => (prev === 'category' || prev === 'menu' ? 'details' : prev));
+    setStep((prev) => {
+      if (plCategory === 'drop-off') return 'menu';
+      return prev === 'category' || prev === 'menu' ? 'details' : prev;
+    });
     setErrors((prev) => ({ ...prev, budget: undefined, numberOfGuests: undefined }));
   }, [initialMenuBooking]);
 
