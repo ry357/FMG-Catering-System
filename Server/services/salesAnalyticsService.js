@@ -134,9 +134,6 @@ export const getSalesDashboard = async ({ month } = {}) => {
 
   const current = bookings.filter((b) => inWindow(b) && finalized(b));
   const previous = bookings.filter((b) => inPrev(b) && finalized(b));
-  const upcoming = bookings.filter(
-    (b) => b.event_date >= startStr && b.event_date <= endStr && (b.status === 'pending' || b.status === 'approved')
-  );
 
   const summarize = (list) => {
     const sum = (pick) => list.reduce((acc, b) => acc + pick(b), 0);
@@ -178,6 +175,13 @@ export const getSalesDashboard = async ({ month } = {}) => {
     monthlyMap[`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`] =
       { month: 0, revenue: 0, foodCost: 0, events: 0 };
   }
+  // Months outside the trailing window that actually have bookings (e.g.
+  // future event dates) must also appear on the chart.
+  Object.keys(monthBookings).forEach((key) => {
+    if (!(key in monthlyMap)) {
+      monthlyMap[key] = { month: 0, revenue: 0, foodCost: 0, events: 0 };
+    }
+  });
 
   bookings
     .filter((b) => b.event_date)
@@ -186,7 +190,7 @@ export const getSalesDashboard = async ({ month } = {}) => {
       if (!key || !monthlyMap[key]) return;
       monthlyMap[key].revenue += b.paid;
       monthlyMap[key].foodCost += finalized(b) ? b.foodCost : 0;
-      monthlyMap[key].events += finalized(b) ? 1 : 0;
+      monthlyMap[key].events += 1;
     });
 
   const monthly = Object.entries(monthlyMap)
@@ -202,15 +206,17 @@ export const getSalesDashboard = async ({ month } = {}) => {
   const stages = [
     { key: 'pending', label: 'Inquiries', count: 0 },
     { key: 'approved', label: 'Confirmed', count: 0 },
-    { key: 'completed', label: 'Closed Won', count: 0 },
+    { key: 'completed', label: 'Completed', count: 0 },
+    { key: 'rejected', label: 'Declined', count: 0 },
   ];
-  upcoming.forEach((b) => {
+  bookings.forEach((b) => {
     const stage = stages.find((s) => s.key === b.status);
     if (stage) stage.count += 1;
   });
   const pipeline = stages.map((s) => ({ ...s, count: Number(s.count) }));
 
-  const upcomingEvents = upcoming
+  const upcomingEvents = bookings
+    .filter((b) => b.event_date && b.status !== 'rejected')
     .sort((a, b) => b.invoiceValue - a.invoiceValue)
     .slice(0, 8)
     .map((b) => ({

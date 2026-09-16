@@ -1,6 +1,53 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { formatCurrency } from '../utils/helpers';
+import BookingDetailModal from '../components/BookingDetailModal';
+
+const statusBadge = (status) => {
+  const map = {
+    pending: { label: 'Pending', cls: 'bg-amber-400/10 text-amber-300 border border-amber-400/30' },
+    approved: { label: 'Approved', cls: 'bg-emerald-400/10 text-emerald-300 border border-emerald-400/30' },
+    rejected: { label: 'Rejected', cls: 'bg-red-400/10 text-red-300 border border-red-400/30' },
+    completed: { label: 'Completed', cls: 'bg-blue-400/10 text-blue-300 border border-blue-400/30' },
+  };
+  const config = map[status] || map.pending;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${config.cls}`}>
+      {config.label}
+    </span>
+  );
+};
+
+const paymentBadge = (status) => {
+  const map = {
+    pending: { label: 'Pending', cls: 'bg-slate-700/40 text-slate-300 border border-slate-500/30' },
+    partial: { label: 'Balance Due', cls: 'bg-cyan-400/10 text-cyan-300 border border-cyan-400/30' },
+    full: { label: 'Fully Paid', cls: 'bg-emerald-400/10 text-emerald-300 border border-emerald-400/30' },
+    failed: { label: 'Failed', cls: 'bg-red-400/10 text-red-300 border border-red-400/30' },
+  };
+  const config = map[status] || map.pending;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${config.cls}`}>
+      {config.label}
+    </span>
+  );
+};
+
+const saleStatusBadge = (status) => {
+  const map = {
+    pending: { label: 'Closed', cls: 'bg-slate-700/40 text-slate-300 border border-slate-500/30' },
+    partial: { label: 'Balance Due', cls: 'bg-cyan-400/10 text-cyan-300 border border-cyan-400/30' },
+    full: { label: 'Fully Paid', cls: 'bg-emerald-400/10 text-emerald-300 border border-emerald-400/30' },
+    failed: { label: 'Failed', cls: 'bg-red-400/10 text-red-300 border border-red-400/30' },
+  };
+  const config = map[status] || map.pending;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${config.cls}`}>
+      {config.label}
+    </span>
+  );
+};
 
 const StaffDashboard = () => {
   const { user, logout } = useAuth();
@@ -8,6 +55,8 @@ const StaffDashboard = () => {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('bookings');
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedSale, setSelectedSale] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -46,47 +95,57 @@ const StaffDashboard = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-700';
-      case 'approved': return 'bg-green-100 text-green-700';
-      case 'rejected': return 'bg-red-100 text-red-700';
-      case 'completed': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
+  const openBookingDetail = (booking, sale = null) => {
+    setSelectedBooking(booking);
+    setSelectedSale(sale);
   };
 
-  const getPaymentStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'text-yellow-600';
-      case 'partial': return 'text-amber-600';
-      case 'full': return 'text-green-600';
-      case 'failed': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };  const capitalizeFirst = (str) => {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
+  const openSaleDetail = (sale) => {
+    const booking = bookings.find((b) => b.id === sale.booking_id) || {
+      ...sale,
+      id: sale.booking_id,
+      customer_name: sale.customer_name,
+      customer_address: sale.customer_address,
+      event_date: sale.event_date,
+      event_type: sale.event_type,
+      created_at: sale.sale_date,
+    };
+    setSelectedBooking(booking);
+    setSelectedSale(sale);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: 'radial-gradient(900px 500px at 50% 0%, rgba(34,211,238,0.10), transparent 60%), #0B1220' }}
+      >
+        <div className="flex items-center gap-3 text-cyan-300">
+          <span className="inline-block w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+          Loading…
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-          <h1 className="text-lg font-semibold text-gray-900">FMG Catering · Staff</h1>
+    <div
+      className="min-h-screen"
+      style={{
+        background:
+          'radial-gradient(1200px 560px at 85% -12%, rgba(34,211,238,0.12), transparent 60%), radial-gradient(1000px 520px at -5% 110%, rgba(255,45,120,0.09), transparent 55%), #0B1220',
+      }}
+    >
+      <nav className="bg-[#0B1220]/95 backdrop-blur border-b border-[#1E2A45] sticky top-0 z-40">
+        <div className="max-w-[1600px] mx-auto px-6 py-3.5 flex justify-between items-center">
+          <h1 className="text-lg font-semibold bg-gradient-to-r from-cyan-300 via-white to-pink-400 bg-clip-text text-transparent">
+            FMG Catering · Staff
+          </h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">Welcome, {user?.full_name}</span>
+            <span className="text-sm text-slate-400">Welcome, {user?.full_name}</span>
             <button
               onClick={logout}
-              className="text-sm text-gray-600 border border-gray-300 px-3 py-1.5 rounded hover:bg-gray-50"
+              className="text-sm text-cyan-300 border border-cyan-400/40 px-3 py-1.5 rounded hover:bg-cyan-400/10 hover:shadow-[0_0_14px_-4px_rgba(34,211,238,0.7)] transition-all"
             >
               Logout
             </button>
@@ -94,165 +153,182 @@ const StaffDashboard = () => {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex gap-1 mb-6 border-b border-gray-200">
+      <div className="max-w-[1600px] mx-auto px-4 py-5">
+        <div className="flex gap-1 mb-4 border-b border-[#1E2A45]">
           <button
             onClick={() => setActiveTab('bookings')}
-            className={`px-4 py-2.5 text-sm font-medium ${
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === 'bookings'
-                ? 'text-gray-900 border-b-2 border-gold-500 -mb-px'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             Bookings ({bookings.length})
           </button>
           <button
             onClick={() => setActiveTab('sales')}
-            className={`px-4 py-2.5 text-sm font-medium ${
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === 'sales'
-                ? 'text-gray-900 border-b-2 border-gold-500 -mb-px'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            Sales ({sales.length})
+            Transaction ({sales.length})
           </button>
         </div>
 
         {activeTab === 'bookings' && (
-          <div className="bg-white border border-gray-200 rounded-lg">
-            <h2 className="text-sm font-semibold text-gray-700 px-6 py-4 border-b border-gray-200">Booking Management</h2>
-            {bookings.length === 0 ? (
-              <p className="text-gray-500 text-center py-10">No bookings found</p>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {bookings.map((booking) => (
-                  <div key={booking.id} className="p-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-medium text-gray-900">{booking.event_type}</h3>
-                        <p className="text-sm text-gray-500">Customer: {booking.customer_name}</p>
-                        <p className="text-sm text-gray-500">Email: {booking.customer_email}</p>
-                        <p className="text-sm text-gray-500">Phone: {booking.customer_phone}</p>
-                      </div>
-                      <span className={`px-2.5 py-0.5 rounded text-xs font-medium ${getStatusColor(booking.status)}`}>
-                        {booking.status}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
-                      <div>
-                        <span className="text-gray-500">Event Date:</span>
-                        <p className="font-medium">{new Date(booking.event_date).toLocaleDateString()}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Guests:</span>
-                        <p className="font-medium">{booking.number_of_guests}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Budget:</span>
-                        <p className="font-medium">₱{booking.budget?.toLocaleString() || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Package:</span>
-                        <p className="font-medium">{booking.preferred_package || 'N/A'}</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
-                      <div>
-                        <span className="text-gray-500">Payment Type:</span>
-                        <p className="font-medium capitalize">{booking.payment_type === 'down_payment' ? 'Down Payment' : 'Full Payment'}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Payment Status:</span>
-                        <p className={`font-medium ${getPaymentStatusColor(booking.payment_status)}`}>
-                          {capitalizeFirst(booking.payment_status)}
-                        </p>
-                      </div>
-                      {booking.payment_type === 'down_payment' && (
-                        <div>
-                          <span className="text-gray-500">Down Payment:</span>
-                          <p className="font-medium">₱{booking.down_payment_amount?.toLocaleString() || 'N/A'}</p>
-                        </div>
-                      )}
-                    </div>
-                    {booking.additional_requests && (
-                      <div className="mb-4">
-                        <span className="text-gray-500 text-sm">Additional Requests:</span>
-                        <p className="text-sm">{booking.additional_requests}</p>
-                      </div>
-                    )}
-                    {booking.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => updateBookingStatus(booking.id, 'approved')}
-                          className="bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 text-sm"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => updateBookingStatus(booking.id, 'rejected')}
-                          className="bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 text-sm"
-                        >
-                          Reject
-                        </button>
-                        <button
-                          onClick={() => updateBookingStatus(booking.id, 'completed')}
-                          className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm"
-                        >
-                          Mark Complete
-                        </button>
-                      </div>
-                    )}
-                    {booking.status === 'approved' && (
-                      <button
-                        onClick={() => updateBookingStatus(booking.id, 'completed')}
-                        className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm"
-                      >
-                        Mark Complete
-                      </button>
-                    )}
-                  </div>
-                ))}
+          <div className="space-y-4">
+            <div className="rounded-xl border border-[#1E2A45] p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)] bg-[#101A2E]">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-5 border-b border-[#1E2A45] pb-3">
+                <div>
+                  <h2 className="text-base font-semibold text-white">Booking Management</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">Review, approve, decline, or complete customer bookings</p>
+                </div>
               </div>
-            )}
+
+              {bookings.length === 0 ? (
+                <p className="text-slate-500 text-center py-10 text-sm">No bookings found</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-slate-200">
+                    <thead>
+                      <tr className="border-b border-[#1E2A45]">
+                        <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Event Date</th>
+                        <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Client</th>
+                        <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Event Type</th>
+                        <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Guests</th>
+                        <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Budget</th>
+                        <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Payment</th>
+                        <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Booking Status</th>
+                        <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bookings.map((booking) => (
+                        <tr
+                          key={booking.id}
+                          className="border-b border-[#17233C] hover:bg-cyan-400/5 align-top cursor-pointer"
+                          onClick={() => openBookingDetail(booking)}
+                        >
+                          <td className="py-3 px-4 whitespace-nowrap text-white font-medium">
+                            {new Date(booking.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </td>
+                          <td className="py-3 px-4">
+                            <p className="text-white font-medium">{booking.customer_name}</p>
+                            <p className="text-[11px] text-slate-500">{booking.customer_email}</p>
+                            <p className="text-[11px] text-slate-500">{booking.customer_phone}</p>
+                          </td>
+                          <td className="py-3 px-4 text-slate-300">{booking.event_type}</td>
+                          <td className="py-3 px-4 text-right text-slate-300 tabular-nums">
+                            {booking.number_of_guests?.toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 text-right font-medium text-cyan-300 tabular-nums">
+                            {booking.budget ? formatCurrency(booking.budget) : 'N/A'}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="space-y-1.5">
+                              <div>{paymentBadge(booking.payment_status)}</div>
+                              <p className="text-[11px] text-slate-500 capitalize">
+                                {booking.payment_type === 'down_payment' ? 'Down Payment' : 'Full Payment'}
+                                {booking.payment_type === 'down_payment' && booking.down_payment_amount
+                                  ? ` · ${formatCurrency(booking.down_payment_amount)}`
+                                  : ''}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">{statusBadge(booking.status)}</td>
+                          <td className="py-3 px-4 text-right">
+                            {booking.status === 'pending' && (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); updateBookingStatus(booking.id, 'approved'); }}
+                                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/20 transition cursor-pointer"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); updateBookingStatus(booking.id, 'rejected'); }}
+                                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-red-400/10 text-red-300 border border-red-400/30 hover:bg-red-400/20 transition cursor-pointer"
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            )}
+                            {booking.status === 'approved' && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); updateBookingStatus(booking.id, 'completed'); }}
+                                className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-400/10 text-blue-300 border border-blue-400/30 hover:bg-blue-400/20 transition cursor-pointer"
+                              >
+                                Mark Complete
+                              </button>
+                            )}
+                            {booking.status === 'completed' && (
+                              <select
+                                defaultValue="completed"
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => { e.stopPropagation(); updateBookingStatus(booking.id, e.target.value); }}
+                                className="appearance-none bg-[#101A2E] border border-[#1E2A45] text-white text-xs font-medium pl-2.5 pr-6 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400/60 cursor-pointer bg-no-repeat"
+                                style={{
+                                  backgroundImage:
+                                    "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2322D3EE%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')",
+                                  backgroundPosition: 'right 0.5rem center',
+                                }}
+                                title="Update booking status"
+                              >
+                                <option value="completed">Completed</option>
+                                <option value="approved">Reopen · Approved</option>
+                                <option value="pending">Back to Pending</option>
+                                <option value="rejected">Mark Rejected</option>
+                              </select>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {activeTab === 'sales' && (
-          <div className="bg-white border border-gray-200 rounded-lg">
-            <h2 className="text-sm font-semibold text-gray-700 px-6 py-4 border-b border-gray-200">Sales Records</h2>
+          <div className="rounded-xl border border-[#1E2A45] p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)] bg-[#101A2E]">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-5 border-b border-[#1E2A45] pb-3">
+              <div>
+                <h2 className="text-base font-semibold text-white">Transaction Records</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Completed and pending payments recorded against bookings</p>
+              </div>
+            </div>
             {sales.length === 0 ? (
-              <p className="text-gray-500 text-center py-10">No sales records found</p>
+              <p className="text-slate-500 text-center py-10 text-sm">No transaction records found</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm text-slate-200">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-2.5 px-6 font-medium text-gray-500">Date</th>
-                      <th className="text-left py-2.5 px-4 font-medium text-gray-500">Customer</th>
-                      <th className="text-left py-2.5 px-4 font-medium text-gray-500">Event</th>
-                      <th className="text-left py-2.5 px-4 font-medium text-gray-500">Amount</th>
-                      <th className="text-left py-2.5 px-4 font-medium text-gray-500">Method</th>
-                      <th className="text-left py-2.5 px-4 font-medium text-gray-500">Status</th>
+                    <tr className="border-b border-[#1E2A45]">
+                      <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Date</th>
+                      <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Customer</th>
+                      <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Event</th>
+                      <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Amount</th>
+                      <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Method</th>
+                      <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sales.map((sale) => (
-                      <tr key={sale.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-2.5 px-6">{new Date(sale.sale_date).toLocaleDateString()}</td>
+                      <tr
+                        key={sale.id}
+                        className="border-b border-[#17233C] hover:bg-cyan-400/5 cursor-pointer"
+                        onClick={() => openSaleDetail(sale)}
+                      >
+                        <td className="py-2.5 px-4 whitespace-nowrap">{new Date(sale.sale_date).toLocaleDateString()}</td>
                         <td className="py-2.5 px-4">{sale.customer_name}</td>
                         <td className="py-2.5 px-4">{sale.event_type}</td>
-                        <td className="py-2.5 px-4 font-medium">₱{parseFloat(sale.amount).toLocaleString()}</td>
+                        <td className="py-2.5 px-4 text-right font-medium text-cyan-300 tabular-nums">{formatCurrency(parseFloat(sale.amount) || 0)}</td>
                         <td className="py-2.5 px-4">{sale.payment_method}</td>
-                        <td className="py-2.5 px-4">
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                            sale.payment_status === 'completed' ? 'bg-green-100 text-green-700' :
-                            sale.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            sale.payment_status === 'failed' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {sale.payment_status}
-                          </span>
-                        </td>
+                        <td className="py-2.5 px-4">{saleStatusBadge(sale.payment_status)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -262,6 +338,14 @@ const StaffDashboard = () => {
           </div>
         )}
       </div>
+
+      {selectedBooking && (
+        <BookingDetailModal
+          booking={selectedBooking}
+          sale={selectedSale}
+          onClose={() => { setSelectedBooking(null); setSelectedSale(null); }}
+        />
+      )}
     </div>
   );
 };

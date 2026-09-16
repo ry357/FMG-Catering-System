@@ -9,10 +9,14 @@ export function generateBookingRef() {
   return `FMG-${timestamp}-${random}`;
 }
 
-export function calculateBookingTotal(form) {
+export function calculateBookingTotal(form, selectedOffer = null) {
   const guests = Number(form.numberOfGuests);
-  const pkg = PACKAGES.find((p) => String(p.id) === String(form.preferredPackageId));
 
+  if (selectedOffer && guests > 0) {
+    return selectedOffer.pricePerPax * guests;
+  }
+
+  const pkg = PACKAGES.find((p) => String(p.id) === String(form.preferredPackageId));
   if (pkg && guests > 0) {
     return pkg.pricePerGuest * guests;
   }
@@ -28,4 +32,17 @@ export function calculateDepositAmount(total) {
 export function getSelectedPackageName(form) {
   const pkg = PACKAGES.find((p) => String(p.id) === String(form.preferredPackageId));
   return pkg?.name || 'Custom package (based on budget)';
+}
+
+export function buildMenuItems(selections = {}) {
+  const items = [];
+  const push = (category, list) =>
+    (list || []).forEach((name) =>
+      items.push({ name, category })
+    );
+
+  push('appetizers', selections.appetizers);
+  push('mains', selections.mains);
+  push('addons', selections.addons);
+  return items;
 }

@@ -33,7 +33,7 @@ export default function PaymentSummary({ form, bookingTotal, depositAmount, book
           <span className="font-medium text-charcoal">{formatCurrency(bookingTotal)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="font-semibold text-charcoal">Deposit due now (30%)</span>
+          <span className="font-semibold text-charcoal">Deposit due now (50%)</span>
           <span className="font-display text-xl font-bold text-gold-600">
             {formatCurrency(depositAmount)}
           </span>

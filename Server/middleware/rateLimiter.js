@@ -37,10 +37,11 @@ export const paymentLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Rate limiter for booking creation
+// Rate limiter for booking creation only (applied to the POST /api/bookings route).
+// Reading, updating, or deleting bookings must never be throttled.
 export const bookingLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // Limit each IP to 3 booking attempts per hour
+  max: 10, // Limit each IP to 10 booking submissions per hour
   message: {
     success: false,
     error: 'Too many booking attempts, please try again later.'

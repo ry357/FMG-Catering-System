@@ -2,31 +2,59 @@
 import axios from 'axios';
 import {
   ResponsiveContainer,
-  LineChart,
+  ComposedChart,
+  Area,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  LabelList,
-  ReferenceLine,
+  ReferenceDot,
 } from 'recharts';
 
-const PESO = (value) => `â‚±${Number(value || 0).toLocaleString(undefined, {
+const PESO = (value) => `₱${Number(value || 0).toLocaleString(undefined, {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 })}`;
 
-const PESO_CENTS = (value) => `â‚±${Number(value || 0).toLocaleString(undefined, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})}`;
+const COMPACT = (value) => (value >= 1000 ? `${Number(value / 1000).toFixed(value >= 100000 ? 0 : 1)}k` : `${value}`);
 
-const COMPACT = (value) => {
-  const n = Number(value || 0);
-  if (Math.abs(n) >= 1000) return `â‚±${(n / 1000).toFixed(1)}k`;
-  return `â‚±${n}`;
+const renderPeakDot = (props) => {
+  const { cx, cy, payload, dataKey } = props;
+  const color = dataKey === 'revenue' ? '#FBBF24' : '#FF2D78';
+  if (payload.isPeak) {
+    return (
+      <g key={`peak-${dataKey}-${payload.label}`}>
+        <circle cx={cx} cy={cy} r={12} fill="none" stroke={color} strokeWidth={1.5} strokeDasharray="3 3" opacity={0.8} />
+        <circle cx={cx} cy={cy} r={7} fill={color} stroke="#0B1220" strokeWidth={2} filter="url(#peakGlow)" />
+        {dataKey === 'revenue' && (
+          <text
+            x={cx}
+            y={cy - 16}
+            textAnchor="middle"
+            fill="#FBBF24"
+            fontSize={11}
+            fontWeight={700}
+            style={{ filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.9))' }}
+          >
+            {payload.label} ★
+          </text>
+        )}
+      </g>
+    );
+  }
+  return (
+    <circle
+      key={`dot-${dataKey}-${payload.label}`}
+      cx={cx}
+      cy={cy}
+      r={3}
+      fill={color}
+      fillOpacity={0.65}
+      stroke="none"
+    />
+  );
 };
 
 const MONTH_NAMES = [
@@ -44,21 +72,6 @@ const fullMonthLabel = (key) => {
   const name = MONTH_NAMES[Number(m) - 1];
   return name ? `${name} ${y}` : key;
 };
-
-const MOCK_MONTHLY = [
-  { month: '2026-01', label: 'Jan', revenue: 42000, foodCost: 18000, events: 4 },
-  { month: '2026-02', label: 'Feb', revenue: 58000, foodCost: 24500, events: 5 },
-  { month: '2026-03', label: 'Mar', revenue: 46500, foodCost: 19500, events: 4 },
-  { month: '2026-04', label: 'Apr', revenue: 72000, foodCost: 30500, events: 6 },
-  { month: '2026-05', label: 'May', revenue: 93500, foodCost: 39800, events: 8 },
-  { month: '2026-06', label: 'Jun', revenue: 128000, foodCost: 54400, events: 11 },
-  { month: '2026-07', label: 'Jul', revenue: 88000, foodCost: 37400, events: 7 },
-  { month: '2026-08', label: 'Aug', revenue: 32000, foodCost: 13600, events: 3 },
-  { month: '2026-09', label: 'Sep', revenue: 76000, foodCost: 32300, events: 6 },
-  { month: '2026-10', label: 'Oct', revenue: 104500, foodCost: 44400, events: 9 },
-  { month: '2026-11', label: 'Nov', revenue: 139000, foodCost: 59100, events: 12 },
-  { month: '2026-12', label: 'Dec', revenue: 212000, foodCost: 90100, events: 15 },
-];
 
 const authHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
@@ -83,7 +96,7 @@ const TrendBadge = ({ value, invert = false, className = '' }) => {
     return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-700/50 text-slate-400 ${className}`}>Baseline</span>;
   }
   const isGood = invert ? value <= 0 : value >= 0;
-  const arrow = value >= 0 ? 'â–²' : 'â–¼';
+  const arrow = value >= 0 ? '▲' : '▼';
   return (
     <span
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
@@ -106,22 +119,6 @@ const Skeleton = () => (
   </div>
 );
 
-const ChartTooltip = ({ active, payload, label }) => {
-  if (!active || !payload || !payload.length) return null;
-  return (
-    <div className="bg-[#0B1220] text-white text-xs rounded-lg px-3 py-2 shadow-xl border border-cyan-400/30">
-      <p className="font-semibold mb-1 text-cyan-300">{label}</p>
-      {payload.map((entry) => (
-        <p key={entry.dataKey} className="flex items-center gap-2 py-0.5">
-          <span className="w-2 h-2 rounded-full" style={{ background: entry.color || entry.stroke }} />
-          <span className="text-slate-300">{entry.name}:</span>
-          <span className="font-medium">{PESO_CENTS(entry.value)}</span>
-        </p>
-      ))}
-    </div>
-  );
-};
-
 const KpiCard = ({ icon, title, value, trend, invert, note }) => (
   <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-5 flex flex-col gap-3 shadow-[0_0_28px_-14px_rgba(34,211,238,0.25)] hover:border-cyan-400/40 hover:shadow-[0_0_34px_-10px_rgba(34,211,238,0.4)] transition-all">
     <div className="flex items-start justify-between">
@@ -131,7 +128,7 @@ const KpiCard = ({ icon, title, value, trend, invert, note }) => (
       </div>
     </div>
     <div>
-      <p className="font-display text-[28px] leading-none font-semibold text-white">{value}</p>
+      <p className="text-[28px] leading-none font-semibold text-white tabular-nums">{value}</p>
       <div className="mt-2.5 flex items-center gap-2">
         <TrendBadge value={trend} invert={invert} />
         {note && <span className="text-[11px] text-slate-500">{note}</span>}
@@ -145,29 +142,32 @@ const PipelineFunnel = ({ data }) => {
   const max = Math.max(...data.map((s) => s.count), 1);
   const widthFor = (count) => (count === 0 ? 0 : Math.max(14, (count / max) * 100));
 
+  const stageStyle = {
+    pending: { bar: 'linear-gradient(90deg, rgba(100,116,139,0.6), #64748B)', glow: 'rgba(100,116,139,0.5)' },
+    approved: { bar: 'linear-gradient(90deg, rgba(34,211,238,0.4), #22D3EE)', glow: 'rgba(34,211,238,0.6)' },
+    completed: { bar: 'linear-gradient(90deg, rgba(251,191,36,0.4), #FBBF24)', glow: 'rgba(251,191,36,0.6)' },
+    rejected: { bar: 'linear-gradient(90deg, rgba(244,63,94,0.5), #F43F5E)', glow: 'rgba(244,63,94,0.5)' },
+  };
+
   return (
     <div className="space-y-3 pt-1">
       {data.map((stage, i) => {
         const conversion = i === 0 ? 100 : data[i - 1].count === 0 ? 0 : Math.round((stage.count / data[i - 1].count) * 100);
+        const style = stageStyle[stage.key] || stageStyle.pending;
         return (
           <div key={stage.key}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-[13px] font-medium text-slate-200">{stage.label}</span>
               <span className="text-[13px] font-semibold text-white">
-                {stage.count} <span className="text-slate-500 font-normal text-[11px]">( {(stage.count / total) * 100 || 0}% )</span>
+                {stage.count} <span className="text-slate-500 font-normal text-[11px]">({Math.round(((stage.count / total) * 100) || 0)}%)</span>
               </span>
             </div>
             <div className="h-9 rounded-lg overflow-hidden border border-white/5" style={{ width: `${widthFor(stage.count)}%` }}>
               <div
                 className="h-full flex items-center justify-end px-2.5 text-[11px] font-semibold text-white transition-all"
                 style={{
-                  background:
-                    stage.key === 'pending'
-                      ? 'linear-gradient(90deg, rgba(100,116,139,0.6), #64748B)'
-                      : stage.key === 'approved'
-                        ? 'linear-gradient(90deg, rgba(34,211,238,0.4), #22D3EE)'
-                        : 'linear-gradient(90deg, rgba(255,45,120,0.4), #FF2D78)',
-                  boxShadow: `0 0 14px -4px ${stage.key === 'approved' ? 'rgba(34,211,238,0.6)' : stage.key === 'completed' ? 'rgba(255,45,120,0.6)' : 'rgba(100,116,139,0.5)'}`,
+                  background: style.bar,
+                  boxShadow: `0 0 14px -4px ${style.glow}`,
                 }}
               >
                 {stage.count > 0 && <span>{conversion}%</span>}
@@ -177,7 +177,7 @@ const PipelineFunnel = ({ data }) => {
         );
       })}
       {total === 0 && (
-        <p className="text-xs text-slate-500 py-4 text-center">No bookings in the selected range yet.</p>
+        <p className="text-xs text-slate-500 py-4 text-center">No bookings in the database yet.</p>
       )}
     </div>
   );
@@ -230,52 +230,42 @@ const SalesAnalyticsDashboard = () => {
   }, [selectedMonth]);
 
   const kpis = data?.kpis;
-  const hasActivity = useMemo(() => {
-    if (!data) return false;
-    return (
-      kpis.totalBookedEvents > 0 ||
-      data.monthly.some((m) => m.revenue > 0 || m.foodCost > 0)
-    );
-  }, [data, kpis]);
 
-  const monthlyLineData = useMemo(() => [...MOCK_MONTHLY], []);
+  const liveMonthly = useMemo(() => data?.monthly || [], [data]);
 
-  const peakPoint = useMemo(() => {
-    if (!monthlyLineData.length) return null;
-    let best = null;
-    let maxVal = -Infinity;
-    monthlyLineData.forEach((d) => {
-      const v = Number(d.revenue) || 0;
-      if (v > maxVal) {
-        maxVal = v;
-        best = { label: d.label, value: v };
-      }
+  // Always display months in calendar order (January → December) regardless of
+  // the data window, so per-month changes are easy to track on the x-axis.
+  const monthlyLineData = useMemo(() => {
+    const base = liveMonthly;
+    return [...base].sort((a, b) => {
+      const ma = Number(String(a.month || '').split('-')[1] || 0);
+      const mb = Number(String(b.month || '').split('-')[1] || 0);
+      return ma - mb;
     });
-    return maxVal > 0 ? best : null;
-  }, [monthlyLineData]);
+  }, [liveMonthly]);
 
-  const leftmostLabel = monthlyLineData[0]?.label || null;
+  const peakData = useMemo(() => {
+    const d = monthlyLineData;
+    if (!d.length) return { points: [], peakIndex: -1 };
 
-  const peakSeasonLabel = (v) =>
-    peakPoint && Number(v) === peakPoint.value ? 'Peak Season' : '';
-  const salesDot = ({ cx, cy, payload }) =>
-    cx == null ? null : (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={peakPoint && Number(payload.revenue) === peakPoint.value ? 7 : 3.5}
-        fill={peakPoint && Number(payload.revenue) === peakPoint.value ? '#FF2D78' : '#22D3EE'}
-        stroke={peakPoint && Number(payload.revenue) === peakPoint.value ? '#fff' : 'none'}
-        strokeWidth={2}
-        style={
-          peakPoint && Number(payload.revenue) === peakPoint.value
-            ? { filter: 'drop-shadow(0 0 6px rgba(255,45,120,0.95))' }
-            : undefined
-        }
-      />
+    const maxRev = Math.max(...d.map((m) => m.revenue), 0) || 1;
+    const maxEvt = Math.max(...d.map((m) => m.events), 0) || 1;
+
+    const points = d.map((m) => ({
+      ...m,
+      demandScore: Math.round(
+        ((m.revenue / maxRev) * 50) + ((m.events / maxEvt) * 50)
+      ),
+      isPeak: false,
+    }));
+
+    const peakIndex = points.reduce(
+      (best, p, i) => (p.demandScore > points[best].demandScore ? i : best), 0
     );
+    points[peakIndex].isPeak = true;
 
-  const rangeLabel = data?.range?.label || fullMonthLabel(selectedMonth);
+    return { points, peakIndex };
+  }, [monthlyLineData]);
 
   return (
     <div className="space-y-4 bg-[#0B1220] rounded-2xl border border-[#1E2A45] p-4 shadow-[0_0_50px_-18px_rgba(34,211,238,0.35)]">
@@ -284,7 +274,7 @@ const SalesAnalyticsDashboard = () => {
         <div>
           <h2 className="font-display text-xl font-semibold text-white">Sales Analytics</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            {data ? `${data.range.label} Â· ${data.range.start} to ${data.range.end}` : 'Loading rangeâ€¦'}
+            {data ? `${data.range.label} · ${data.range.start} to ${data.range.end}` : 'Loading range…'}
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-400">
@@ -336,97 +326,148 @@ const SalesAnalyticsDashboard = () => {
               <KpiCard
                 icon={icons.events}
                 title="Total Booked Events"
-                value={kpis.totalBookedEvents.toLocaleString()}
+                value={Number(kpis.totalBookedEvents).toLocaleString('en-PH')}
                 trend={kpis.trends.totalBookedEvents}
               />
             </div>
           )}
 
-          {/* Middle charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div
-                className="lg:col-span-2 rounded-xl border border-[#1C2A44] p-4 shadow-[0_0_40px_-12px_rgba(34,211,238,0.35)] relative overflow-hidden"
-                style={{
-                  background:
-                    'radial-gradient(900px 450px at 85% -15%, rgba(34,211,238,0.16), transparent 60%), radial-gradient(700px 400px at 0% 110%, rgba(255,45,120,0.10), transparent 55%), #0B1220',
-                }}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="font-display text-lg font-semibold text-white">
-                      Monthly Sales Performance
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Illustrative sample Â· Janâ€“Dec jagged seasonal trend (slow Jan Â· wedding surge Jun Â· dip Aug Â· peak Dec) highlighted as Peak Season</p>
-                  </div>
-                  <span className="hidden sm:inline-flex items-center gap-1.5 shrink-0 text-[11px] font-semibold tracking-wide uppercase text-cyan-300 border border-cyan-400/30 bg-cyan-400/10 rounded-full px-3 py-1">
-                    <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#22D3EE', boxShadow: '0 0 8px #22D3EE' }} />
-                    Sample Data Â· Jagged Trend
-                  </span>
-                </div>
-              {hasActivity ? (
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={monthlyLineData} margin={{ top: 20, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1E2A45" vertical={false} />
-                      <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#2A3A5C' }} tick={{ fontSize: 12, fill: '#8FA3BF' }} interval={0} />
-                      <YAxis tickFormatter={COMPACT} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#8FA3BF' }} width={64} />
-                      <Tooltip content={<ChartTooltip />} />
-                      {peakPoint && leftmostLabel && (
-                        <ReferenceLine
-                          segment={[
-                            { x: peakPoint.label, y: peakPoint.value },
-                            { x: leftmostLabel, y: peakPoint.value },
-                          ]}
-                          stroke="#22D3EE"
-                          strokeOpacity={0.75}
-                          strokeDasharray="2 5"
-                          strokeWidth={1.5}
-                          style={{ filter: 'drop-shadow(0 0 4px rgba(34,211,238,0.8))' }}
-                          label={{
-                            value: PESO(peakPoint.value),
-                            position: 'insideBottomLeft',
-                            fill: '#22D3EE',
-                            fontSize: 11,
-                            fontWeight: 700,
-                          }}
-                        />
+          {/* Monthly Sales Performance */}
+          <div
+            className="rounded-xl border border-[#1C2A44] p-4 shadow-[0_0_40px_-12px_rgba(34,211,238,0.35)] relative overflow-hidden"
+            style={{
+              background:
+                'radial-gradient(900px 450px at 85% -15%, rgba(34,211,238,0.16), transparent 60%), radial-gradient(700px 400px at 0% 110%, rgba(255,45,120,0.10), transparent 55%), #0B1220',
+            }}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-white">
+                  Monthly Sales Performance
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">Time-series of revenue &amp; bookings · trailing 12 months · ★ peak month</p>
+              </div>
+            </div>
+            {monthlyLineData.length ? (
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={peakData.points} margin={{ top: 28, right: 8, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.4} />
+                        <stop offset="60%" stopColor="#F59E0B" stopOpacity={0.08} />
+                        <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
+                      </linearGradient>
+                      <filter id="peakGlow">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1E2A45" vertical={false} />
+                    <XAxis
+                      dataKey="label"
+                      tickLine={false}
+                      axisLine={{ stroke: '#2A3A5C' }}
+                      tick={{ fontSize: 12, fill: '#8FA3BF' }}
+                      interval={0}
+                    />
+                    <YAxis
+                      yAxisId="revenue"
+                      tickFormatter={COMPACT}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 12, fill: '#8FA3BF' }}
+                      width={64}
+                      label={{
+                        value: 'Revenue',
+                        angle: -90,
+                        position: 'insideLeft',
+                        offset: -6,
+                        style: { fontSize: 11, fill: '#B45309', fontWeight: 600 },
+                      }}
+                    />
+                    <YAxis
+                      yAxisId="events"
+                      orientation="right"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 12, fill: '#8FA3BF' }}
+                      width={40}
+                      allowDecimals={false}
+                      tickCount={4}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload || !payload.length) return null;
+                        const item = payload[0]?.payload;
+                        return (
+                          <div className="bg-[#0B1220] text-white text-xs rounded-lg px-3 py-2.5 shadow-xl border border-amber-400/30">
+                            <p className="font-semibold mb-1.5 text-amber-300">{label}{item?.isPeak ? '  ★ Peak' : ''}</p>
+                            <p className="text-slate-300 py-0.5">Revenue: <span className="font-medium text-amber-300">{PESO(item?.revenue)}</span></p>
+                            <p className="text-slate-300 py-0.5">Bookings: <span className="font-medium text-pink-300">{item?.events}</span></p>
+                            <p className="text-slate-300 py-0.5">Demand Score: <span className="font-medium text-white">{item?.demandScore}</span></p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Legend
+                      iconType="plainline"
+                      formatter={(value) => <span className="text-xs text-slate-300">{value}</span>}
+                      content={({ payload }) => (
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 pt-3 text-xs text-slate-300">
+                          {payload?.map((entry, i) => (
+                            <span key={i} className="inline-flex items-center gap-2">
+                              <span
+                                className="inline-block w-6 border-t-2 border-solid"
+                                style={{ borderColor: entry.color }}
+                              />
+                              {entry.value}
+                            </span>
+                          ))}
+                        </div>
                       )}
-                      <Legend
-                        iconType="plainline"
-                        formatter={(value) => <span className="text-xs text-slate-300">{value}</span>}
-                      />
-                      <Line
-                        type="linear"
-                        dot={salesDot}
-                        activeDot={{ r: 5 }}
-                        dataKey="revenue"
-                        name="Monthly Revenue"
-                        stroke="#22D3EE"
-                        strokeWidth={2.5}
-                        style={{ filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.7))' }}
-                      >
-                        <LabelList
-                          dataKey="revenue"
-                          position="top"
-                          formatter={peakSeasonLabel}
-                          style={{ fontSize: 12, fontWeight: 800, fill: '#FF2D78', filter: 'drop-shadow(0 0 4px rgba(255,45,120,0.9))' }}
-                        />
-                      </Line>
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="h-[300px] flex items-center justify-center text-slate-500 text-sm">
-                  No recorded sales activity for the last 12 months.
-                </div>
-              )}
-            </div>
+                    />
+                    <Area
+                      yAxisId="revenue"
+                      type="monotone"
+                      dataKey="revenue"
+                      name="Monthly Revenue"
+                      stroke="#FBBF24"
+                      strokeWidth={2.5}
+                      fill="url(#revenueGradient)"
+                      dot={renderPeakDot}
+                      activeDot={{ r: 6, fill: '#FBBF24', stroke: '#F59E0B', strokeWidth: 2 }}
+                      style={{ filter: 'drop-shadow(0 0 6px rgba(251,191,36,0.45))' }}
+                    />
+                    <Line
+                      yAxisId="events"
+                      type="monotone"
+                      dataKey="events"
+                      name="Bookings"
+                      stroke="#FF2D78"
+                      strokeWidth={2.5}
+                      dot={renderPeakDot}
+                      activeDot={{ r: 6, fill: '#FF2D78', stroke: '#0B1220', strokeWidth: 2 }}
+                      style={{ filter: 'drop-shadow(0 0 6px rgba(255,45,120,0.45))' }}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center text-slate-500 text-sm">
+                No recorded sales activity for the last 12 months.
+              </div>
+            )}
+          </div>
 
-            <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
-              <h3 className="font-display text-lg font-semibold text-white mb-1">Booking Pipeline</h3>
-              <p className="text-xs text-slate-400 mb-5">Inquiries â†’ Confirmed â†’ Closed Won Â· {rangeLabel}</p>
-              <PipelineFunnel data={data.pipeline} />
-            </div>
+          {/* Booking Pipeline */}
+          <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+            <h3 className="font-display text-lg font-semibold text-white mb-1">Booking Pipeline</h3>
+            <p className="text-xs text-slate-400 mb-5">Inquiries → Confirmed → Completed · all bookings in the database</p>
+            <PipelineFunnel data={data.pipeline} />
           </div>
 
           {/* Upcoming high-value events */}
@@ -434,7 +475,7 @@ const SalesAnalyticsDashboard = () => {
             <div className="p-4 pb-3 flex flex-wrap items-start justify-between gap-3 border-b border-[#1E2A45]">
               <div>
                 <h3 className="font-display text-lg font-semibold text-white">Upcoming High-Value Events</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Booked events in the selected range, ranked by invoice value</p>
+                <p className="text-xs text-slate-400 mt-0.5">All events in the database, ranked by invoice value</p>
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -453,7 +494,7 @@ const SalesAnalyticsDashboard = () => {
                   {data.upcomingEvents.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-10 text-center text-slate-500 text-sm">
-                        No upcoming events in the selected range.
+                        No events in the database yet.
                       </td>
                     </tr>
                   ) : (

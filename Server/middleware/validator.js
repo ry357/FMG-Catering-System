@@ -40,25 +40,64 @@ export const validateBooking = [
     .trim()
     .notEmpty().withMessage('Phone number is required')
     .matches(/^[\d\s+\-()]{7,20}$/).withMessage('Invalid phone number'),
+  // Canonical list matches the frontend EVENT_TYPES. Lowercase legacy variants
+  // are still accepted for backward compatibility and normalized in the service.
   body('event_type')
     .trim()
     .notEmpty().withMessage('Event type is required')
-    .isIn(['birthday', 'wedding', 'corporate', 'debut', 'christening', 'other']).withMessage('Invalid event type'),
+    .isIn(['Wedding', 'Birthday', 'Corporate', 'Anniversary', 'Gala', 'Other', 'wedding', 'birthday', 'corporate', 'anniversary', 'gala', 'other']).withMessage('Invalid event type'),
   body('event_date')
     .notEmpty().withMessage('Event date is required')
     .isISO8601().withMessage('Invalid date format'),
   body('number_of_guests')
-    .notEmpty().withMessage('Number of guests is required')
-    .isInt({ min: 1, max: 10000 }).withMessage('Guests must be between 1 and 10000'),
+    .custom((value, { req }) => {
+      if (req.body.booking_category === 'drop-off') return true;
+      if (!value) throw new Error('Number of guests is required');
+      const guests = Number(value);
+      if (!Number.isInteger(guests) || guests < 1 || guests > 10000) {
+        throw new Error('Guests must be between 1 and 10000');
+      }
+      return true;
+    }),
   body('budget')
-    .notEmpty().withMessage('Budget is required')
-    .isFloat({ min: 0 }).withMessage('Budget must be a positive number'),
+    .custom((value, { req }) => {
+      if (req.body.booking_category === 'drop-off') return true;
+      if (!value) throw new Error('Budget is required');
+      const budget = Number(value);
+      if (!Number.isFinite(budget) || budget < 0) {
+        throw new Error('Budget must be a positive number');
+      }
+      return true;
+    }),
   body('additional_requests')
     .optional()
     .isLength({ max: 1000 }).withMessage('Additional requests must be under 1000 characters'),
   body('selected_menu_items')
     .optional()
-    .isArray().withMessage('Menu items must be an array'),
+    .isArray().withMessage('Menu items must be an array')
+    .custom((items) => {
+      if (!items.every((item) => item && typeof item === 'object' && typeof item.name === 'string')) {
+        throw new Error('Each menu item must have a name');
+      }
+      return true;
+    }),
+  body('menu_preference')
+    .optional()
+    .isObject().withMessage('Menu preference must be an object'),
+  body('booking_category')
+    .optional()
+    .trim()
+    .isIn(['natural', 'drop-off']).withMessage('Invalid booking category'),
+  body('tier')
+    .optional()
+    .trim()
+    .isIn(['buffet', 'plated', 'drop-off']).withMessage('Invalid tier'),
+  body('dietary_preferences')
+    .optional()
+    .isArray().withMessage('Dietary preferences must be an array'),
+  body('total_amount')
+    .optional()
+    .isFloat({ min: 0 }).withMessage('Total amount must be a positive number'),
   validate
 ];
 
@@ -119,5 +158,32 @@ export const validatePayment = [
     .optional()
     .trim()
     .isIn(['full', 'down_payment']).withMessage('Invalid payment type'),
+  body('bookingData')
+    .optional()
+    .isObject().withMessage('Booking data must be an object'),
+  body('bookingData.totalAmount')
+    .optional()
+    .toFloat()
+    .isFloat({ min: 0 }).withMessage('Total amount must be a positive number'),
+  body('bookingData.numberOfGuests')
+    .custom((value, { req }) => {
+      if (req.body.bookingData?.bookingCategory === 'drop-off') return true;
+      if (!value) throw new Error('Number of guests is required');
+      const guests = Number(value);
+      if (!Number.isInteger(guests) || guests < 1 || guests > 10000) {
+        throw new Error('Guests must be between 1 and 10000');
+      }
+      return true;
+    }),
+  body('bookingData.selectedMenuItems')
+    .optional()
+    .isArray().withMessage('Menu items must be an array'),
+  body('bookingData.menuPreference')
+    .optional()
+    .isObject().withMessage('Menu preference must be an object'),
+  body('bookingData.bookingCategory')
+    .optional()
+    .trim()
+    .isIn(['natural', 'drop-off']).withMessage('Invalid booking category'),
   validate
 ];

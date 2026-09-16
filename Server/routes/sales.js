@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
     const sales = await query(`
-      SELECT s.*, b.event_type, b.event_date, c.name as customer_name
+      SELECT s.*, b.event_type, b.event_date, c.name as customer_name, c.address as customer_address
       FROM Sales s
       JOIN Bookings b ON s.booking_id = b.id
       JOIN Customers c ON b.customer_id = c.id
@@ -27,7 +27,7 @@ router.get('/analytics', authenticateToken, requireRole(['staff', 'admin']), asy
     const { start_date, end_date } = req.query;
 
     let sql = `
-      SELECT s.*, b.event_type, b.event_date, c.name as customer_name
+      SELECT s.*, b.event_type, b.event_date, c.name as customer_name, c.address as customer_address
       FROM Sales s
       JOIN Bookings b ON s.booking_id = b.id
       JOIN Customers c ON b.customer_id = c.id

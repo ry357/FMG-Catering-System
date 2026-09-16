@@ -140,6 +140,49 @@ export const EVENT_TYPES = [
   'Other',
 ];
 
+// Top-level booking categories. A booking is either a full-service (natural)
+// event with on-site staff, or a drop-off where FMG delivers food and leaves.
+export const BOOKING_CATEGORIES = [
+  {
+    id: 'natural',
+    label: 'Full-Service Catering',
+    shortLabel: 'Full Service Catering',
+    description:
+      'Complete event catering with waiters, servers, on-site setup, and coordination. Ideal for weddings, corporate events, and larger gatherings.',
+  },
+  {
+    id: 'drop-off',
+    label: 'Drop-Off Catering',
+    shortLabel: 'Drop-Off',
+    description:
+      'Pre-packed meals delivered ready to serve. FMG brings the food to your location and leaves — no service staff, simple and budget-friendly.',
+  },
+];
+
+// Baseline full-service tiers the client chooses inside the natural flow.
+export const MENU_TIERS = [
+  {
+    id: 'buffet',
+    label: 'Buffet',
+    description: 'Self-serve food stations set up at your venue, ideal for medium to large gatherings.',
+  },
+  {
+    id: 'plated',
+    label: 'Plated',
+    description: 'Individually served courses brought to each guest, perfect for formal events.',
+  },
+];
+
+// Dietary preferences the client can select up front before food selection.
+export const DIETARY_PREFERENCES = [
+  'Vegetarian',
+  'No pork',
+  'Halal',
+  'No seafood',
+  'Gluten-free',
+  'No nuts',
+];
+
 export const CONTACT_INFO = {
   address: 'Carcar City, Cebu, Philippines',
   phone: '+63 912 345 6789',
@@ -190,20 +233,108 @@ export const MENU_ITEMS = {
 };
 
 // Prices and inclusions transcribed from FMG's supplied menu cards.
+// `category` splits offers into the two booking flows: natural (full-service)
+// and drop-off. Budget-based recommendations only ever surface natural offers.
 export const MENU_OFFERS = [
-  { id: 'catering-a', name: 'Catering Set A', category: 'Catered buffet', pricePerPax: 330, includes: ['Rice', '3 pork or chicken main dishes', '1 side dish', '1 round of soft drinks'] },
-  { id: 'catering-b', name: 'Catering Set B', category: 'Catered buffet', pricePerPax: 350, includes: ['Rice', '3 main dishes with beef or seafood', '1 side dish', '1 round of soft drinks'] },
-  { id: 'catering-c', name: 'Catering Set C', category: 'Catered buffet', pricePerPax: 400, includes: ['Rice', '3 beef or seafood main dishes', '1 side dish', '1 round of soft drinks'] },
-  { id: 'catering-d', name: 'Catering Set D', category: 'Catered buffet', pricePerPax: 430, includes: ['Rice', '4 main dishes', 'Salad', 'Pasta or vegetables', '1 round of drinks'] },
-  { id: 'packed-a', name: 'Packed Meal Set A', category: 'Packed meals', pricePerPax: 150, includes: ['Rice', 'Soft drink or bottled water', '1 main dish', '1 side dish'] },
-  { id: 'packed-b', name: 'Packed Meal Set B', category: 'Packed meals', pricePerPax: 180, includes: ['Rice', 'Soft drink or bottled water', '2 main dishes'] },
-  { id: 'packed-c', name: 'Packed Meal Set C', category: 'Packed meals', pricePerPax: 200, includes: ['Rice', 'Soft drink or bottled water', '2 main dishes', '1 side dish'] },
-  { id: 'packed-d', name: 'Packed Meal Set D', category: 'Packed meals', pricePerPax: 230, includes: ['Rice', 'Soft drink or bottled water', '2 main dishes', '1 side dish', 'Dessert or fruit'] },
-  { id: 'packed-e', name: 'Packed Meal Set E', category: 'Packed meals', pricePerPax: 250, includes: ['Rice', 'Soft drink or bottled water', 'Grilled fish or chicken', '1 main dish', '1 side dish', 'Dessert or fruit'] },
+  { id: 'catering-a', category: 'natural', name: 'Catering Set A', tier: 'buffet', pricePerPax: 330, includes: ['Rice', '3 pork or chicken main dishes', '1 side dish', '1 round of soft drinks'] },
+  { id: 'catering-b', category: 'natural', name: 'Catering Set B', tier: 'buffet', pricePerPax: 350, includes: ['Rice', '3 main dishes with beef or seafood', '1 side dish', '1 round of soft drinks'] },
+  { id: 'catering-c', category: 'natural', name: 'Catering Set C', tier: 'buffet', pricePerPax: 400, includes: ['Rice', '3 beef or seafood main dishes', '1 side dish', '1 round of soft drinks'] },
+  { id: 'catering-d', category: 'natural', name: 'Catering Set D', tier: 'buffet', pricePerPax: 430, includes: ['Rice', '4 main dishes', 'Salad', 'Pasta or vegetables', '1 round of drinks'] },
+  { id: 'plated-a', category: 'natural', name: 'Plated Set A', tier: 'plated', pricePerPax: 380, includes: ['Soup or appetizer', '1 main dish', 'Rice', '1 side dish', '1 round of drinks'] },
+  { id: 'plated-b', category: 'natural', name: 'Plated Set B', tier: 'plated', pricePerPax: 430, includes: ['Soup or appetizer', '2 main dish choices', 'Rice', '1 side dish', '1 round of drinks'] },
+  { id: 'plated-c', category: 'natural', name: 'Plated Set C', tier: 'plated', pricePerPax: 480, includes: ['Soup or appetizer', 'Choice of beef or seafood main', 'Rice', '1 side dish', 'Dessert or fruit', '1 round of drinks'] },
+  { id: 'packed-a', category: 'drop-off', name: 'Packed Meal Set A', tier: 'drop-off', pricePerPax: 150, includes: ['Rice', 'Soft drink or bottled water', '1 main dish', '1 side dish'] },
+  { id: 'packed-b', category: 'drop-off', name: 'Packed Meal Set B', tier: 'drop-off', pricePerPax: 180, includes: ['Rice', 'Soft drink or bottled water', '2 main dishes'] },
+  { id: 'packed-c', category: 'drop-off', name: 'Packed Meal Set C', tier: 'drop-off', pricePerPax: 200, includes: ['Rice', 'Soft drink or bottled water', '2 main dishes', '1 side dish'] },
+  { id: 'packed-d', category: 'drop-off', name: 'Packed Meal Set D', tier: 'drop-off', pricePerPax: 230, includes: ['Rice', 'Soft drink or bottled water', '2 main dishes', '1 side dish', 'Dessert or fruit'] },
+  { id: 'packed-e', category: 'drop-off', name: 'Packed Meal Set E', tier: 'drop-off', pricePerPax: 250, includes: ['Rice', 'Soft drink or bottled water', 'Grilled fish or chicken', '1 main dish', '1 side dish', 'Dessert or fruit'] },
 ];
 
+// Drop-off (platter-based) order catalogue. Drop-off clients do not book per
+// guest or per packed set — instead they build a checklist of platters, jars of
+// drinks, and fresh fruit, each with a fixed price. When the optional chafer
+// (serving container) is included, main and side platters switch to their
+// higher chaferPrice. `sub` groups each dish under its FMG menu category.
+const platter = (id, name, sub, price, chaferPrice = null) => ({
+  id,
+  name,
+  sub,
+  price,
+  ...(chaferPrice ? { chaferPrice } : {}),
+});
+
+export const PLATTER_MENU = {
+  chafer: {
+    label: 'Include chafer dish (serving container)',
+    help: 'Disposable chafers keep each main and side platter warm. Prices go up: main platters become ₱1,500 and sides ₱600.',
+  },
+  mains: [
+    platter('pork-afritada', 'Pork Afritada', 'Pork', 1300, 1500),
+    platter('pork-steak', 'Pork Steak', 'Pork', 1300, 1500),
+    platter('pork-sweet-sour', 'Pork Sweet & Sour', 'Pork', 1300, 1500),
+    platter('pork-menudo', 'Pork Menudo', 'Pork', 1300, 1500),
+    platter('pork-estupado', 'Pork Estupado', 'Pork', 1300, 1500),
+    platter('pork-guisantes', 'Pork Guisantes', 'Pork', 1300, 1500),
+    platter('pork-teriyaki', 'Pork Teriyaki', 'Pork', 1300, 1500),
+    platter('pork-hawaiian', 'Pork Hawaiian Steak', 'Pork', 1300, 1500),
+    platter('pork-humba', 'Pinoy Humba', 'Pork', 1300, 1500),
+    platter('pork-lumpia', 'Pork Lumpia', 'Pork', 1300, 1500),
+    platter('pork-embotido', 'Pork Embotido', 'Pork', 1300, 1500),
+    platter('glazed-pork-belly', 'Glazed Pork Belly', 'Pork', 1300, 1500),
+    platter('pork-kare-kare', 'Pork Kare-Kare', 'Pork', 1300, 1500),
+    platter('chicken-cordon-bleu', 'Chicken Cordon Bleu', 'Chicken', 1300, 1500),
+    platter('buttered-chicken', 'Buttered Chicken', 'Chicken', 1300, 1500),
+    platter('chicken-curry', 'Chicken Curry', 'Chicken', 1300, 1500),
+    platter('chicken-sweet-sour', 'Chicken Sweet & Sour', 'Chicken', 1300, 1500),
+    platter('chicken-fillet', 'Chicken Fillet', 'Chicken', 1300, 1500),
+    platter('chicken-afritada', 'Chicken Afritada', 'Chicken', 1300, 1500),
+    platter('chicken-bacon-tarragon', 'Chicken wrapped Bacon w/ Tarragon Sauce', 'Chicken', 1300, 1500),
+    platter('black-pepper-chicken', 'Black Pepper Chicken Mushroom', 'Chicken', 1300, 1500),
+    platter('creamy-chicken-mushroom', 'Creamy Chicken w/ Mushroom', 'Chicken', 1300, 1500),
+    platter('creamy-chicken-broccoli', 'Creamy Chicken w/ Broccoli', 'Chicken', 1300, 1500),
+    platter('corn-shrimp', 'Corn Shrimp', 'Seafood', 1300, 1500),
+    platter('sweet-sour-fish', 'Sweet & Sour Fish', 'Seafood', 1300, 1500),
+    platter('buttered-shrimp', 'Buttered Shrimp', 'Seafood', 1300, 1500),
+    platter('seafood-cajun', 'Seafood Cajun', 'Seafood', 1300, 1500),
+    platter('crispy-garlic-shrimp', 'Crispy Garlic Shrimp', 'Seafood', 1300, 1500),
+    platter('beef-steak', 'Beef Steak', 'Beef', 1300, 1500),
+    platter('beef-teriyaki', 'Beef Teriyaki', 'Beef', 1300, 1500),
+    platter('beef-steak-onion-rings', 'Beef Steak w/ Onion Rings', 'Beef', 1300, 1500),
+    platter('beef-steak-tagalog', 'Beef Steak Tagalog', 'Beef', 1300, 1500),
+    platter('beef-kare-kare', 'Beef Kare-Kare', 'Beef', 1300, 1500),
+    platter('beef-salpicao', 'Beef Salpicao', 'Beef', 1300, 1500),
+  ],
+  sides: [
+    platter('special-chopsuey', 'Special Chopsuey', 'Vegetables', 500, 600),
+    platter('vegetable-lumpia', 'Vegetable Lumpia', 'Vegetables', 500, 600),
+    platter('corn-soup', 'Corn Soup', 'Soup', 500, 600),
+    platter('mushroom-soup', 'Mushroom Soup', 'Soup', 500, 600),
+    platter('macaroni-soup', 'Macaroni Soup', 'Soup', 500, 600),
+    platter('pancit-guisado', 'Pancit Guisado', 'Noodles', 500, 600),
+    platter('bam-e', 'Bam-e', 'Noodles', 500, 600),
+    platter('sotanghon', 'Sotanghon', 'Noodles', 500, 600),
+    platter('mango-tapioca', 'Mango Tapioca', 'Dessert', 500, 600),
+    platter('buko-pandan', 'Buko Pandan', 'Dessert', 500, 600),
+    platter('chicken-macaroni-salad', 'Chicken Macaroni Salad', 'Dessert', 500, 600),
+    platter('buko-mango-sago', 'Buko Mango Sago', 'Dessert', 500, 600),
+    platter('fresh-fruit-salad', 'Fresh Fruit Salad', 'Dessert', 500, 600),
+    platter('pinoy-spaghetti', 'Pinoy Spaghetti', 'Pasta', 500, 600),
+    platter('carbonara', 'Carbonara', 'Pasta', 500, 600),
+    platter('macaroni', 'Macaroni', 'Pasta', 500, 600),
+    platter('alfredo-pasta', 'Alfredo Pasta', 'Pasta', 500, 600),
+  ],
+  drinks: [
+    { id: 'gulaman', name: 'Gulaman Juice', price: 200 },
+    { id: 'iced-tea', name: 'Iced Tea', price: 200 },
+    { id: 'calamansi', name: 'Calamansi Juice', price: 200 },
+  ],
+  fruits: [
+    { id: 'fresh-fruits', name: 'Fresh Fruit Platter', price: 300 },
+  ],
+};
+
 export const MENU_CHOICES = {
-  mains: ['Pork Afritada', 'Pork Steak', 'Pork Sweet & Sour', 'Pork Menudo', 'Pork Teriyaki', 'Pinoy Humba', 'Chicken Cordon Bleu', 'Buttered Chicken', 'Chicken Curry', 'Chicken Fillet', 'Corn Shrimp', 'Sweet & Sour Fish', 'Buttered Shrimp', 'Beef Steak', 'Beef Teriyaki', 'Beef Kare-Kare'],
-  sides: ['Special Chopsuey', 'Vegetable Lumpia', 'Corn Soup', 'Mushroom Soup', 'Pancit Guisado', 'Bam-e', 'Pinoy Spaghetti', 'Carbonara'],
-  desserts: ['Mango Tapioca', 'Buko Pandan', 'Chicken Macaroni Salad', 'Buko Mango Sago', 'Fresh Fruit Salad'],
+  appetizers: ['Chicken Satay', 'Spring Rolls', 'Cheese Sticks', 'Garlic Bread', 'Fruit Platter'],
+  mains: ['Pork Afritada', 'Pork Steak', 'Pork Sweet & Sour', 'Pork Menudo', 'Pork Estupado', 'Pork Guisantes', 'Pork Teriyaki', 'Pork Hawaiian Steak', 'Pinoy Humba', 'Pork Lumpia', 'Pork Embotido', 'Glazed Pork Belly', 'Pork Kare-Kare', 'Chicken Cordon Bleu', 'Buttered Chicken', 'Chicken Curry', 'Chicken Sweet & Sour', 'Chicken Fillet', 'Chicken Afritada', 'Chicken wrapped Bacon w/ Tarragon Sauce', 'Black Pepper Chicken Mushroom', 'Creamy Chicken w/ Mushroom', 'Creamy Chicken w/ Broccoli', 'Corn Shrimp', 'Sweet & Sour Fish', 'Buttered Shrimp', 'Seafood Cajun', 'Crispy Garlic Shrimp', 'Beef Steak', 'Beef Teriyaki', 'Beef Steak w/ Onion Rings', 'Beef Steak Tagalog', 'Beef Kare-Kare', 'Beef Salpicao'],
+  addons: ['Special Chopsuey', 'Vegetable Lumpia', 'Corn Soup', 'Mushroom Soup', 'Macaroni Soup', 'Pancit Guisado', 'Bam-e', 'Sotanghon', 'Mango Tapioca', 'Buko Pandan', 'Chicken Macaroni Salad', 'Buko Mango Sago', 'Fresh Fruit Salad', 'Pinoy Spaghetti', 'Carbonara', 'Macaroni', 'Alfredo Pasta'],
 };

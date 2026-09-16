@@ -28,7 +28,7 @@ export default function BookingPage() {
       <Navbar />
       <main className="pt-16 md:pt-20">
         <MenuSection initialPackage={selectedPackage} />
-        {bookingDetails && <BookNow initialMenuBooking={bookingDetails} />}
+        <BookNow initialMenuBooking={bookingDetails} />
       </main>
       <Footer />
     </>

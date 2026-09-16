@@ -1,58 +1,58 @@
 # FMG Catering — Frontend
 
-React + Vite + Tailwind CSS landing page with GCash and PayPal booking payments.
+React 19 + Vite 6 + Tailwind CSS client for the FMG Catering System. Public landing, booking with budget recommendations, and GCash payments.
 
 ## Setup
 
-### 1. Client
-
 ```bash
-cd client
+cd Client
 cp .env.example .env
 npm install
 npm run dev
 ```
 
-Add your PayPal Client ID to `client/.env`:
-```
-VITE_PAYPAL_CLIENT_ID=your_paypal_client_id
-```
+Set your Google Client ID in `Client/.env` (used for booking identity):
 
-### 2. Payment server (required for payments)
-
-```bash
-cd server
-cp .env.example .env
-npm install
-npm run dev
+```
+VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 ```
 
-Configure PayPal and PayMongo credentials in `server/.env`. See `server/README.md`.
+The dev server proxies `/api` to the backend on `http://localhost:3001` (see `vite.config.js`). Start the backend first — see the root `README.md` or `Server/README.md`.
 
-Open [http://localhost:5173](http://localhost:5173).
+## Pages & Routing
 
-## Booking & Payment Flow
+| Route | Page |
+|-------|------|
+| `/` | Landing (hero, services, packages, testimonials, contact) |
+| `/book` | Booking form + budget recommendations + GCash payment |
+| `/payment/success` | Payment confirmation |
+| `/payment/cancel` | Payment cancelled |
+| `/login` | Staff/admin login (JWT) |
+| `/staff/dashboard` | Staff dashboard (bookings, sales, reports) |
+| `/admin/dashboard` | Admin dashboard (users, analytics, trends, reports) |
 
-1. **Event Details** — Fill in booking form and select a package
-2. **Payment** — Pay 30% deposit via GCash or PayPal
-3. **Confirmation** — Receive booking reference and transaction ID
+Staff/admin pages are wrapped in `ProtectedRoute` and check roles via `AuthContext`.
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server (proxies `/api` to port 3001) |
+| `npm run dev` | Vite dev server (proxies `/api` to port 3001) |
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
 
-## Payment Methods
+## Layout
 
-| Method | Provider | Notes |
-|--------|----------|-------|
-| **PayPal** | PayPal REST API | Smart Buttons, server-side capture |
-| **GCash** | PayMongo Checkout | Redirects to official GCash payment page |
+```
+src/
+├── components/   # landing/, admin/, payment/, layout/, ui/ + ProtectedRoute
+├── pages/        # Route-level pages
+├── context/      # AuthContext (staff/admin JWT + google identity)
+├── services/     # googleAuthService, paymentService
+├── utils/        # booking, payment, and general helpers
+└── data/         # Landing page static content
+```
 
 ## Notes
 
-- Static mock data in `src/data/landingData.js` — database integration coming later
-- Completed bookings stored in `sessionStorage` until backend is connected
+- The client is deployed on Vercel; `vercel.json` rewrites `/api/*` to the backend server and SPA routes to `index.html`.

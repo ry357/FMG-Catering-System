@@ -3,17 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import logoImage from '../../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 import { NAV_LINKS } from '../../data/landingData';
 import { scrollToSection } from '../../utils/helpers';
-import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
-import AuthModal from '../landing/AuthModal';
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { customer } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -40,11 +36,7 @@ export default function Navbar() {
   const handleBookClick = (e) => {
     e.preventDefault();
     setIsOpen(false);
-    if (customer) {
-      navigate('/book');
-    } else {
-      setShowAuthModal(true);
-    }
+    navigate('/book');
   };
 
   return (
@@ -133,7 +125,6 @@ export default function Navbar() {
         </div>
       )}
     </header>
-    <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
   );
 }

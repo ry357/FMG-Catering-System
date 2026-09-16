@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard';
 import Trendnalytics from '../components/admin/TrendAnalytics';
+import BookingDetailModal from '../components/BookingDetailModal';
+import { formatCurrency } from '../utils/helpers';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -106,9 +108,47 @@ const renderMarkdown = (md) => {
 const reportBadgeClass = (type) =>
   type === 'monthly_summary' ? 'bg-emerald-400/10 text-emerald-300' : 'bg-amber-400/10 text-amber-300';
 
+const statusBadge = (status) => {
+  const map = {
+    pending: { label: 'Pending', cls: 'bg-amber-400/10 text-amber-300 border border-amber-400/30' },
+    approved: { label: 'Approved', cls: 'bg-emerald-400/10 text-emerald-300 border border-emerald-400/30' },
+    rejected: { label: 'Rejected', cls: 'bg-red-400/10 text-red-300 border border-red-400/30' },
+    completed: { label: 'Completed', cls: 'bg-blue-400/10 text-blue-300 border border-blue-400/30' },
+  };
+  const config = map[status] || map.pending;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${config.cls}`}>
+      {config.label}
+    </span>
+  );
+};
+
+const paymentBadge = (status) => {
+  const map = {
+    pending: { label: 'Pending', cls: 'bg-slate-700/40 text-slate-300 border border-slate-500/30' },
+    partial: { label: 'Balance Due', cls: 'bg-cyan-400/10 text-cyan-300 border border-cyan-400/30' },
+    full: { label: 'Fully Paid', cls: 'bg-emerald-400/10 text-emerald-300 border border-emerald-400/30' },
+    failed: { label: 'Failed', cls: 'bg-red-400/10 text-red-300 border border-red-400/30' },
+  };
+  const config = map[status] || map.pending;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${config.cls}`}>
+      {config.label}
+    </span>
+  );
+};
+
+const BOOKING_STATUS_META = [
+  { status: 'pending', label: 'Pending', dot: 'bg-amber-400', ring: 'border-amber-400/20' },
+  { status: 'approved', label: 'Approved', dot: 'bg-emerald-400', ring: 'border-emerald-400/20' },
+  { status: 'rejected', label: 'Rejected', dot: 'bg-red-400', ring: 'border-red-400/20' },
+  { status: 'completed', label: 'Completed', dot: 'bg-blue-400', ring: 'border-blue-400/20' },
+];
+
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [users, setUsers] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [reports, setReports] = useState([]);
   const [monthlySummary, setMonthlySummary] = useState(null);
   const [reportBusy, setReportBusy] = useState(false);
@@ -120,6 +160,7 @@ const AdminDashboard = () => {
   const [googleDocMessage, setGoogleDocMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('analytics');
+  const [selectedBooking, setSelectedBooking] = useState(null);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState({
     username: '',
@@ -143,14 +184,17 @@ const AdminDashboard = () => {
         usersRes,
         reportListRes,
         monthlySummaryRes,
-        googleDocsConfigRes
+        googleDocsConfigRes,
+        bookingsRes
       ] = await Promise.all([
         axios.get('/api/users', authHeader()),
         axios.get('/api/reports', authHeader()),
         axios.get('/api/reports/monthly-summary', authHeader()),
-        axios.get('/api/reports/google-docs/config', authHeader())
+        axios.get('/api/reports/google-docs/config', authHeader()),
+        axios.get('/api/bookings', authHeader())
       ]);
       setUsers(usersRes.data.users);
+      setBookings(bookingsRes.data.bookings || []);
       setReports(reportListRes.data.reports || []);
       setMonthlySummary(monthlySummaryRes.data.data || null);
       setGoogleDocsConfigured(Boolean(googleDocsConfigRes.data.configured));
@@ -261,6 +305,28 @@ const AdminDashboard = () => {
     }
   };
 
+  const updateBookingStatus = async (bookingId, status) => {
+    try {
+      await axios.patch(`/api/bookings/${bookingId}/status`, { status }, authHeader());
+      const bookingsRes = await axios.get('/api/bookings', authHeader());
+      setBookings(bookingsRes.data.bookings || []);
+    } catch (error) {
+      console.error('Error updating booking:', error);
+      alert('Failed to update booking status');
+    }
+  };
+
+  const groupedBookings = {
+    pending: [],
+    approved: [],
+    rejected: [],
+    completed: [],
+  };
+  (bookings || []).forEach((booking) => {
+    const key = groupedBookings[booking.status] ? booking.status : 'pending';
+    groupedBookings[key].push(booking);
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center"
@@ -282,7 +348,7 @@ const AdminDashboard = () => {
       }}
     >
       <nav className="bg-[#0B1220]/95 backdrop-blur border-b border-[#1E2A45] sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-3.5 flex justify-between items-center">
+        <div className="max-w-[1600px] mx-auto px-4 py-3.5 flex justify-between items-center">
           <h1 className="text-lg font-semibold bg-gradient-to-r from-cyan-300 via-white to-pink-400 bg-clip-text text-transparent">
             FMG Catering · Admin
           </h1>
@@ -300,6 +366,16 @@ const AdminDashboard = () => {
 
       <div className="max-w-[1600px] mx-auto px-4 py-5">
         <div className="flex gap-1 mb-4 border-b border-[#1E2A45]">
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === 'bookings'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Bookings ({bookings.length})
+          </button>
           <button
             onClick={() => setActiveTab('analytics')}
             className={`px-4 py-2.5 text-sm font-medium transition-colors ${
@@ -344,6 +420,149 @@ const AdminDashboard = () => {
 
         {activeTab === 'analytics' && (
           <SalesAnalyticsDashboard />
+        )}
+
+        {activeTab === 'bookings' && (
+          <div className="space-y-5">
+            <div className="rounded-xl border border-[#1E2A45] bg-[#101A2E] p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-semibold text-white">Booking Status Overview</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    All bookings grouped by status — pending, approved, rejected, and completed
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                {BOOKING_STATUS_META.map((meta) => (
+                  <div key={meta.status} className="rounded-xl border border-[#1E2A45] bg-[#0B1220] p-4 text-center">
+                    <p className="text-[11px] uppercase tracking-wider text-slate-500">{meta.label}</p>
+                    <p className="text-2xl font-semibold text-white mt-1">{groupedBookings[meta.status].length}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {BOOKING_STATUS_META.map((meta) => (
+              <section
+                key={meta.status}
+                className={`rounded-xl border bg-[#101A2E] p-4 shadow-[0_0_40px_-12px_rgba(34,211,238,0.2)] ${meta.ring}`}
+              >
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#1E2A45]">
+                  <div className="flex items-center gap-3">
+                    <span className={`w-2.5 h-2.5 rounded-full ${meta.dot}`} />
+                    <h3 className="text-base font-semibold text-white">
+                      {meta.label} <span className="text-slate-500 font-normal">({groupedBookings[meta.status].length})</span>
+                    </h3>
+                  </div>
+                </div>
+
+                {groupedBookings[meta.status].length === 0 ? (
+                  <p className="text-slate-500 text-center py-8 text-sm">
+                    No {meta.label.toLowerCase()} bookings.
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-slate-200">
+                      <thead>
+                        <tr className="border-b border-[#1E2A45]">
+                          <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Event Date</th>
+                          <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Client</th>
+                          <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Event Type</th>
+                          <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Guests</th>
+                          <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Budget</th>
+                          <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Payment</th>
+                          <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Status</th>
+                          <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {groupedBookings[meta.status].map((booking) => (
+                          <tr
+                            key={booking.id}
+                            className="border-b border-[#17233C] hover:bg-cyan-400/5 align-top cursor-pointer"
+                            onClick={() => setSelectedBooking(booking)}
+                          >
+                            <td className="py-3 px-4 whitespace-nowrap text-white font-medium">
+                              {new Date(booking.event_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </td>
+                            <td className="py-3 px-4">
+                              <p className="text-white font-medium">{booking.customer_name}</p>
+                              <p className="text-[11px] text-slate-500">{booking.customer_email}</p>
+                              <p className="text-[11px] text-slate-500">{booking.customer_phone}</p>
+                            </td>
+                            <td className="py-3 px-4 text-slate-300">{booking.event_type}</td>
+                            <td className="py-3 px-4 text-right text-slate-300 tabular-nums">
+                              {booking.number_of_guests?.toLocaleString()}
+                            </td>
+                            <td className="py-3 px-4 text-right font-medium text-cyan-300 tabular-nums">
+                              {booking.budget ? formatCurrency(booking.budget) : 'N/A'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="space-y-1.5">
+                                <div>{paymentBadge(booking.payment_status)}</div>
+                                <p className="text-[11px] text-slate-500 capitalize">
+                                  {booking.payment_type === 'down_payment' ? 'Down Payment' : 'Full Payment'}
+                                  {booking.payment_type === 'down_payment' && booking.down_payment_amount
+                                    ? ` · ${formatCurrency(booking.down_payment_amount)}`
+                                    : ''}
+                                </p>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">{statusBadge(booking.status)}</td>
+                            <td className="py-3 px-4 text-right">
+                              {booking.status === 'pending' && (
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); updateBookingStatus(booking.id, 'approved'); }}
+                                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/20 transition cursor-pointer"
+                                  >
+                                    Approve
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); updateBookingStatus(booking.id, 'rejected'); }}
+                                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-red-400/10 text-red-300 border border-red-400/30 hover:bg-red-400/20 transition cursor-pointer"
+                                  >
+                                    Decline
+                                  </button>
+                                </div>
+                              )}
+                              {booking.status === 'approved' && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); updateBookingStatus(booking.id, 'completed'); }}
+                                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-400/10 text-blue-300 border border-blue-400/30 hover:bg-blue-400/20 transition cursor-pointer"
+                                >
+                                  Mark Complete
+                                </button>
+                              )}
+                              {booking.status === 'completed' && (
+                                <select
+                                  defaultValue="completed"
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) => { e.stopPropagation(); updateBookingStatus(booking.id, e.target.value); }}
+                                  className="appearance-none bg-[#101A2E] border border-[#1E2A45] text-white text-xs font-medium pl-2.5 pr-6 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400/60 cursor-pointer bg-no-repeat"
+                                  style={{
+                                    backgroundImage:
+                                      "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2322D3EE%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')",
+                                    backgroundPosition: 'right 0.5rem center',
+                                  }}
+                                >
+                                  <option value="completed">Completed</option>
+                                  <option value="approved">Reopen · Approved</option>
+                                  <option value="pending">Back to Pending</option>
+                                  <option value="rejected">Mark Rejected</option>
+                                </select>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            ))}
+          </div>
         )}
 
         {activeTab === 'reports' && (
@@ -615,6 +834,13 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {selectedBooking && (
+        <BookingDetailModal
+          booking={selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+        />
+      )}
     </div>
   );
 };

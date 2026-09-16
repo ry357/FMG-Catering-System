@@ -17,6 +17,9 @@ import { generateMonthlyReport } from './services/monthlyReportService.js';
 import { isGoogleDocsConfigured, autoUploadMonthlyReport } from './services/googleDocsService.js';
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 const corsOrigins = (process.env.CORS_ORIGINS || process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim())
@@ -50,7 +53,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/payments', paymentLimiter, paymentRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/google-auth', googleAuthRoutes);
-app.use('/api/bookings', bookingLimiter, bookingRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api', contentRoutes);

@@ -22,6 +22,7 @@ export const SCHEMA_STATEMENTS = [
       name TEXT NOT NULL,
       email TEXT NOT NULL,
       phone TEXT,
+      address TEXT,
       google_id TEXT UNIQUE,
       avatar TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -40,6 +41,9 @@ export const SCHEMA_STATEMENTS = [
       budget REAL,
       preferred_package TEXT,
       additional_requests TEXT,
+      menu_items TEXT,
+      menu_preference TEXT,
+      booking_category TEXT DEFAULT 'natural' CHECK(booking_category IN ('natural', 'drop-off')),
       status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected', 'completed')),
       booking_ref TEXT UNIQUE,
       payment_type TEXT DEFAULT 'full' CHECK(payment_type IN ('full', 'down_payment')),
@@ -85,7 +89,7 @@ export const SCHEMA_STATEMENTS = [
     CREATE TABLE IF NOT EXISTS EmailLogs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       recipient_email TEXT NOT NULL,
-      email_type TEXT NOT NULL CHECK(email_type IN ('booking_confirmation', 'booking_approval', 'promotional', 'anniversary_reminder')),
+      email_type TEXT NOT NULL CHECK(email_type IN ('booking_confirmation', 'booking_approval', 'booking_rejected', 'promotional', 'anniversary_reminder')),
       subject TEXT,
       status TEXT DEFAULT 'sent' CHECK(status IN ('sent', 'failed')),
       sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -119,4 +123,16 @@ export const INDEX_STATEMENTS = [
   'CREATE INDEX IF NOT EXISTS idx_customers_email ON Customers(email)',
   'CREATE INDEX IF NOT EXISTS idx_customers_google_id ON Customers(google_id)',
   'CREATE INDEX IF NOT EXISTS idx_otpsessions_user ON OtpSessions(user_id)',
+];
+
+// Post-CREATE migrations for databases that already exist. Each entry is a
+// best-effort ALTER whose failure is ignored when the change is already applied
+// (e.g. "duplicate column name"), so fresh and existing databases both work.
+export const MIGRATION_STATEMENTS = [
+  'ALTER TABLE Customers ADD COLUMN address TEXT',
+  'ALTER TABLE Bookings ADD COLUMN menu_items TEXT',
+  'ALTER TABLE Bookings ADD COLUMN menu_preference TEXT',
+  // SQLite ALTER ADD COLUMN cannot carry a CHECK constraint, so existing DBs
+  // get a plain DEFAULT column; fresh DBs get the full CHECK via SCHEMA_STATEMENTS.
+  "ALTER TABLE Bookings ADD COLUMN booking_category TEXT DEFAULT 'natural'",
 ];

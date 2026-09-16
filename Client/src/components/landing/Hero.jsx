@@ -8,8 +8,6 @@ import serviceFoodImage from '../../assets/710781918_989007957247850_83600094013
 import serviceBuffetDetailImage from '../../assets/715413195_989007987247847_6053587252518028193_n.jpg';
 import Button from '../ui/Button';
 import { scrollToSection } from '../../utils/helpers';
-import { useAuth } from '../../context/AuthContext';
-import AuthModal from './AuthModal';
 
 const SERVICE_DOCUMENTATION = [
   { src: logoImage, alt: 'FMG Catering Services logo', label: 'FMG Catering Services' },
@@ -22,8 +20,6 @@ const SERVICE_DOCUMENTATION = [
 
 export default function Hero() {
   const [documentationIndex, setDocumentationIndex] = useState(0);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const { customer } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,11 +36,7 @@ export default function Hero() {
 
   const handleBookClick = (e) => {
     e.preventDefault();
-    if (customer) {
-      navigate('/book');
-    } else {
-      setShowAuthModal(true);
-    }
+    navigate('/book');
   };
 
   return (
@@ -138,7 +130,6 @@ export default function Hero() {
           </div>
         </div>
       </div>
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </section>
   );
 }

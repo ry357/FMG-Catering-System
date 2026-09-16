@@ -3,7 +3,7 @@ import foodPerPaxImage from '../../assets/5b4b7960-0099-4363-9d98-ac7814b440f6.j
 import sideDishesImage from '../../assets/cbea243e-ca67-44df-b395-f2dc793a2cbd.jpg';
 import mainDishesImage from '../../assets/fa79860c-4838-4d40-90c3-6e305761dace.jpg';
 import packedMealsImage from '../../assets/faf3e38e-e1ab-4ebf-86fe-40f9217a63e6.jpg';
-import { MENU_CHOICES, MENU_OFFERS } from '../../data/landingData';
+import { BOOKING_CATEGORIES, MENU_OFFERS, MENU_TIERS } from '../../data/landingData';
 import { formatCurrency } from '../../utils/helpers';
 import Button from '../ui/Button';
 import SectionHeading from '../ui/SectionHeading';
@@ -12,64 +12,31 @@ const MENU_IMAGES = [
   { src: foodPerPaxImage, alt: 'FMG Catering food per pax menu sets' },
   { src: mainDishesImage, alt: 'FMG Catering main dish choices' },
   { src: sideDishesImage, alt: 'FMG Catering side dish choices' },
-  { src: packedMealsImage, alt: 'FMG Catering packed meal sets' },
+  { src: packedMealsImage, alt: 'FMG Catering platter and packed meal options' },
 ];
 
-const SELECTION_LIMITS = {
-  'catering-a': { mains: 3, sides: 1, desserts: 0 },
-  'catering-b': { mains: 3, sides: 1, desserts: 0 },
-  'catering-c': { mains: 3, sides: 1, desserts: 0 },
-  'catering-d': { mains: 4, sides: 2, desserts: 0 },
-  'packed-a': { mains: 1, sides: 1, desserts: 0 },
-  'packed-b': { mains: 2, sides: 0, desserts: 0 },
-  'packed-c': { mains: 2, sides: 1, desserts: 0 },
-  'packed-d': { mains: 2, sides: 1, desserts: 1 },
-  'packed-e': { mains: 2, sides: 1, desserts: 1 },
-};
-
-const PACKAGE_SELECTION_LIMITS = {
-  1: { mains: 2, sides: 0, desserts: 1 },
-  2: { mains: 4, sides: 1, desserts: 2 },
-  3: { mains: 4, sides: 2, desserts: 2 },
-};
-
-function ChoiceGroup({ title, choices, selected, limit, onToggle }) {
-  if (!limit) return null;
-  return (
-    <fieldset>
-      <legend className="flex w-full items-center justify-between text-sm font-semibold text-charcoal">
-        <span>{title}</span>
-        <span className="text-gold-600">Choose {limit} · {selected.length}/{limit}</span>
-      </legend>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        {choices.map((choice) => {
-          const checked = selected.includes(choice);
-          const unavailable = !checked && selected.length >= limit;
-          return (
-            <label key={choice} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition ${checked ? 'border-gold-400 bg-gold-50 text-charcoal' : 'border-gray-200 bg-white text-charcoal-light'} ${unavailable ? 'cursor-not-allowed opacity-45' : 'hover:border-gold-300'}`}>
-              <input type="checkbox" checked={checked} disabled={unavailable} onChange={() => onToggle(choice)} className="h-4 w-4 rounded border-gray-300 text-gold-500 focus:ring-gold-400" />
-              {choice}
-            </label>
-          );
-        })}
-      </div>
-    </fieldset>
-  );
+function tierLabel(tierId) {
+  const label = MENU_TIERS.find((t) => t.id === tierId)?.label;
+  if (label) return label;
+  if (tierId === 'drop-off') return 'Drop-Off';
+  return tierId || '';
 }
 
 export default function MenuSection({ initialPackage = null }) {
+  const [category, setCategory] = useState('natural');
   const [budgetInput, setBudgetInput] = useState('');
   const [guestInput, setGuestInput] = useState('');
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [selectedMenuImage, setSelectedMenuImage] = useState(null);
-  const [selections, setSelections] = useState({ mains: [], sides: [], desserts: [] });
-  const [menuNotes, setMenuNotes] = useState('');
   const budget = Number(budgetInput);
   const guests = Number(guestInput);
   const packageMode = Boolean(initialPackage);
+  const naturalOffers = MENU_OFFERS.filter((offer) => offer.category === 'natural');
   const hasValidInputs = packageMode
     ? Number.isInteger(guests) && guests > 0
-    : Number.isFinite(budget) && budget > 0 && Number.isInteger(guests) && guests > 0;
+    : category === 'drop-off'
+      ? true
+      : Number.isFinite(budget) && budget > 0 && Number.isInteger(guests) && guests > 0;
 
   useEffect(() => {
     if (!selectedMenuImage) return undefined;
@@ -85,90 +52,158 @@ export default function MenuSection({ initialPackage = null }) {
   }, [selectedMenuImage]);
 
   const suggestions = useMemo(() => {
-    if (!hasValidInputs) return [];
-    return MENU_OFFERS
+    if (!hasValidInputs || packageMode || category !== 'natural') return [];
+    return naturalOffers
       .map((offer) => ({ ...offer, total: offer.pricePerPax * guests, remaining: budget - offer.pricePerPax * guests }))
       .filter((offer) => offer.total <= budget)
       .sort((a, b) => (b.total / budget) - (a.total / budget) || b.pricePerPax - a.pricePerPax)
       .slice(0, 3);
-  }, [budget, guests, hasValidInputs]);
+  }, [budget, guests, hasValidInputs, packageMode, category, naturalOffers]);
 
-  const limits = packageMode
-    ? PACKAGE_SELECTION_LIMITS[initialPackage.id]
-    : selectedOffer ? SELECTION_LIMITS[selectedOffer.id] : null;
-  const selectionsComplete = limits && Object.entries(limits).every(([category, limit]) => selections[category].length === limit);
+  const switchCategory = (nextCategory) => {
+    setCategory(nextCategory);
+    setSelectedOffer(null);
+    setBudgetInput('');
+  };
 
   const chooseOffer = (offer) => {
     setSelectedOffer(offer);
-    setSelections({ mains: [], sides: [], desserts: [] });
-    setMenuNotes('');
     requestAnimationFrame(() => document.getElementById('menu-customize')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   };
 
-  const toggleChoice = (category, choice) => {
-    setSelections((current) => ({
-      ...current,
-      [category]: current[category].includes(choice)
-        ? current[category].filter((item) => item !== choice)
-        : [...current[category], choice],
-    }));
-  };
+  const activeCategory = BOOKING_CATEGORIES.find((c) => c.id === category);
 
   const continueToBooking = () => {
-    if ((!selectedOffer && !initialPackage) || !hasValidInputs || !selectionsComplete) return;
-    const offer = initialPackage || selectedOffer;
+    if (!hasValidInputs) return;
+    if (!packageMode && category === 'natural' && !selectedOffer) return;
+    const offer = packageMode ? null : selectedOffer;
     window.dispatchEvent(new CustomEvent('startMenuBooking', {
       detail: {
-        budget: packageMode ? initialPackage.pricePerGuest * guests : budget,
-        guests,
+        category: packageMode ? 'natural' : category,
+        budget: packageMode
+          ? initialPackage.pricePerGuest * guests
+          : category === 'drop-off'
+            ? null
+            : budget,
+        guests: category === 'drop-off' ? '' : guests,
         packageId: initialPackage?.id || null,
-        menuPreference: { offer: offer.name, pricePerPax: packageMode ? initialPackage.pricePerGuest : selectedOffer.pricePerPax, selections, notes: menuNotes.trim() },
+        offer: offer || null,
+        tier: offer?.tier || null,
       },
     }));
   };
 
+  const packageTotal = initialPackage ? initialPackage.pricePerGuest * (guests || 0) : 0;
+
   return (
     <section id="menu" className="section-padding bg-amber-50">
       <div className="section-container">
-        <SectionHeading label="FMG Menu" title={packageMode ? `Customize ${initialPackage.name}` : 'Plan Your Menu Around Your Budget'} description={packageMode ? 'Choose your guest count and the dishes included in your selected package.' : 'Enter your food budget and expected guest count. We will show the published menu offers that fit both figures.'} />
+        <SectionHeading label="FMG Menu" title={packageMode ? `Start booking ${initialPackage.name}` : 'Plan Your Menu'} description={packageMode ? 'Choose your guest count, then continue to book with your selected package.' : "Pick a booking type, then choose the menu offer that fits your event."} />
 
-        <div className="mx-auto max-w-3xl rounded-2xl bg-charcoal p-6 shadow-elevated md:p-8">
-          <div className={`grid gap-4 ${packageMode ? '' : 'sm:grid-cols-2'}`}>
-            {!packageMode && <label htmlFor="menu-budget" className="block text-sm font-semibold text-white">Food budget (PHP)
-              <span className="relative mt-2 block"><span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/60">₱</span><input id="menu-budget" type="number" min="1" inputMode="numeric" value={budgetInput} onChange={(event) => setBudgetInput(event.target.value)} placeholder="Example: 15000" className="w-full rounded-lg border border-white/20 bg-white/10 py-3 pl-8 pr-4 text-white placeholder:text-white/45 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/30" /></span>
-            </label>}
+        {!packageMode && (
+          <div className="mx-auto max-w-2xl rounded-2xl bg-white p-2 shadow-card">
+            <div className="grid grid-cols-2 gap-2">
+              {BOOKING_CATEGORIES.map((c) => {
+                const active = category === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => switchCategory(c.id)}
+                    aria-pressed={active}
+                    className={`rounded-xl border-2 px-4 py-3 text-left transition-all ${active ? 'border-gold-400 bg-gold-50' : 'border-gray-200 hover:border-gold-300'}`}
+                  >
+                    <span className={`block text-sm font-semibold ${active ? 'text-charcoal' : 'text-charcoal-light'}`}>{c.shortLabel}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6 mx-auto max-w-3xl rounded-2xl bg-charcoal p-6 shadow-elevated md:p-8">
+          {!packageMode && category === 'natural' && (
+            <div className="mb-3">
+              <label htmlFor="menu-budget" className="block text-sm font-semibold text-white">Food budget (PHP)
+                <span className="relative mt-2 block"><span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/60">₱</span><input id="menu-budget" type="number" min="1" inputMode="numeric" value={budgetInput} onChange={(event) => setBudgetInput(event.target.value)} placeholder="Example: 15000" className="w-full rounded-lg border border-white/20 bg-white/10 py-3 pl-8 pr-4 text-white placeholder:text-white/45 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/30" /></span>
+              </label>
+            </div>
+          )}
+          {!packageMode && category === 'drop-off' && (
+            <div className="rounded-xl border border-gold-400/30 bg-white/5 p-5">
+              <p className="text-sm font-semibold text-white">Drop-Off bookings are platter-based</p>
+              <p className="mt-2 text-xs leading-5 text-white/70">
+                No guest count or budget needed. Inside the booking form you build a checklist of platters
+                (mains and sides), jars of drinks, and fresh fruit — each with a fixed price — and optionally
+                add a chafer dish to keep the food warm.
+              </p>
+            </div>
+          )}
+          {category !== 'drop-off' && (
             <label htmlFor="menu-guests" className="block text-sm font-semibold text-white">How many guests?
               <input id="menu-guests" type="number" min="1" step="1" inputMode="numeric" value={guestInput} onChange={(event) => setGuestInput(event.target.value)} placeholder="Example: 50" className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/45 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/30" />
             </label>
-          </div>
-          <p className="mt-4 text-xs leading-5 text-white/65">{packageMode ? `Estimated total: ${formatCurrency(initialPackage.pricePerGuest * (guests || 0))}` : "The estimate checks that the selected offer's per-pax cost × your guest count stays within your budget."}</p>
+          )}
+          <p className="mt-4 text-xs leading-5 text-white/65">
+            {packageMode
+              ? `Estimated total: ${formatCurrency(packageTotal)}`
+              : category === 'drop-off'
+                ? 'Choose your drop-off order in the booking form below — each platter, jar, and fruit platter has a fixed price.'
+                : "The estimate checks that the selected offer's per-pax cost × your guest count stays within your budget."}
+          </p>
         </div>
 
-        {hasValidInputs && !packageMode && (
+        {hasValidInputs && !packageMode && category === 'natural' && (
           <div className="mt-10" aria-live="polite">
             <div className="mb-5"><p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Recommended packages based on your event details</p><h3 className="mt-1 font-display text-2xl font-semibold text-charcoal">Offers for {guests} guests within {formatCurrency(budget)}</h3></div>
             {suggestions.length ? <div className="grid gap-6 md:grid-cols-3">
               {suggestions.map((offer, index) => <article key={offer.id} className="flex flex-col rounded-2xl border border-gold-100 bg-white p-6 shadow-card">
-                <span className="w-fit rounded-full bg-gold-50 px-3 py-1 text-xs font-semibold text-gold-700">{index === 0 ? 'Closest budget match' : offer.category}</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-fit rounded-full bg-gold-50 px-3 py-1 text-xs font-semibold text-gold-700">{tierLabel(offer.tier)}</span>
+                  <span className="text-xs text-charcoal-muted">{index === 0 ? '· Closest budget match' : ''}</span>
+                </div>
                 <h4 className="mt-4 font-display text-xl font-semibold text-charcoal">{offer.name}</h4><p className="mt-1 text-sm text-charcoal-muted">{formatCurrency(offer.pricePerPax)} per pax</p>
                 <div className="my-5 rounded-xl bg-amber-50 p-4"><p className="text-sm text-charcoal-muted">For {guests} guests</p><p className="font-display text-3xl font-bold text-gold-600">{formatCurrency(offer.total)}</p><p className="mt-1 text-xs text-charcoal-muted">{formatCurrency(offer.remaining)} remaining from your budget</p></div>
                 <ul className="space-y-2 text-sm text-charcoal-light">{offer.includes.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-500">✓</span><span>{item}</span></li>)}</ul>
-                <Button className="mt-6 w-full" onClick={() => chooseOffer(offer)}>Choose & Customize Food</Button>
+                <Button className="mt-6 w-full" onClick={() => chooseOffer(offer)}>Continue to Booking</Button>
               </article>)}
             </div> : <div className="rounded-xl border border-amber-200 bg-white p-6 text-center text-charcoal-muted">No listed offer fits both your budget and guest count. Increase the budget, reduce the guest count, or contact FMG for a custom quote.</div>}
           </div>
         )}
 
-        {(selectedOffer || initialPackage) && limits && <section id="menu-customize" className="mt-12 rounded-2xl border border-gold-200 bg-white p-6 shadow-card md:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Next: choose your food</p>
-          <h3 className="mt-2 font-display text-2xl font-semibold text-charcoal">Customize {(initialPackage || selectedOffer).name}</h3>
-          <p className="mt-2 text-charcoal-muted">Choose the dishes included in your selected offer. You can add special instructions below.</p>
-          <div className="mt-7 space-y-7"><ChoiceGroup title="Main dishes" choices={MENU_CHOICES.mains} selected={selections.mains} limit={limits.mains} onToggle={(choice) => toggleChoice('mains', choice)} /><ChoiceGroup title="Side dishes" choices={MENU_CHOICES.sides} selected={selections.sides} limit={limits.sides} onToggle={(choice) => toggleChoice('sides', choice)} /><ChoiceGroup title="Desserts" choices={MENU_CHOICES.desserts} selected={selections.desserts} limit={limits.desserts} onToggle={(choice) => toggleChoice('desserts', choice)} /></div>
-          <label htmlFor="menu-notes" className="mt-7 block text-sm font-semibold text-charcoal">Food requests or dietary notes <span className="font-normal text-charcoal-muted">(optional)</span></label>
-          <textarea id="menu-notes" value={menuNotes} maxLength="500" onChange={(event) => setMenuNotes(event.target.value)} rows="3" placeholder="Example: no spicy food, vegetarian option needed" className="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20" />
-          {!selectionsComplete && <p className="mt-4 text-sm text-amber-700">Complete each required food selection to continue to booking.</p>}
-          <Button className="mt-6" disabled={!selectionsComplete} onClick={continueToBooking}>Continue to Booking</Button>
-        </section>}
+        {hasValidInputs && !packageMode && category === 'drop-off' && (
+          <div className="mt-10 rounded-2xl border border-gold-200 bg-white p-6 shadow-card md:p-8" aria-live="polite">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Drop-off</p>
+            <h3 className="mt-1 font-display text-2xl font-semibold text-charcoal">Build your own platter order</h3>
+            <p className="mt-2 text-charcoal-muted">
+              Start a drop-off booking and tick off the dishes you want — any main from Pork, Chicken, Seafood,
+              or Beef at ₱1,300 per platter, side dishes from ₱500, drinks at ₱200 per jar, and a fresh fruit
+              platter for ₱300. Add a chafer dish and main platters go up to ₱1,500 with sides at ₱600.
+            </p>
+            <Button className="mt-6" onClick={continueToBooking}>Start Drop-Off Booking</Button>
+          </div>
+        )}
+
+        {packageMode && (
+          <section id="menu-customize" className="mt-12 rounded-2xl border border-gold-200 bg-white p-6 shadow-card md:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Ready to book</p>
+            <h3 className="mt-2 font-display text-2xl font-semibold text-charcoal">{initialPackage.name}</h3>
+            <p className="mt-2 text-charcoal-muted">For {guests || '—'} guests · {formatCurrency(packageTotal)} estimated total</p>
+            <ul className="mt-5 space-y-2 text-sm text-charcoal-light">{initialPackage.features.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-500">✓</span><span>{item}</span></li>)}</ul>
+            <Button className="mt-6" disabled={!hasValidInputs} onClick={continueToBooking}>Continue to Booking</Button>
+          </section>
+        )}
+
+        {!packageMode && selectedOffer && (
+          <section id="menu-customize" className="mt-12 rounded-2xl border border-gold-200 bg-white p-6 shadow-card md:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">{activeCategory?.label || tierLabel(selectedOffer.tier)} · selected menu set</p>
+            <h3 className="mt-2 font-display text-2xl font-semibold text-charcoal">{selectedOffer.name}</h3>
+            <p className="mt-2 text-charcoal-muted">{formatCurrency(selectedOffer.pricePerPax)} per pax · {formatCurrency(selectedOffer.pricePerPax * guests)} for {guests} guests</p>
+            <ul className="mt-5 space-y-2 text-sm text-charcoal-light">{selectedOffer.includes.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-500">✓</span><span>{item}</span></li>)}</ul>
+            <p className="mt-5 text-sm text-charcoal-muted">You will choose your appetizers, main dishes, and add-ons in the next step of the booking form.</p>
+            <Button className="mt-6" onClick={continueToBooking}>Continue to Booking</Button>
+          </section>
+        )}
 
         <div className="mt-14"><h3 className="font-display text-2xl font-semibold text-charcoal">Browse the full FMG menu</h3><p className="mt-2 text-charcoal-muted">Review the supplied menu cards for dish choices, inclusions, and every available set.</p><div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{MENU_IMAGES.map((image) => <button key={image.src} type="button" aria-label={`Open ${image.alt}`} onClick={() => setSelectedMenuImage(image)} className="group overflow-hidden rounded-2xl bg-charcoal text-left shadow-card focus:outline-none focus:ring-2 focus:ring-gold-400"><img src={image.src} alt={image.alt} className="aspect-[7/10] w-full object-cover object-top transition duration-300 group-hover:scale-105" loading="lazy" /></button>)}</div></div>
       </div>

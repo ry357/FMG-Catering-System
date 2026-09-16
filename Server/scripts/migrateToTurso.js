@@ -4,7 +4,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { getDb } from '../config/db.js';
-import { SCHEMA_STATEMENTS, INDEX_STATEMENTS } from './schema.js';
+import { SCHEMA_STATEMENTS, INDEX_STATEMENTS, MIGRATION_STATEMENTS } from './schema.js';
 
 dotenv.config();
 
@@ -34,6 +34,18 @@ async function migrateToTurso() {
   }
   for (const statement of INDEX_STATEMENTS) {
     await turso.exec(statement);
+  }
+  for (const statement of MIGRATION_STATEMENTS) {
+    try {
+      await turso.exec(statement);
+      console.log(`Applied migration: ${statement}`);
+    } catch (err) {
+      const message = `${err?.message || ''} ${err?.code || ''}`.toLowerCase();
+      if (/duplicate column|already exists/.test(message)) {
+        continue;
+      }
+      throw err;
+    }
   }
 
   let totalRows = 0;

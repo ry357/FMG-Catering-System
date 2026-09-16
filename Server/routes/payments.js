@@ -3,9 +3,9 @@ import {
   createGCashCheckout,
   verifyGCashPayment,
 } from '../services/paymentProviders.js';
-import { query, queryOne, execute, executeWithId } from '../config/dbHelper.js';
-import { sendBookingConfirmationEmail, sendBookingApprovalEmail } from '../services/emailService.js';
+import { query, queryOne, execute } from '../config/dbHelper.js';
 import { validatePayment } from '../middleware/validator.js';
+import { createBooking } from '../services/bookingService.js';
 
 const router = Router();
 
@@ -21,78 +21,32 @@ router.get('/config', (_req, res) => {
 // Create booking and payment session
 router.post('/gcash/create-checkout', validatePayment, async (req, res, next) => {
   try {
-    const { amount, bookingRef, customerName, customerEmail, description, bookingData, paymentType = 'full' } = req.body;
+    const { amount, bookingRef, customerName, customerEmail, description, bookingData = {}, paymentType = 'full' } = req.body;
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-    
-    // Generate unique booking reference with timestamp + random string
-    const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const ref = bookingRef || `FMG-${Date.now()}-${randomStr}`;
 
-    // Calculate down payment and total amount
-    const totalAmount = bookingData?.budget || (amount * 2); // If down payment, assume 50% so total = amount * 2
-    const downPaymentAmount = paymentType === 'down_payment' ? amount : 0;
+    const downPaymentAmount = paymentType === 'down_payment' ? Number(amount) : 0;
 
-    // Calculate total based on menu items if provided
-    let finalTotalAmount = totalAmount;
-    if (bookingData?.selectedMenuItems && bookingData.selectedMenuItems.length > 0) {
-      const itemsTotal = bookingData.selectedMenuItems.reduce((sum, item) => sum + (item.price || 0), 0);
-      finalTotalAmount = itemsTotal * (bookingData?.numberOfGuests || 1);
-    }
-
-    // Create or get customer
-    let customer;
-    const existingCustomer = await queryOne(
-      'SELECT id FROM Customers WHERE email = ?',
-      [customerEmail]
-    );
-
-    if (existingCustomer) {
-      customer = existingCustomer;
-    } else {
-      const customerId = await executeWithId(
-        'INSERT INTO Customers (name, email, phone) VALUES (?, ?, ?)',
-        [customerName, customerEmail, bookingData?.contactNumber || '']
-      );
-      customer = { id: customerId };
-    }
-
-    // Create booking
-    const bookingId = await executeWithId(
-      `INSERT INTO Bookings (customer_id, event_type, event_date, number_of_guests, budget, preferred_package, additional_requests, booking_ref, status, payment_type, down_payment_amount, total_amount, payment_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        customer.id,
-        bookingData?.eventType || 'General',
-        bookingData?.eventDate || new Date().toISOString().split('T')[0],
-        bookingData?.numberOfGuests || 0,
-        bookingData?.budget || 0,
-        bookingData?.preferredPackageId || '',
-        bookingData?.additionalRequests || '',
-        ref,
-        'pending',
-        paymentType,
-        downPaymentAmount,
-        finalTotalAmount,
-        'pending'
-      ]
-    );
-
-    // Store client menu selections without changing the package price calculation.
-    if (bookingData?.selectedMenuItems && bookingData.selectedMenuItems.length > 0) {
-      const menuJson = JSON.stringify(bookingData.selectedMenuItems);
-      await execute(
-        'UPDATE Bookings SET additional_requests = ? WHERE id = ?',
-        [`${bookingData?.additionalRequests || ''} | MENU: ${menuJson}`, bookingId]
-      );
-    }
-
-    if (bookingData?.menuPreference) {
-      const preferenceJson = JSON.stringify(bookingData.menuPreference);
-      await execute(
-        'UPDATE Bookings SET additional_requests = ? WHERE id = ?',
-        [`${bookingData?.additionalRequests || ''} | MENU PREFERENCE: ${preferenceJson}`, bookingId]
-      );
-    }
+    // Booking creation is delegated to the shared service so the public POST
+    // /api/bookings and this payment path always behave identically.
+    const { bookingId, bookingRef: ref } = await createBooking({
+      name: customerName,
+      email: customerEmail,
+      phone: bookingData.contactNumber,
+      address: bookingData.address,
+      event_type: bookingData.eventType,
+      event_date: bookingData.eventDate,
+      number_of_guests: bookingData.numberOfGuests,
+      budget: bookingData.budget,
+      preferred_package: bookingData.preferredPackageId || bookingData.offerId,
+      additional_requests: bookingData.additionalRequests,
+      selected_menu_items: bookingData.selectedMenuItems,
+      menu_preference: bookingData.menuPreference,
+      booking_category: bookingData.bookingCategory,
+      total_amount: bookingData.totalAmount,
+      payment_type: paymentType,
+      down_payment_amount: downPaymentAmount,
+      booking_ref: bookingRef,
+    });
 
     // Create PayMongo checkout session
     const checkout = await createGCashCheckout({
@@ -112,21 +66,8 @@ router.post('/gcash/create-checkout', validatePayment, async (req, res, next) =>
       [bookingId, Number(amount), 'gcash', 'pending', checkout.sessionId, paymentType]
     );
 
-    // Send booking confirmation email (async, non-blocking)
-    if (customerEmail && customerName) {
-      sendBookingConfirmationEmail(
-        customerName,
-        customerEmail,
-        ref,
-        bookingData?.eventType || 'General',
-        bookingData?.eventDate || new Date().toISOString().split('T')[0]
-      ).catch(emailError => {
-        console.error('Failed to send booking confirmation email:', emailError);
-      });
-    }
-
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       data: {
         ...checkout,
         bookingId,
@@ -141,12 +82,12 @@ router.post('/gcash/create-checkout', validatePayment, async (req, res, next) =>
 router.get('/gcash/verify/:sessionId', async (req, res, next) => {
   try {
     const result = await verifyGCashPayment(req.params.sessionId);
-    
+
     // Update sale record if payment is successful
     if (result.paymentStatus === 'paid') {
       // Get booking details before updating
       const booking = await queryOne(`
-        SELECT b.*, c.name as customer_name, c.email as customer_email
+        SELECT b.*, c.name as customer_name, c.email as customer_email, c.address as customer_address
         FROM Bookings b
         JOIN Customers c ON b.customer_id = c.id
         WHERE b.booking_ref = ?
@@ -160,27 +101,17 @@ router.get('/gcash/verify/:sessionId', async (req, res, next) => {
         [result.sessionId, req.params.sessionId]
       );
 
-      // Update booking payment status based on payment type
-      const paymentStatus = booking.payment_type === 'down_payment' ? 'partial' : 'full';
-      
-      await execute(
-        `UPDATE Bookings
-         SET payment_status = ?, status = 'approved'
-         WHERE booking_ref = ?`,
-        [paymentStatus, result.referenceNumber]
-      );
+      // Update booking payment status based on payment type.
+      // Status stays 'pending' for staff review in the dashboard.
+      if (booking) {
+        const paymentStatus = booking.payment_type === 'down_payment' ? 'partial' : 'full';
 
-      // Send booking approval email (async, non-blocking)
-      if (booking && booking.customer_email && booking.customer_name) {
-        sendBookingApprovalEmail(
-          booking.customer_name,
-          booking.customer_email,
-          booking.booking_ref,
-          booking.event_type,
-          booking.event_date
-        ).catch(emailError => {
-          console.error('Failed to send booking approval email:', emailError);
-        });
+        await execute(
+          `UPDATE Bookings
+           SET payment_status = ?
+           WHERE booking_ref = ?`,
+          [paymentStatus, result.referenceNumber]
+        );
       }
     }
 

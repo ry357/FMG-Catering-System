@@ -330,6 +330,83 @@ export async function sendBookingApprovalEmail(customerName, customerEmail, book
   }
 }
 
+// Send booking rejection email
+export async function sendBookingRejectionEmail(customerName, customerEmail, bookingRef, eventType, eventDate) {
+  try {
+    const subject = `Booking Update - ${bookingRef} | FMG Catering`;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Booking Update - FMG Catering</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%); color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 8px; margin-top: 20px; }
+          .message { font-size: 16px; margin-bottom: 20px; }
+          .details { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; }
+          .details p { margin: 10px 0; }
+          .footer { text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>FMG Catering</h1>
+            <p>Booking Update</p>
+          </div>
+          <div class="content">
+            <p>Hello ${customerName},</p>
+            <p>We have reviewed your booking request and unfortunately we are unable to accept it at this time.</p>
+
+            <div class="details">
+              <p><strong>Booking Reference:</strong> ${bookingRef}</p>
+              <p><strong>Event Type:</strong> ${eventType}</p>
+              <p><strong>Event Date:</strong> ${new Date(eventDate).toLocaleDateString()}</p>
+            </div>
+
+            <p>Please contact us if your event details changed or if you would like to discuss alternative arrangements. We would love to help you plan your celebration.</p>
+            <p>If you have any questions, please don't hesitate to reach out to our team.</p>
+          </div>
+          <div class="footer">
+            <p>FMG Catering | Cebu, Philippines</p>
+            <p>Email: bookings@fmgcatering.com | Phone: +63 32 123 4567</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: customerEmail,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('Booking rejection email sent successfully:', info.messageId);
+
+    // Log successful email
+    await logEmailToDatabase(customerEmail, 'booking_rejected', subject, 'sent');
+
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending booking rejection email:', error);
+
+    // Log failed email
+    await logEmailToDatabase(customerEmail, 'booking_rejected', subject, 'failed', error.message);
+
+    return { success: false, error: error.message };
+  }
+}
+
 // Send promotional campaign email
 export async function sendPromotionalEmail(subject, html, recipientEmail, recipientName = '') {
   try {
@@ -365,6 +442,7 @@ export default {
   sendAnniversaryEmail,
   sendBookingConfirmationEmail,
   sendBookingApprovalEmail,
+  sendBookingRejectionEmail,
   sendPromotionalEmail,
   getEmailSettings,
   applyEmailSettings,

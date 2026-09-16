@@ -35,6 +35,9 @@ CREATE TABLE IF NOT EXISTS Bookings (
     budget DECIMAL(10, 2),
     preferred_package VARCHAR(100),
     additional_requests TEXT,
+    menu_items TEXT,
+    menu_preference TEXT,
+    booking_category ENUM('natural', 'drop-off') DEFAULT 'natural',
     status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
     booking_ref VARCHAR(50) UNIQUE,
     payment_type ENUM('full', 'down_payment') DEFAULT 'full',
@@ -74,7 +77,7 @@ CREATE TABLE IF NOT EXISTS Reports (
 CREATE TABLE IF NOT EXISTS EmailLogs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     recipient_email VARCHAR(100) NOT NULL,
-    email_type ENUM('booking_confirmation', 'booking_approval', 'promotional', 'anniversary_reminder') NOT NULL,
+    email_type ENUM('booking_confirmation', 'booking_approval', 'booking_rejected', 'promotional', 'anniversary_reminder') NOT NULL,
     subject VARCHAR(255),
     status ENUM('sent', 'failed') DEFAULT 'sent',
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
