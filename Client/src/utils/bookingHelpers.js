@@ -116,7 +116,7 @@ export function getPackageRecommendations(eventType, guests, budget) {
     .slice(0, 3);
 }
 
-export function validateBookingForm(form, { requireBudget = true, requireGuests = true } = {}) {
+export function validateBookingForm(form, { requireBudget = true, requireGuests = true, requireEventType = true } = {}) {
   const errors = {};
 
   if (!form.name.trim() || form.name.trim().length < 2) {
@@ -139,9 +139,9 @@ export function validateBookingForm(form, { requireBudget = true, requireGuests 
     errors.email = 'Enter a valid email address';
   }
 
-  if (!form.eventType) {
-    errors.eventType = 'Please select an event type';
-  }
+        if (requireEventType && !form.eventType) {
+          errors.eventType = 'Please select an event type';
+        }
 
   if (!form.eventDate) {
     errors.eventDate = 'Event date is required';

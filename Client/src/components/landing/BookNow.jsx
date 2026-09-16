@@ -485,6 +485,7 @@ export default function BookNow({ initialMenuBooking }) {
     const validationErrors = validateBookingForm(form, {
       requireBudget: !isDropOff,
       requireGuests: !isDropOff,
+      requireEventType: !isDropOff,
     });
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
