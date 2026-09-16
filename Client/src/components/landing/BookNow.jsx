@@ -6,7 +6,6 @@ import {
   MENU_TIERS,
   BOOKING_CATEGORIES,
   MENU_CHOICES,
-  DIETARY_PREFERENCES,
   PLATTER_MENU,
 } from '../../data/landingData';
 import {
@@ -314,7 +313,6 @@ export default function BookNow({ initialMenuBooking }) {
   const [category, setCategory] = useState(presetCategory);
   const [tier, setTier] = useState('');
   const [selectedOffer, setSelectedOffer] = useState(null);
-  const [dietaryPreferences, setDietaryPreferences] = useState([]);
   const [selections, setSelections] = useState(INITIAL_SELECTIONS);
   const [dropOffSelections, setDropOffSelections] = useState(INITIAL_DROP_OFF_SELECTIONS);
   const [platters, setPlatters] = useState(INITIAL_PLATTERS);
@@ -433,12 +431,6 @@ export default function BookNow({ initialMenuBooking }) {
     setErrors((prev) => ({ ...prev, tier: undefined, offer: undefined }));
   };
 
-  const toggleDietary = (pref) => {
-    setDietaryPreferences((current) =>
-      current.includes(pref) ? current.filter((p) => p !== pref) : [...current, pref]
-    );
-  };
-
   const toggleChafer = () => setIncludeChafer((current) => !current);
 
   const toggleChoice = (category, choice) => {
@@ -529,7 +521,6 @@ export default function BookNow({ initialMenuBooking }) {
     pricePerPax: selectedOffer?.pricePerPax || null,
     chafer: includeChafer,
     platters,
-    dietaryPreferences,
     selections,
     notes: menuNotes.trim(),
   };
@@ -557,7 +548,6 @@ export default function BookNow({ initialMenuBooking }) {
     setCategory(presetCategory || '');
     setTier('');
     setSelectedOffer(null);
-    setDietaryPreferences([]);
     setSelections(INITIAL_SELECTIONS);
     setDropOffSelections(INITIAL_DROP_OFF_SELECTIONS);
     setPlatters(INITIAL_PLATTERS);
@@ -728,23 +718,9 @@ export default function BookNow({ initialMenuBooking }) {
 
                   <div>
                     <label className="block text-sm font-semibold text-charcoal mb-3">
-                      Dietary preferences <span className="font-normal text-charcoal-muted">(optional)</span>
+                      Food requests or dietary notes <span className="font-normal text-charcoal-muted">(optional)</span>
                     </label>
-                    <div className="flex flex-wrap gap-2">
-                      {DIETARY_PREFERENCES.map((pref) => {
-                        const active = dietaryPreferences.includes(pref);
-                        return (
-                          <button
-                            key={pref}
-                            type="button"
-                            onClick={() => toggleDietary(pref)}
-                            className={`rounded-full border px-4 py-2 text-sm transition ${active ? 'border-gold-400 bg-gold-50 text-charcoal font-medium' : 'border-gray-300 text-charcoal-light hover:border-gold-300'}`}
-                          >
-                            {pref}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <textarea id="food-notes" value={menuNotes} onChange={(event) => setMenuNotes(event.target.value)} rows="3" maxLength="500" placeholder="Example: no spicy food, vegetarian option needed" className="mt-1 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20" />
                   </div>
 
                   <div className="flex flex-wrap gap-3">
@@ -998,9 +974,6 @@ export default function BookNow({ initialMenuBooking }) {
                     {isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Items</dt><dd className="font-medium text-white">{platterItemCount} · {includeChafer ? 'with chafer' : 'no chafer'}</dd></div>}
                     {(selectedOffer || (isDropOff && platterItemCount > 0)) && <div className="flex justify-between gap-4"><dt className="text-white/50">Estimated total</dt><dd className="font-medium text-gold-300">{formatCurrency(bookingTotal)}</dd></div>}
                     {!packageBooking && !isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Budget</dt><dd className="font-medium text-gold-300">{formatCurrency(form.budget)}</dd></div>}
-                    {dietaryPreferences.length > 0 && (
-                      <div className="flex justify-between gap-4"><dt className="text-white/50">Dietary</dt><dd className="font-medium text-white text-right">{dietaryPreferences.join(', ')}</dd></div>
-                    )}
                   </dl>
                 </div>
               )}

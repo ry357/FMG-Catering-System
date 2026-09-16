@@ -173,15 +173,7 @@ export const MENU_TIERS = [
   },
 ];
 
-// Dietary preferences the client can select up front before food selection.
-export const DIETARY_PREFERENCES = [
-  'Vegetarian',
-  'No pork',
-  'Halal',
-  'No seafood',
-  'Gluten-free',
-  'No nuts',
-];
+// Menu items grouped by course type.
 
 export const CONTACT_INFO = {
   address: 'Carcar City, Cebu, Philippines',
