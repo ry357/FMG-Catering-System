@@ -774,14 +774,16 @@ export default function BookNow({ initialMenuBooking }) {
                   </FormField>
 
                   <div className="grid sm:grid-cols-2 gap-5">
-                    <FormField label="Event Type" error={errors.eventType} required>
-                      <select name="eventType" value={form.eventType} onChange={handleChange} className={inputClass}>
-                        <option value="">Select event type</option>
-                        {EVENT_TYPES.map((type) => (
-                          <option key={type} value={type}>{type}</option>
-                        ))}
-                      </select>
-                    </FormField>
+                    {!isDropOff && (
+                      <FormField label="Event Type" error={errors.eventType} required>
+                        <select name="eventType" value={form.eventType} onChange={handleChange} className={inputClass}>
+                          <option value="">Select event type</option>
+                          {EVENT_TYPES.map((type) => (
+                            <option key={type} value={type}>{type}</option>
+                          ))}
+                        </select>
+                      </FormField>
+                    )}
                     <FormField label="Event Date" error={errors.eventDate} required>
                       <input type="date" name="eventDate" value={form.eventDate} onChange={handleChange} min={minDate} className={inputClass} />
                     </FormField>
