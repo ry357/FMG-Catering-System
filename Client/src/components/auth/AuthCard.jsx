@@ -52,6 +52,7 @@ export default function AuthCard({ onAuthenticated }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [otpId, setOtpId] = useState('');
   const [otp, setOtp] = useState('');
   const [busy, setBusy] = useState(false);
@@ -66,6 +67,7 @@ export default function AuthCard({ onAuthenticated }) {
     setInfo('');
     setOtpId('');
     setOtp('');
+    setConfirmPassword('');
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -76,6 +78,11 @@ export default function AuthCard({ onAuthenticated }) {
       const passwordPolicy = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/;
       if (!passwordPolicy.test(password)) {
         setError('Password must be at least 8 characters and include letters, numbers, and a special character.');
+        setBusy(false);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
         setBusy(false);
         return;
       }
@@ -295,6 +302,20 @@ export default function AuthCard({ onAuthenticated }) {
               </p>
             )}
           </Field>
+          {mode === MODES.REGISTER && (
+            <Field label="Confirm password">
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={inputClass}
+                required
+                minLength={8}
+                pattern="(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}"
+                title="Must match the password above"
+              />
+            </Field>
+          )}
           <button type="submit" disabled={busy} className={goldButtonClass}>
             {busy
               ? 'Please wait...'
