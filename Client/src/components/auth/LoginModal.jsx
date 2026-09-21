@@ -27,7 +27,7 @@ export default function LoginModal({ open, onClose }) {
       aria-label="Customer login"
     >
       <div
-        className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-elevated border border-gold-100 max-h-[92vh] overflow-y-auto"
+        className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-elevated border border-gold-100"
         onClick={(e) => e.stopPropagation()}
       >
         <button

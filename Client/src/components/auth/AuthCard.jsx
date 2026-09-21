@@ -315,12 +315,6 @@ export default function AuthCard({ onAuthenticated }) {
           <div ref={googleButtonRef} className="flex justify-center"></div>
         </div>
       )}
-
-      <div className="mt-8 text-center">
-        <p className="text-xs text-charcoal-muted">
-          Logging in lets us use your contact details for bookings and lets you leave a review.
-        </p>
-      </div>
     </>
   );
 }
