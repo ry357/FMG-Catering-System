@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logoImage from '../../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 import { NAV_LINKS } from '../../data/landingData';
+import { useAuth } from '../../context/AuthContext';
+import { useLoginModal } from '../../context/LoginModalContext';
 import Button from '../ui/Button';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { openLogin } = useLoginModal();
+  const { customer, logoutCustomer } = useAuth();
 
   const closeMenu = () => setIsOpen(false);
 
@@ -53,9 +57,20 @@ export default function Navbar() {
         </ul>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Button onClick={() => navigate('/customer/login')} variant="secondary" size="sm">
-            Log in
-          </Button>
+          {customer ? (
+            <>
+              <span className="text-sm font-medium text-charcoal-muted">
+                Hi, {customer.name.split(' ')[0]}
+              </span>
+              <Button onClick={logoutCustomer} variant="secondary" size="sm">
+                Log out
+              </Button>
+            </>
+          ) : (
+            <Button onClick={openLogin} variant="secondary" size="sm">
+              Log in
+            </Button>
+          )}
           <Button onClick={handleBookClick} size="sm">
             Book your event
           </Button>
@@ -95,16 +110,29 @@ export default function Navbar() {
               </li>
             ))}
             <li className="pt-2">
-              <Button
-                variant="secondary"
-                className="w-full"
-                onClick={() => {
-                  closeMenu();
-                  navigate('/customer/login');
-                }}
-              >
-                Log in
-              </Button>
+              {customer ? (
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => {
+                    closeMenu();
+                    logoutCustomer();
+                  }}
+                >
+                  Log out ({customer.name.split(' ')[0]})
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => {
+                    closeMenu();
+                    openLogin();
+                  }}
+                >
+                  Log in
+                </Button>
+              )}
             </li>
             <li>
               <Button onClick={handleBookClick} className="w-full">

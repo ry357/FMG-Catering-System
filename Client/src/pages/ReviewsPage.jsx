@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -7,6 +6,7 @@ import SectionHeading from '../components/ui/SectionHeading';
 import Button from '../components/ui/Button';
 import { TESTIMONIALS } from '../data/landingData';
 import { useAuth } from '../context/AuthContext';
+import { useLoginModal } from '../context/LoginModalContext';
 
 function StarRating({ rating, onChange = null, size = 'h-5 w-5' }) {
   return (
@@ -38,6 +38,7 @@ function formatDate(value) {
 
 export default function ReviewsPage() {
   const { customer, customerToken } = useAuth();
+  const { openLogin } = useLoginModal();
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
 
@@ -167,9 +168,7 @@ export default function ReviewsPage() {
                   <p className="text-sm text-charcoal-muted mb-6">
                     Log in with your email to leave a review.
                   </p>
-                  <Link to="/customer/login" state={{ from: { pathname: '/reviews' } }}>
-                    <Button>Log in to leave a review</Button>
-                  </Link>
+                  <Button onClick={openLogin}>Log in to leave a review</Button>
                 </div>
               )}
             </div>
