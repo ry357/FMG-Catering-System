@@ -3,7 +3,6 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import Packages from '../components/landing/Packages';
 import SectionHeading from '../components/ui/SectionHeading';
-import ServiceIcon from '../components/ui/ServiceIcon';
 import Button from '../components/ui/Button';
 import { MENU_OFFERS, SERVICES } from '../data/landingData';
 import { formatCurrency } from '../utils/helpers';
@@ -42,16 +41,10 @@ export default function ServicesPage() {
                       className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/20 to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-95" />
-                    <span className="absolute left-5 top-5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-gold-600 shadow-sm backdrop-blur-sm">
-                      Service {String(service.id).padStart(2, '0')}
-                    </span>
                   </div>
 
                   <div className="flex flex-1 flex-col p-6 md:p-8">
-                    <div className="-mt-14 flex h-14 w-14 items-center justify-center rounded-xl bg-gold-500 text-charcoal shadow-[0_8px_20px_rgba(190,149,67,0.4)] ring-4 ring-white transition-transform duration-300 group-hover:-translate-y-0.5">
-                      <ServiceIcon name={service.icon} />
-                    </div>
-                    <h3 className="mt-5 font-display text-xl font-semibold text-charcoal">
+                    <h3 className="font-display text-xl font-semibold text-charcoal">
                       {service.title}
                     </h3>
                     <p className="mt-3 flex-1 text-sm leading-relaxed text-charcoal-muted">
