@@ -8,27 +8,16 @@ import packedMealsImage from '../../assets/faf3e38e-e1ab-4ebf-86fe-40f9217a63e6.
 import sideDishesImage from '../../assets/cbea243e-ca67-44df-b395-f2dc793a2cbd.jpg';
 import foodPerPaxImage from '../../assets/5b4b7960-0099-4363-9d98-ac7814b440f6.jpg';
 
-const VARIATIONS = [
-  'aspect-[3/4]',
-  'aspect-square',
-  'aspect-[4/5]',
-  'aspect-[5/6]',
-  'aspect-[3/4]',
-  'aspect-[4/5]',
-  'aspect-square',
-  'aspect-[3/4]',
-];
-
 const GALLERY = [
-  { src: setupImage, alt: 'Elegant FMG event setup with table settings' },
-  { src: buffetStationImage, alt: 'Styled buffet station ready for guests' },
-  { src: lechonImage, alt: 'Chef carving whole roasted lechon' },
-  { src: buffetDetailImage, alt: 'Close-up of a styled serving station' },
-  { src: mainsImage, alt: 'FMG main dish selections' },
-  { src: packedMealsImage, alt: 'Packed meal and platter options' },
-  { src: sideDishesImage, alt: 'Side dishes and desserts' },
-  { src: foodPerPaxImage, alt: 'Food per pax catering sets' },
-].map((item, i) => ({ ...item, aspect: VARIATIONS[i % VARIATIONS.length] }));
+  { src: setupImage, span: 'col-span-2 row-span-2' },
+  { src: buffetStationImage, span: 'col-span-1 row-span-1' },
+  { src: lechonImage, span: 'col-span-1 row-span-2' },
+  { src: buffetDetailImage, span: 'col-span-1 row-span-1' },
+  { src: mainsImage, span: 'col-span-2 row-span-1' },
+  { src: packedMealsImage, span: 'col-span-1 row-span-1' },
+  { src: sideDishesImage, span: 'col-span-1 row-span-1' },
+  { src: foodPerPaxImage, span: 'col-span-2 row-span-1 md:col-span-4' },
+];
 
 export default function Gallery() {
   const navigate = useNavigate();
@@ -45,15 +34,19 @@ export default function Gallery() {
           </h2>
         </div>
 
-        <div className="mt-14 columns-2 gap-4 md:columns-3 lg:columns-4">
-          {GALLERY.map((item) => (
-            <img
-              key={item.alt}
-              src={item.src}
-              alt={item.alt}
-              loading="lazy"
-              className={`mb-4 w-full break-inside-avoid rounded-2xl object-cover shadow-card transition-transform duration-300 hover:-translate-y-1 ${item.aspect}`}
-            />
+        <div className="mt-14 grid auto-rows-[150px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-4 md:gap-4">
+          {GALLERY.map((item, i) => (
+            <div
+              key={i}
+              className={`relative overflow-hidden rounded-2xl shadow-card group ${item.span}`}
+            >
+              <img
+                src={item.src}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+            </div>
           ))}
         </div>
 
