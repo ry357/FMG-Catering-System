@@ -31,7 +31,7 @@ function issueCustomerToken(customer) {
 function isStrongPassword(password) {
   return (
     typeof password === 'string' &&
-    password.length >= 8 &&
+    password.length >= 16 &&
     /[a-zA-Z]/.test(password) &&
     /[0-9]/.test(password) &&
     /[^a-zA-Z0-9]/.test(password)
@@ -58,7 +58,7 @@ router.post('/register', async (req, res) => {
     if (!isStrongPassword(password)) {
       return res.status(400).json({
         success: false,
-        error: 'Password must be at least 8 characters and include letters, numbers, and a special character',
+        error: 'Password must be at least 16 characters and include letters, numbers, and a special character',
       });
     }
 

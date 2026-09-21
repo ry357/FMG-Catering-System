@@ -75,9 +75,9 @@ export default function AuthCard({ onAuthenticated }) {
     setBusy(true);
     setError('');
     if (mode === MODES.REGISTER) {
-      const passwordPolicy = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/;
+      const passwordPolicy = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{16,}$/;
       if (!passwordPolicy.test(password)) {
-        setError('Password must be at least 8 characters and include letters, numbers, and a special character.');
+        setError('Password must be at least 16 characters and include letters, numbers, and a special character.');
         setBusy(false);
         return;
       }
@@ -292,13 +292,13 @@ export default function AuthCard({ onAuthenticated }) {
               onChange={(e) => setPassword(e.target.value)}
               className={inputClass}
               required
-              minLength={8}
-              pattern="(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}"
-              title="Must be at least 8 characters and include letters, numbers, and a special character"
+              minLength={16}
+              pattern="(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{16,}"
+              title="Must be at least 16 characters and include letters, numbers, and a special character"
             />
             {mode === MODES.REGISTER && (
               <p className="mt-2 text-xs text-charcoal-muted">
-                Use at least 8 characters with a mix of letters, numbers, and a special character.
+                Use at least 16 characters with a mix of letters, numbers, and a special character.
               </p>
             )}
           </Field>
@@ -310,8 +310,8 @@ export default function AuthCard({ onAuthenticated }) {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={inputClass}
                 required
-                minLength={8}
-                pattern="(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}"
+                minLength={16}
+                pattern="(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{16,}"
                 title="Must match the password above"
               />
             </Field>
