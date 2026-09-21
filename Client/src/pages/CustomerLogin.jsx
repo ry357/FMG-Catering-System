@@ -306,7 +306,6 @@ export default function CustomerLogin() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode === MODES.REGISTER ? 'At least 8 characters with letters, numbers & symbols' : 'Your password'}
                   className={inputClass}
                   required
                   minLength={8}
