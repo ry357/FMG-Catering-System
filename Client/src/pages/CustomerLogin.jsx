@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
+import logoImage from '../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -191,9 +192,11 @@ export default function CustomerLogin() {
 
         <div className="bg-white rounded-2xl p-8 shadow-elevated border border-gold-100">
           <div className="text-center mb-8">
-            <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gold-500 font-display text-2xl font-bold text-charcoal shadow-[0_0_24px_-6px_rgba(190,149,67,0.6)]">
-              FMG
-            </div>
+            <img
+              src={logoImage}
+              alt="FMG Catering logo"
+              className="mx-auto h-16 w-16 rounded-2xl object-cover shadow-[0_0_24px_-6px_rgba(190,149,67,0.6)]"
+            />
             <h2 className="mt-4 font-display text-3xl font-semibold text-charcoal">
               {mode === MODES.REGISTER ? 'Create your account' : 'Welcome back'}
             </h2>
