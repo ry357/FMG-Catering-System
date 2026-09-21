@@ -1,6 +1,5 @@
 import { SERVICES } from '../../data/landingData';
 import SectionHeading from '../ui/SectionHeading';
-import ServiceIcon from '../ui/ServiceIcon';
 
 export default function Services() {
   return (
@@ -29,10 +28,7 @@ export default function Services() {
               </div>
 
               <div className="flex flex-1 flex-col p-6 md:p-8">
-                <div className="relative z-10 -mt-14 flex h-14 w-14 items-center justify-center rounded-xl bg-gold-500 text-charcoal shadow-[0_8px_20px_rgba(190,149,67,0.4)] ring-4 ring-white transition-transform duration-300 group-hover:-translate-y-0.5">
-                  <ServiceIcon name={service.icon} />
-                </div>
-                <h3 className="mt-5 font-display text-xl font-semibold text-charcoal">
+                <h3 className="font-display text-xl font-semibold text-charcoal">
                   {service.title}
                 </h3>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-charcoal-muted">
