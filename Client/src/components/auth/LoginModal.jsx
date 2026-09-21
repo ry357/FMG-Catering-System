@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import AuthCard from './AuthCard';
 
-export default function LoginModal({ open, onClose }) {
+export default function LoginModal({ open, onClose, onAuthenticated }) {
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -40,7 +40,7 @@ export default function LoginModal({ open, onClose }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <AuthCard onAuthenticated={onClose} />
+        <AuthCard onAuthenticated={onAuthenticated} />
       </div>
     </div>
   );

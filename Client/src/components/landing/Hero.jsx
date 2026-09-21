@@ -1,9 +1,21 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../ui/Button';
 import backgroundImage from '../../assets/background.jpg';
+import { useAuth } from '../../context/AuthContext';
+import { useLoginModal } from '../../context/LoginModalContext';
 
 export default function Hero() {
   const navigate = useNavigate();
+  const { customer } = useAuth();
+  const { openLogin } = useLoginModal();
+
+  const handleBook = () => {
+    if (customer) {
+      navigate('/book');
+    } else {
+      openLogin(() => navigate('/book'));
+    }
+  };
 
   return (
     <section id="hero" className="relative overflow-hidden bg-charcoal">
@@ -31,7 +43,7 @@ export default function Hero() {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button onClick={() => navigate('/book')} size="lg">
+          <Button onClick={handleBook} size="lg">
             Book Your Event
           </Button>
           <Button onClick={() => navigate('/menus')} variant="secondary" size="lg">

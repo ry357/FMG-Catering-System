@@ -18,7 +18,11 @@ export default function Navbar() {
   const handleBookClick = (e) => {
     e.preventDefault();
     closeMenu();
-    navigate('/book');
+    if (customer) {
+      navigate('/book');
+    } else {
+      openLogin(() => navigate('/book'));
+    }
   };
 
   return (
