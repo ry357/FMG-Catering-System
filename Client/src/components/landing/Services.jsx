@@ -9,24 +9,37 @@ export default function Services() {
         <SectionHeading
           label="Our Services"
           title="Comprehensive Catering Solutions"
-          description="From intimate dinners to large-scale events, we provide end-to-end catering services tailored to your occasion."
+          description="End-to-end catering for any occasion."
         />
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {SERVICES.map((service) => (
             <article
               key={service.id}
-              className="group bg-white rounded-2xl p-6 md:p-8 shadow-card hover:shadow-elevated transition-all duration-300 border border-transparent hover:border-gold-200"
+              className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:shadow-elevated"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gold-100 text-gold-600 group-hover:bg-gold-400 group-hover:text-white transition-colors duration-300">
-                <ServiceIcon name={service.icon} />
+              <div className="relative h-52 overflow-hidden">
+                <img
+                  src={service.image}
+                  alt={service.title}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/20 to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-95" />
               </div>
-              <h3 className="mt-5 font-display text-xl font-semibold text-charcoal">
-                {service.title}
-              </h3>
-              <p className="mt-3 text-sm text-charcoal-muted leading-relaxed">
-                {service.description}
-              </p>
+
+              <div className="flex flex-1 flex-col p-6 md:p-8">
+                <div className="relative z-10 -mt-14 flex h-14 w-14 items-center justify-center rounded-xl bg-gold-500 text-charcoal shadow-[0_8px_20px_rgba(190,149,67,0.4)] ring-4 ring-white transition-transform duration-300 group-hover:-translate-y-0.5">
+                  <ServiceIcon name={service.icon} />
+                </div>
+                <h3 className="mt-5 font-display text-xl font-semibold text-charcoal">
+                  {service.title}
+                </h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-charcoal-muted">
+                  {service.description}
+                </p>
+                <div className="mt-6 h-0.5 w-10 rounded-full bg-gold-400 transition-all duration-500 group-hover:w-full group-hover:bg-gold-500" />
+              </div>
             </article>
           ))}
         </div>

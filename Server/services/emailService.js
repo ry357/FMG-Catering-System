@@ -438,12 +438,74 @@ export async function sendPromotionalEmail(subject, html, recipientEmail, recipi
   }
 }
 
+// Send customer login OTP email
+export async function sendCustomerOtpEmail(customerEmail, otp) {
+  const subject = 'FMG Catering — Your Login Verification Code';
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your FMG Catering Login Code</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        .header { background: #1C1C1C; color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; color: #D4AF37; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 8px; margin-top: 20px; text-align: center; }
+        .otp { font-size: 40px; font-weight: bold; color: #C9A227; letter-spacing: 10px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 13px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>FMG Catering</h1>
+          <p>Creating Unforgettable Celebrations</p>
+        </div>
+        <div class="content">
+          <p>Your login verification code is:</p>
+          <div class="otp">${otp}</div>
+          <p>This code expires in 5 minutes.</p>
+          <p>If you did not request this, please ignore this email.</p>
+        </div>
+        <div class="footer">
+          <p>FMG Catering · Carcar City, Cebu, Philippines</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: customerEmail,
+      subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Customer OTP email sent successfully:', info.messageId);
+
+    await logEmailToDatabase(customerEmail, 'promotional', subject, 'sent');
+
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending customer OTP email:', error);
+    await logEmailToDatabase(customerEmail, 'promotional', subject, 'failed', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
 export default {
   sendAnniversaryEmail,
   sendBookingConfirmationEmail,
   sendBookingApprovalEmail,
   sendBookingRejectionEmail,
   sendPromotionalEmail,
+  sendCustomerOtpEmail,
   getEmailSettings,
   applyEmailSettings,
   reloadTransporter,

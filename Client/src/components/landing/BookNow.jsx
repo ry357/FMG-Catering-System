@@ -48,12 +48,13 @@ const INITIAL_FORM = {
 
 const INITIAL_SELECTIONS = { appetizers: [], mains: [], addons: [] };
 
-const INITIAL_DROP_OFF_SELECTIONS = { mains: [], sides: [], drinks: [], fruits: [] };
+const INITIAL_DROP_OFF_SELECTIONS = { mains: [], specials: [], sides: [], drinks: [], fruits: [] };
 
-const INITIAL_PLATTERS = { mains: {}, sides: {}, drinks: {}, fruits: {} };
+const INITIAL_PLATTERS = { mains: {}, specials: {}, sides: {}, drinks: {}, fruits: {} };
 
 const PLATTER_GROUPS = [
   { id: 'mains', label: 'Main Dishes', unit: '₱1,300 per platter · ₱1,500 w/ chafer' },
+  { id: 'specials', label: 'Whole Lechon', unit: '₱8,000 per whole' },
   { id: 'sides', label: 'Side Dishes', unit: '₱500 per platter · ₱600 w/ chafer' },
   { id: 'drinks', label: 'Drinks', unit: '₱200 per jar' },
   { id: 'fruits', label: 'Fresh Fruits', unit: '₱300 per platter' },
@@ -81,7 +82,7 @@ function FormField({ label, error, children, required }) {
     <div>
       <label className="block text-sm font-medium text-charcoal mb-1.5">
         {label}
-        {required && <span className="text-gold-500 ml-0.5">*</span>}
+        {required && <span className="text-gold-600 ml-0.5">*</span>}
       </label>
       {children}
       {error && (
@@ -94,7 +95,7 @@ function FormField({ label, error, children, required }) {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal placeholder:text-gray-400 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20 transition-colors';
+  'w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal placeholder:text-gray-400 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20 transition-colors';
 
 function StepIndicator({ currentStep, steps = STEPS }) {
   const currentIndex = steps.findIndex((step) => step.id === currentStep);
@@ -111,7 +112,7 @@ function StepIndicator({ currentStep, steps = STEPS }) {
               <span
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
                   isActive
-                    ? 'bg-gold-400 text-white'
+                    ? 'bg-gold-500 text-charcoal'
                     : isComplete
                       ? 'bg-green-500 text-white'
                       : 'bg-white/10 text-white/50'
@@ -199,7 +200,7 @@ function ChoiceGroup({ title, choices, selected, limit, onToggle }) {
           const unavailable = !checked && selected.length >= limit;
           return (
             <label key={choice} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition ${checked ? 'border-gold-400 bg-gold-50 text-charcoal' : 'border-gray-200 bg-white text-charcoal-light'} ${unavailable ? 'cursor-not-allowed opacity-45' : 'hover:border-gold-300'}`}>
-              <input type="checkbox" checked={checked} disabled={unavailable} onChange={() => onToggle(choice)} className="h-4 w-4 rounded border-gray-300 text-gold-500 focus:ring-gold-400" />
+              <input type="checkbox" checked={checked} disabled={unavailable} onChange={() => onToggle(choice)} className="h-4 w-4 rounded border-gray-300 text-gold-600 focus:ring-gold-500" />
               {choice}
             </label>
           );
@@ -248,6 +249,7 @@ function buildPlatterItems(platters, chafer) {
 function DropOffChecklist({ selections, onToggle, total, itemCount }) {
   const categories = [
     { key: 'mains', label: 'Main Dishes', items: PLATTER_MENU.mains, price: '₱1,300/platter · ₱1,500 w/ chafer' },
+    { key: 'specials', label: 'Whole Lechon', items: PLATTER_MENU.specials, price: '₱8,000/whole' },
     { key: 'sides', label: 'Side Dishes', items: PLATTER_MENU.sides, price: '₱500/platter · ₱600 w/ chafer' },
     { key: 'drinks', label: 'Drinks', items: PLATTER_MENU.drinks, price: '₱200/jar' },
     { key: 'fruits', label: 'Fresh Fruits', items: PLATTER_MENU.fruits, price: '₱300/platter' },
@@ -268,10 +270,13 @@ function DropOffChecklist({ selections, onToggle, total, itemCount }) {
               acc[sub].push(item);
               return acc;
             }, {});
-            return Object.entries(grouped).map(([sub, groupItems]) => (
+            const subs = Object.entries(grouped);
+            return subs.map(([sub, groupItems], subIndex) => (
               <div key={sub} className="mt-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">{sub}</p>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {subs.length > 1 && (
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">{sub}</p>
+                )}
+                <div className={`mt-2 grid gap-2 sm:grid-cols-2`}>
                   {groupItems.map((item) => {
                     const checked = selections[key]?.includes(item.id);
                     return (
@@ -283,7 +288,7 @@ function DropOffChecklist({ selections, onToggle, total, itemCount }) {
                           type="checkbox"
                           checked={checked}
                           onChange={() => onToggle(key, item.id)}
-                          className="h-4 w-4 rounded border-gray-300 text-gold-500 focus:ring-gold-400"
+                          className="h-4 w-4 rounded border-gray-300 text-gold-600 focus:ring-gold-500"
                         />
                         <span className="font-medium">{item.name}</span>
                       </label>
@@ -295,7 +300,7 @@ function DropOffChecklist({ selections, onToggle, total, itemCount }) {
           })()}
         </fieldset>
       ))}
-      <div className="flex items-center justify-between rounded-xl border border-gold-200 bg-amber-50 px-5 py-4">
+      <div className="flex items-center justify-between rounded-xl border border-gold-200 bg-gold-50 px-5 py-4">
         <span className="text-sm font-semibold text-charcoal">{itemCount} item(s) selected</span>
         <span className="font-display text-2xl font-bold text-gold-600">{formatCurrency(total)}</span>
       </div>
@@ -575,7 +580,7 @@ export default function BookNow({ initialMenuBooking }) {
         <SectionHeading
           label="Book Now"
           title="Book & Pay for Your Event"
-          description="Choose a booking type, pick your menu set, tell us about your event, and secure your booking date with GCash."
+          description="Pick a booking type, choose your menu, and pay securely with GCash."
           light
         />
 
@@ -590,7 +595,7 @@ export default function BookNow({ initialMenuBooking }) {
                 <form onSubmit={handleContinueFromCategory} className="space-y-6" noValidate>
                   <fieldset>
                     <legend className="block text-sm font-semibold text-charcoal mb-3">
-                      Choose your booking type <span className="text-gold-500">*</span>
+                      Choose your booking type <span className="text-gold-600">*</span>
                     </legend>
                     <div className="grid sm:grid-cols-2 gap-4">
                       {BOOKING_CATEGORIES.map((c) => {
@@ -622,7 +627,7 @@ export default function BookNow({ initialMenuBooking }) {
                     <>
                       <fieldset>
                         <legend className="block text-sm font-semibold text-charcoal mb-3">
-                          Choose your service tier <span className="text-gold-500">*</span>
+                          Choose your service tier <span className="text-gold-600">*</span>
                         </legend>
                         <div className="grid sm:grid-cols-2 gap-4">
                           {MENU_TIERS.map((t) => {
@@ -646,7 +651,7 @@ export default function BookNow({ initialMenuBooking }) {
                       {tier && (
                         <fieldset>
                           <legend className="block text-sm font-semibold text-charcoal mb-3">
-                            Choose your {tier} menu set <span className="text-gold-500">*</span>
+                            Choose your {tier} menu set <span className="text-gold-600">*</span>
                           </legend>
                           <div className="grid sm:grid-cols-2 gap-4">
                             {tierOffers.map((offer) => {
@@ -669,7 +674,7 @@ export default function BookNow({ initialMenuBooking }) {
                                   <ul className="mt-2 space-y-1 text-xs text-charcoal-muted">
                                     {offer.includes.map((item) => (
                                       <li key={item} className="flex gap-1.5">
-                                        <span className="text-gold-500">✓</span>{item}
+                                        <span className="text-gold-600">✓</span>{item}
                                       </li>
                                     ))}
                                   </ul>
@@ -705,7 +710,7 @@ export default function BookNow({ initialMenuBooking }) {
                       <span className="mt-1 block text-xs leading-5 text-charcoal-muted">{PLATTER_MENU.chafer.help}</span>
                     </button>
                     <p className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-charcoal-muted">
-                      Next, you will pick your dishes from a simple checklist — main platters ₱1,300, side platters ₱500, drinks ₱200/jar, and fresh fruits ₱300.
+                      Pick dishes from a checklist — mains ₱1,300, sides ₱500, drinks ₱200/jar, fruits ₱300.
                     </p>
                   </div>
                   )}
@@ -721,7 +726,7 @@ export default function BookNow({ initialMenuBooking }) {
                     <label className="block text-sm font-semibold text-charcoal mb-3">
                       Food requests or dietary notes <span className="font-normal text-charcoal-muted">(optional)</span>
                     </label>
-                    <textarea id="food-notes" value={menuNotes} onChange={(event) => setMenuNotes(event.target.value)} rows="3" maxLength="500" placeholder="Example: no spicy food, vegetarian option needed" className="mt-1 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20" />
+                    <textarea id="food-notes" value={menuNotes} onChange={(event) => setMenuNotes(event.target.value)} rows="3" maxLength="500" className="mt-1 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20" />
                   </div>
 
                   <div className="flex flex-wrap gap-3">
@@ -759,19 +764,19 @@ export default function BookNow({ initialMenuBooking }) {
 
                   <div className="grid sm:grid-cols-2 gap-5">
                     <FormField label="Full Name" error={errors.name} required>
-                      <input type="text" name="name" value={form.name} onChange={handleChange} className={inputClass} placeholder="Juan Dela Cruz" />
+                      <input type="text" name="name" value={form.name} onChange={handleChange} className={inputClass} />
                     </FormField>
                     <FormField label="Contact Number" error={errors.contactNumber} required>
-                      <input type="tel" name="contactNumber" value={form.contactNumber} onChange={handleChange} className={inputClass} placeholder="+63 912 345 6789" />
+                      <input type="tel" name="contactNumber" value={form.contactNumber} onChange={handleChange} className={inputClass} />
                     </FormField>
                   </div>
 
                   <FormField label="Email Address" error={errors.email} required>
-                    <input type="email" name="email" value={form.email} onChange={handleChange} className={inputClass} placeholder="you@email.com" />
+                    <input type="email" name="email" value={form.email} onChange={handleChange} className={inputClass} />
                   </FormField>
 
                   <FormField label="Complete Address" error={errors.address} required>
-                    <input type="text" name="address" value={form.address} onChange={handleChange} className={inputClass} placeholder="House no., Street, Barangay, City" />
+                    <input type="text" name="address" value={form.address} onChange={handleChange} className={inputClass} />
                   </FormField>
 
                   <div className="grid sm:grid-cols-2 gap-5">
@@ -793,18 +798,18 @@ export default function BookNow({ initialMenuBooking }) {
                   <div className="grid sm:grid-cols-2 gap-5">
                     {!isDropOff && (
                       <FormField label="Number of Guests" error={errors.numberOfGuests} required>
-                        <input type="number" name="numberOfGuests" value={form.numberOfGuests} onChange={handleChange} min="1" step="1" className={inputClass} placeholder="50" />
+                        <input type="number" name="numberOfGuests" value={form.numberOfGuests} onChange={handleChange} min="1" step="1" className={inputClass} />
                       </FormField>
                     )}
                     {!isDropOff && (
                       <FormField label={packageBooking ? 'Estimated Total (PHP)' : 'Budget (PHP)'} error={errors.budget} required>
-                        <input type="number" name="budget" value={form.budget} onChange={handleChange} min="1" inputMode="numeric" className={inputClass} placeholder="15000" />
+                        <input type="number" name="budget" value={form.budget} onChange={handleChange} min="1" inputMode="numeric" className={inputClass} />
                       </FormField>
                     )}
                   </div>
 
                   <FormField label="Additional Requests" error={errors.additionalRequests} required={false}>
-                    <textarea name="additionalRequests" value={form.additionalRequests} onChange={handleChange} rows="3" maxLength="1000" className={inputClass} placeholder="Venue notes, setup details, etc. (optional)" />
+                    <textarea name="additionalRequests" value={form.additionalRequests} onChange={handleChange} rows="3" maxLength="1000" className={inputClass} />
                   </FormField>
 
                   <div className="flex flex-wrap gap-3">
@@ -870,7 +875,7 @@ export default function BookNow({ initialMenuBooking }) {
                   <label htmlFor="food-notes" className="block text-sm font-semibold text-charcoal">
                     Food requests or dietary notes <span className="font-normal text-charcoal-muted">(optional)</span>
                   </label>
-                  <textarea id="food-notes" value={menuNotes} maxLength="500" onChange={(event) => setMenuNotes(event.target.value)} rows="3" placeholder="Example: no spicy food, vegetarian option needed" className="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20" />
+                  <textarea id="food-notes" value={menuNotes} maxLength="500" onChange={(event) => setMenuNotes(event.target.value)} rows="3" className="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20" />
 
                   <div className="flex flex-wrap gap-3">
                     <Button type="button" variant="secondary" onClick={() => setStep('details')}>
@@ -986,7 +991,7 @@ export default function BookNow({ initialMenuBooking }) {
                   <h3 className="font-semibold text-gold-200">Which booking type fits you?</h3>
                   <ul className="mt-4 space-y-3 text-sm text-white/70 list-disc list-inside">
                     <li><span className="font-medium text-white">Full-Service</span> — waiters, servers, setup, and on-site coordination. Budget recommendations apply.</li>
-                    <li><span className="font-medium text-white">Drop-Off</span> — build a checklist of platter mains, sides, jars of drinks, and fresh fruit. We prepare and deliver, no service staff.</li>
+                    <li><span className="font-medium text-white">Drop-Off</span> — build a platter checklist; we prepare and deliver, no service staff.</li>
                   </ul>
                 </div>
               )}
@@ -996,8 +1001,8 @@ export default function BookNow({ initialMenuBooking }) {
                   <h3 className="font-semibold text-gold-200">Pick your menu set</h3>
                   <p className="mt-3 text-sm text-white/70">
                     {isDropOff
-                      ? 'Choose whether to include a chafer serving dish, then pick your mains, sides, drinks, and fresh fruits from a checklist in the next step. With chafer, mains go to ₱1,500 and sides to ₱600.'
-                      : 'Choose a service tier first, then the menu set that fits your event. Budget recommendations are only available for full-service bookings.'}
+                      ? 'Add a chafer dish if you want mains and sides kept warm, then pick your dishes next. With chafer: mains ₱1,500, sides ₱600.'
+                      : 'Pick a service tier, then the menu set that fits your event. Budget recommendations apply to full-service only.'}
                   </p>
                 </div>
               )}
@@ -1008,14 +1013,14 @@ export default function BookNow({ initialMenuBooking }) {
                   {step === 'details' ? (
                     <p className="mt-3 text-sm text-white/70">
                       {isDropOff
-                        ? 'After your details, you will pick your dishes from a checklist before payment.'
-                        : 'After your details, you will choose your appetizers, main dishes, and add-ons before payment.'}
+                        ? 'Next, pick your dishes from a checklist before payment.'
+                        : 'Next, choose appetizers, mains, and add-ons before payment.'}
                     </p>
                   ) : (
                     <p className="mt-3 text-sm text-white/70">
                       {isDropOff
-                        ? 'Tick the boxes to choose at least one dish for your drop-off order.'
-                        : 'Complete the required dish selections — the chosen counts are shown next to each category.'}
+                        ? 'Tick at least one dish for your drop-off order.'
+                        : 'Complete the required dish selections — counts show next to each category.'}
                     </p>
                   )}
                 </div>

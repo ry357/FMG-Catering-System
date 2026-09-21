@@ -50,7 +50,7 @@ export default function Contact() {
         <SectionHeading
           label="Contact"
           title="Get in Touch"
-          description="Have questions about our services or packages? Reach out and our team will respond promptly."
+          description="Questions? Message us and we will respond promptly."
         />
 
         <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -60,7 +60,7 @@ export default function Contact() {
                 key={item.label}
                 className="bg-gold-50/80 rounded-2xl p-6 border border-gold-100"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-400 text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-500 text-charcoal">
                   {item.icon}
                 </div>
                 <h3 className="mt-4 font-semibold text-charcoal">{item.label}</h3>

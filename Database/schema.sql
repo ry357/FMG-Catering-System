@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS Customers (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
+    address VARCHAR(255),
+    password_hash VARCHAR(255),        -- email + password login
     google_id VARCHAR(255) UNIQUE,  -- Google OAuth ID token
     avatar VARCHAR(500),           -- Google profile picture
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -84,6 +86,30 @@ CREATE TABLE IF NOT EXISTS EmailLogs (
     error_message TEXT
 );
 
+-- Customer OTP Sessions Table (email OTP login)
+CREATE TABLE IF NOT EXISTS CustomerOtpSessions (
+    id VARCHAR(36) PRIMARY KEY,
+    customer_id INT NOT NULL,
+    otp_hash VARCHAR(255) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    attempts INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES Customers(id) ON DELETE CASCADE
+);
+
+-- Reviews Table (logged-in customers leave testimonials)
+CREATE TABLE IF NOT EXISTS Reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NULL,
+    name VARCHAR(100) NOT NULL,
+    event_type VARCHAR(50),
+    rating INT NOT NULL DEFAULT 5,
+    quote TEXT NOT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'approved',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES Customers(id) ON DELETE SET NULL
+);
+
 
 CREATE INDEX IF NOT EXISTS idx_customers_email ON Customers(email);
 -- Indexes for better performance
@@ -96,3 +122,5 @@ CREATE INDEX idx_sales_date ON Sales(sale_date);
 CREATE INDEX idx_customers_google_id ON Customers(google_id);
 CREATE INDEX idx_emaillogs_recipient ON EmailLogs(recipient_email);
 CREATE INDEX idx_emaillogs_type ON EmailLogs(email_type);
+CREATE INDEX idx_customer_otp_customer ON CustomerOtpSessions(customer_id);
+CREATE INDEX idx_reviews_status ON Reviews(status);

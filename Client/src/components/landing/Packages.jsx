@@ -18,7 +18,7 @@ export default function Packages() {
         <SectionHeading
           label="Packages"
           title="Choose the Perfect Package"
-          description="Transparent pricing per guest with flexible options for every event size. Enter your budget when booking to receive personalized package recommendations."
+          description="Per-guest pricing. Enter your budget at booking to get recommended packages."
         />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -27,12 +27,12 @@ export default function Packages() {
               key={pkg.id}
               className={`relative flex flex-col rounded-2xl p-8 transition-all duration-300 ${
                 pkg.featured
-                  ? 'bg-charcoal text-white shadow-elevated scale-[1.02] ring-2 ring-gold-400'
+                  ? 'bg-charcoal text-white shadow-elevated scale-[1.02] ring-2 ring-gold-500'
                   : 'bg-white shadow-card border border-gold-100 hover:shadow-elevated hover:border-gold-200'
               }`}
             >
               {pkg.featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold-400 text-white text-xs font-semibold uppercase tracking-wider px-4 py-1 rounded-full">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold-500 text-charcoal text-xs font-semibold uppercase tracking-wider px-4 py-1 rounded-full">
                   Most Popular
                 </span>
               )}
@@ -61,7 +61,7 @@ export default function Packages() {
                 {pkg.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3 text-sm">
                     <svg
-                      className={`h-5 w-5 flex-shrink-0 ${pkg.featured ? 'text-gold-300' : 'text-gold-500'}`}
+                      className={`h-5 w-5 flex-shrink-0 ${pkg.featured ? 'text-gold-300' : 'text-gold-600'}`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >

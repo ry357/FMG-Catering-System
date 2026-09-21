@@ -1,8 +1,8 @@
 const variants = {
   primary:
-    'bg-gold-400 text-white shadow-[0_8px_20px_rgba(201,162,39,0.2)] hover:-translate-y-0.5 hover:bg-gold-500 hover:shadow-[0_12px_24px_rgba(201,162,39,0.28)] focus-visible:ring-gold-400',
+    'bg-gold-500 text-charcoal shadow-[0_8px_20px_rgba(190,149,67,0.28)] hover:-translate-y-0.5 hover:bg-gold-600 hover:text-white hover:shadow-[0_12px_24px_rgba(190,149,67,0.36)] focus-visible:ring-gold-500',
   secondary:
-    'border border-gold-300 bg-white text-charcoal shadow-sm hover:-translate-y-0.5 hover:border-gold-400 hover:bg-gold-50 hover:shadow-md focus-visible:ring-gold-400',
+    'border border-gold-400 bg-white text-charcoal shadow-sm hover:-translate-y-0.5 hover:border-gold-500 hover:bg-gold-50 hover:shadow-md focus-visible:ring-gold-500',
   outline:
     'border border-white/70 text-white hover:-translate-y-0.5 hover:border-white hover:bg-white/10 focus-visible:ring-white',
 };

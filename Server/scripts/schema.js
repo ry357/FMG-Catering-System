@@ -23,6 +23,7 @@ export const SCHEMA_STATEMENTS = [
       email TEXT NOT NULL,
       phone TEXT,
       address TEXT,
+      password_hash TEXT,
       google_id TEXT UNIQUE,
       avatar TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -109,6 +110,34 @@ export const SCHEMA_STATEMENTS = [
       FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
     )
   `,
+
+  // Customer OTP Sessions Table
+  `
+    CREATE TABLE IF NOT EXISTS CustomerOtpSessions (
+      id TEXT PRIMARY KEY,
+      customer_id INTEGER NOT NULL,
+      otp_hash TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      attempts INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (customer_id) REFERENCES Customers(id) ON DELETE CASCADE
+    )
+  `,
+
+  // Reviews Table
+  `
+    CREATE TABLE IF NOT EXISTS Reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER,
+      name TEXT NOT NULL,
+      event_type TEXT,
+      rating INTEGER NOT NULL DEFAULT 5,
+      quote TEXT NOT NULL,
+      status TEXT DEFAULT 'approved' CHECK(status IN ('pending', 'approved', 'rejected')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (customer_id) REFERENCES Customers(id) ON DELETE SET NULL
+    )
+  `,
 ];
 
 export const INDEX_STATEMENTS = [
@@ -123,6 +152,8 @@ export const INDEX_STATEMENTS = [
   'CREATE INDEX IF NOT EXISTS idx_customers_email ON Customers(email)',
   'CREATE INDEX IF NOT EXISTS idx_customers_google_id ON Customers(google_id)',
   'CREATE INDEX IF NOT EXISTS idx_otpsessions_user ON OtpSessions(user_id)',
+  'CREATE INDEX IF NOT EXISTS idx_customer_otp_customer ON CustomerOtpSessions(customer_id)',
+  'CREATE INDEX IF NOT EXISTS idx_reviews_status ON Reviews(status)',
 ];
 
 // Post-CREATE migrations for databases that already exist. Each entry is a
@@ -135,4 +166,5 @@ export const MIGRATION_STATEMENTS = [
   // SQLite ALTER ADD COLUMN cannot carry a CHECK constraint, so existing DBs
   // get a plain DEFAULT column; fresh DBs get the full CHECK via SCHEMA_STATEMENTS.
   "ALTER TABLE Bookings ADD COLUMN booking_category TEXT DEFAULT 'natural'",
+  'ALTER TABLE Customers ADD COLUMN password_hash TEXT',
 ];

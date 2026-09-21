@@ -7,16 +7,25 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [customer, setCustomer] = useState(null);
+  const [customerToken, setCustomerToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const savedCustomer = localStorage.getItem('customer');
+    const savedToken = localStorage.getItem('customerToken');
+
     if (savedCustomer) {
       try { setCustomer(JSON.parse(savedCustomer)); } catch { localStorage.removeItem('customer'); }
     }
+    if (savedToken) {
+      setCustomerToken(savedToken);
+    }
+
     if (token) {
       verifyToken(token);
+    } else if (savedToken) {
+      verifyCustomerToken(savedToken);
     } else {
       setLoading(false);
     }
@@ -33,6 +42,30 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const verifyCustomerToken = async (token) => {
+    try {
+      const response = await axios.get('/api/customer/verify', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCustomer(response.data.customer);
+      localStorage.setItem('customer', JSON.stringify(response.data.customer));
+    } catch (error) {
+      setCustomerToken(null);
+      setCustomer(null);
+      localStorage.removeItem('customerToken');
+      localStorage.removeItem('customer');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setCustomerSession = (tokenValue, customerValue) => {
+    setCustomerToken(tokenValue);
+    setCustomer(customerValue);
+    localStorage.setItem('customerToken', tokenValue);
+    localStorage.setItem('customer', JSON.stringify(customerValue));
   };
 
 const login = async (username, password) => {
@@ -54,11 +87,36 @@ const sendOTP = async (username) => {
   await axios.post('/api/auth/otp/send', { username });
 };
 
+// ── Customer email + password login ────────────────────────────
+const customerLogin = async (email, password) => {
+  const response = await axios.post('/api/customer/login', { email, password });
+  setCustomerSession(response.data.token, response.data.customer);
+  return response.data;
+};
+
+// ── Customer email + password registration ─────────────────────
+const customerRegister = async (name, email, password) => {
+  const response = await axios.post('/api/customer/register', { name, email, password });
+  setCustomerSession(response.data.token, response.data.customer);
+  return response.data;
+};
+
+// ── Customer OTP login ─────────────────────────────────────────
+const sendCustomerOtp = async (email) => {
+  const response = await axios.post('/api/customer/otp/send', { email });
+  return response.data;
+};
+
+const verifyCustomerOtp = async (otpId, otp) => {
+  const response = await axios.post('/api/customer/otp/verify', { otpId, otp });
+  setCustomerSession(response.data.token, response.data.customer);
+  return response.data;
+};
+
 const loginWithGoogle = useCallback(async (credential) => {
   const response = await googleAuthService.verifyCredential(credential);
   if (response.success) {
-    setCustomer(response.customer);
-    localStorage.setItem('customer', JSON.stringify(response.customer));
+    setCustomerSession(response.token, response.customer);
     return response;
   }
   throw new Error(response.error || 'Google sign-in failed');
@@ -66,6 +124,8 @@ const loginWithGoogle = useCallback(async (credential) => {
 
 const logoutCustomer = useCallback(() => {
   setCustomer(null);
+  setCustomerToken(null);
+  localStorage.removeItem('customerToken');
   localStorage.removeItem('customer');
 }, []);
 
@@ -75,7 +135,7 @@ const logout = () => {
 };
 
 return (
-  <AuthContext.Provider value={{ user, customer, login, loginWithGoogle, logoutCustomer, verifyOTP, sendOTP, logout, loading }}>
+  <AuthContext.Provider value={{ user, customer, customerToken, login, customerLogin, customerRegister, sendCustomerOtp, verifyCustomerOtp, loginWithGoogle, logoutCustomer, verifyOTP, sendOTP, logout, loading }}>
     {children}
   </AuthContext.Provider>
 );

@@ -7,7 +7,7 @@ function StarRating({ rating }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
-          className={`h-5 w-5 ${i < rating ? 'text-gold-400' : 'text-gray-200'}`}
+          className={`h-5 w-5 ${i < rating ? 'text-gold-500' : 'text-gray-200'}`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -25,7 +25,7 @@ export default function Testimonials() {
         <SectionHeading
           label="Testimonials"
           title="What Our Clients Say"
-          description="Trusted by hundreds of clients for weddings, corporate events, and special celebrations."
+          description="Trusted for weddings, corporate events, and celebrations."
         />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

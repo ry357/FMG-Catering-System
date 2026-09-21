@@ -1,52 +1,59 @@
 export const NAV_LINKS = [
-  { label: 'About', href: '#about' },
-  { label: 'Services', href: '#services' },
-  { label: 'Packages', href: '#packages' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'About', to: '/about' },
+  { label: 'Services', to: '/services' },
+  { label: 'Menus', to: '/menus' },
+  { label: 'Discover', to: '/discover' },
+  { label: 'Reviews', to: '/reviews' },
 ];
 
 export const SERVICES = [
   {
     id: 1,
     title: 'Wedding Catering',
-    description:
-      'Elegant multi-course menus, cocktail receptions, and full-service dining tailored to your special day.',
+    description: 'Elegant menus and full-service dining for your special day.',
     icon: 'rings',
+    image:
+      'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 2,
     title: 'Corporate Events',
-    description:
-      'Professional catering for conferences, meetings, product launches, and company celebrations.',
+    description: 'Professional catering for conferences and company events.',
     icon: 'briefcase',
+    image:
+      'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 3,
     title: 'Birthday Celebrations',
-    description:
-      'Memorable feasts for milestone birthdays, from intimate gatherings to grand party spreads.',
+    description: 'Memorable feasts for milestone birthdays of any size.',
     icon: 'cake',
+    image:
+      'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 4,
     title: 'Buffet & Plated Service',
-    description:
-      'Flexible service styles with beautifully presented dishes for events of any size.',
+    description: 'Flexible service styles for events of any size.',
     icon: 'utensils',
+    image:
+      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 5,
     title: 'Custom Menu Planning',
-    description:
-      'Work with our team to design menus that match your theme, dietary needs, and budget.',
+    description: 'Menus matched to your theme, diet, and budget.',
     icon: 'clipboard',
+    image:
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 6,
     title: 'On-Site Event Setup',
-    description:
-      'Complete setup, service staff, and cleanup so you can focus on your guests.',
+    description: 'Full setup, service staff, and cleanup.',
     icon: 'setup',
+    image:
+      'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
@@ -54,7 +61,7 @@ export const PACKAGES = [
   {
     id: 1,
     name: 'Essential Package',
-    description: 'Perfect for intimate gatherings and casual celebrations.',
+    description: 'For intimate gatherings and casual celebrations.',
     pricePerGuest: 350,
     minGuests: 20,
     maxGuests: 80,
@@ -70,7 +77,7 @@ export const PACKAGES = [
   {
     id: 2,
     name: 'Premium Package',
-    description: 'Our most popular choice for weddings and milestone events.',
+    description: 'Most popular for weddings and milestone events.',
     pricePerGuest: 650,
     minGuests: 50,
     maxGuests: 200,
@@ -87,7 +94,7 @@ export const PACKAGES = [
   {
     id: 3,
     name: 'Grand Package',
-    description: 'Luxury catering for large-scale and high-profile occasions.',
+    description: 'Luxury catering for large-scale occasions.',
     pricePerGuest: 950,
     minGuests: 100,
     maxGuests: 500,
@@ -148,14 +155,14 @@ export const BOOKING_CATEGORIES = [
     label: 'Full-Service Catering',
     shortLabel: 'Full Service Catering',
     description:
-      'Complete event catering with waiters, servers, on-site setup, and coordination. Ideal for weddings, corporate events, and larger gatherings.',
+      'Complete catering with waiters, servers, on-site setup, and coordination.',
   },
   {
     id: 'drop-off',
     label: 'Drop-Off Catering',
     shortLabel: 'Drop-Off',
     description:
-      'Pre-packed meals delivered ready to serve. FMG brings the food to your location and leaves — no service staff, simple and budget-friendly.',
+      'Pre-packed meals delivered ready to serve — no service staff.',
   },
 ];
 
@@ -164,12 +171,12 @@ export const MENU_TIERS = [
   {
     id: 'buffet',
     label: 'Buffet',
-    description: 'Self-serve food stations set up at your venue, ideal for medium to large gatherings.',
+    description: 'Self-serve food stations for medium to large gatherings.',
   },
   {
     id: 'plated',
     label: 'Plated',
-    description: 'Individually served courses brought to each guest, perfect for formal events.',
+    description: 'Individually served courses for formal events.',
   },
 ];
 
@@ -258,7 +265,7 @@ const platter = (id, name, sub, price, chaferPrice = null) => ({
 export const PLATTER_MENU = {
   chafer: {
     label: 'Include chafer dish (serving container)',
-    help: 'Disposable chafers keep each main and side platter warm. Prices go up: main platters become ₱1,500 and sides ₱600.',
+    help: 'Keeps platters warm. Mains become ₱1,500, sides ₱600.',
   },
   mains: [
     platter('pork-afritada', 'Pork Afritada', 'Pork', 1300, 1500),
@@ -296,6 +303,9 @@ export const PLATTER_MENU = {
     platter('beef-kare-kare', 'Beef Kare-Kare', 'Beef', 1300, 1500),
     platter('beef-salpicao', 'Beef Salpicao', 'Beef', 1300, 1500),
   ],
+  specials: [
+    platter('lechon', 'Whole Lechon (Roast Pig)', null, 8000),
+  ],
   sides: [
     platter('special-chopsuey', 'Special Chopsuey', 'Vegetables', 500, 600),
     platter('vegetable-lumpia', 'Vegetable Lumpia', 'Vegetables', 500, 600),
@@ -327,6 +337,6 @@ export const PLATTER_MENU = {
 
 export const MENU_CHOICES = {
   appetizers: ['Chicken Satay', 'Spring Rolls', 'Cheese Sticks', 'Garlic Bread', 'Fruit Platter'],
-  mains: ['Pork Afritada', 'Pork Steak', 'Pork Sweet & Sour', 'Pork Menudo', 'Pork Estupado', 'Pork Guisantes', 'Pork Teriyaki', 'Pork Hawaiian Steak', 'Pinoy Humba', 'Pork Lumpia', 'Pork Embotido', 'Glazed Pork Belly', 'Pork Kare-Kare', 'Chicken Cordon Bleu', 'Buttered Chicken', 'Chicken Curry', 'Chicken Sweet & Sour', 'Chicken Fillet', 'Chicken Afritada', 'Chicken wrapped Bacon w/ Tarragon Sauce', 'Black Pepper Chicken Mushroom', 'Creamy Chicken w/ Mushroom', 'Creamy Chicken w/ Broccoli', 'Corn Shrimp', 'Sweet & Sour Fish', 'Buttered Shrimp', 'Seafood Cajun', 'Crispy Garlic Shrimp', 'Beef Steak', 'Beef Teriyaki', 'Beef Steak w/ Onion Rings', 'Beef Steak Tagalog', 'Beef Kare-Kare', 'Beef Salpicao'],
+  mains: ['Lechon', 'Pork Afritada', 'Pork Steak', 'Pork Sweet & Sour', 'Pork Menudo', 'Pork Estupado', 'Pork Guisantes', 'Pork Teriyaki', 'Pork Hawaiian Steak', 'Pinoy Humba', 'Pork Lumpia', 'Pork Embotido', 'Glazed Pork Belly', 'Pork Kare-Kare', 'Chicken Cordon Bleu', 'Buttered Chicken', 'Chicken Curry', 'Chicken Sweet & Sour', 'Chicken Fillet', 'Chicken Afritada', 'Chicken wrapped Bacon w/ Tarragon Sauce', 'Black Pepper Chicken Mushroom', 'Creamy Chicken w/ Mushroom', 'Creamy Chicken w/ Broccoli', 'Corn Shrimp', 'Sweet & Sour Fish', 'Buttered Shrimp', 'Seafood Cajun', 'Crispy Garlic Shrimp', 'Beef Steak', 'Beef Teriyaki', 'Beef Steak w/ Onion Rings', 'Beef Steak Tagalog', 'Beef Kare-Kare', 'Beef Salpicao'],
   addons: ['Special Chopsuey', 'Vegetable Lumpia', 'Corn Soup', 'Mushroom Soup', 'Macaroni Soup', 'Pancit Guisado', 'Bam-e', 'Sotanghon', 'Mango Tapioca', 'Buko Pandan', 'Chicken Macaroni Salad', 'Buko Mango Sago', 'Fresh Fruit Salad', 'Pinoy Spaghetti', 'Carbonara', 'Macaroni', 'Alfredo Pasta'],
 };

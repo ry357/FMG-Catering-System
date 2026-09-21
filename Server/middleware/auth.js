@@ -32,3 +32,15 @@ export const requireRole = (roles) => {
     next();
   };
 };
+
+export const requireCustomer = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: 'Authentication required' });
+  }
+
+  if (req.user.type !== 'customer') {
+    return res.status(403).json({ success: false, error: 'Customer account required' });
+  }
+
+  next();
+};

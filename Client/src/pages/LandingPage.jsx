@@ -1,11 +1,10 @@
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import Hero from '../components/landing/Hero';
-import About from '../components/landing/About';
-import Services from '../components/landing/Services';
-import Packages from '../components/landing/Packages';
-import Testimonials from '../components/landing/Testimonials';
-import Contact from '../components/landing/Contact';
+import OffersSection from '../components/landing/OffersSection';
+import HowItWorks from '../components/landing/HowItWorks';
+import ReadySection from '../components/landing/ReadySection';
+import Gallery from '../components/landing/Gallery';
 
 export default function LandingPage() {
   return (
@@ -13,11 +12,10 @@ export default function LandingPage() {
       <Navbar />
       <main>
         <Hero />
-        <About />
-        <Services />
-<Packages />
-        <Testimonials />
-        <Contact />
+        <OffersSection />
+        <HowItWorks />
+        <ReadySection />
+        <Gallery />
       </main>
       <Footer />
     </>

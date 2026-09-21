@@ -131,6 +131,7 @@ export const TESTIMONIALS = [
 // Used by analytics to rank foods, side dishes, and drinks by popularity.
 export const MENU_CATALOG = {
   foods: [
+    'Lechon',
     'Pork Afritada',
     'Pork Steak',
     'Pork Sweet & Sour',
