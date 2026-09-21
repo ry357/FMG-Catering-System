@@ -28,6 +28,16 @@ function issueCustomerToken(customer) {
   );
 }
 
+function isStrongPassword(password) {
+  return (
+    typeof password === 'string' &&
+    password.length >= 8 &&
+    /[a-zA-Z]/.test(password) &&
+    /[0-9]/.test(password) &&
+    /[^a-zA-Z0-9]/.test(password)
+  );
+}
+
 function serializeCustomer(customer) {
   return {
     id: customer.id,
@@ -45,8 +55,11 @@ router.post('/register', async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ success: false, error: 'Email and password are required' });
     }
-    if (String(password).length < 6) {
-      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters' });
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 8 characters and include letters, numbers, and a special character',
+      });
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();

@@ -84,6 +84,14 @@ export default function CustomerLogin() {
     e.preventDefault();
     setBusy(true);
     setError('');
+    if (mode === MODES.REGISTER) {
+      const passwordPolicy = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/;
+      if (!passwordPolicy.test(password)) {
+        setError('Password must be at least 8 characters and include letters, numbers, and a special character.');
+        setBusy(false);
+        return;
+      }
+    }
     try {
       if (mode === MODES.REGISTER) {
         await customerRegister(name, email, password);
@@ -298,11 +306,18 @@ export default function CustomerLogin() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode === MODES.REGISTER ? 'At least 6 characters' : 'Your password'}
+                  placeholder={mode === MODES.REGISTER ? 'At least 8 characters with letters, numbers & symbols' : 'Your password'}
                   className={inputClass}
                   required
-                  minLength={6}
+                  minLength={8}
+                  pattern="(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}"
+                  title="Must be at least 8 characters and include letters, numbers, and a special character"
                 />
+                {mode === MODES.REGISTER && (
+                  <p className="mt-2 text-xs text-charcoal-muted">
+                    Use at least 8 characters with a mix of letters, numbers, and a special character.
+                  </p>
+                )}
               </Field>
               <button type="submit" disabled={busy} className={goldButtonClass}>
                 {busy
