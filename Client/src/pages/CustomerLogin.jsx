@@ -264,7 +264,6 @@ export default function CustomerLogin() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
                     className={inputClass}
                     required
                   />
@@ -295,7 +294,6 @@ export default function CustomerLogin() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
                   className={inputClass}
                   required
                 />
