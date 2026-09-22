@@ -1,4 +1,5 @@
 import SectionHeading from '../ui/SectionHeading';
+import discoverBackground from '../../assets/discover-background.avif';
 
 const DISCOVER_TAGS = [
   'Wedding',
@@ -31,12 +32,20 @@ export default function Discover({ query = '', onChange, onPick }) {
   const active = normalize(query);
 
   return (
-    <section id="discover" className="section-padding bg-white">
-      <div className="section-container">
+    <section id="discover" className="section-padding relative overflow-hidden bg-charcoal">
+      <img
+        src={discoverBackground}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover opacity-40"
+        loading="lazy"
+      />
+      <div className="section-container relative z-10">
         <SectionHeading
           label="Discover"
           title="What are you planning?"
           description="Browse by event type, service style, or crowd favorite."
+          light
         />
 
         <label htmlFor="discover-search" className="mx-auto mt-2 block max-w-xl text-left">
@@ -57,7 +66,7 @@ export default function Discover({ query = '', onChange, onPick }) {
               value={query}
               onChange={(event) => onChange(event.target.value)}
               placeholder="Search menus, packages, dishes…"
-              className="w-full rounded-full border border-gold-200 bg-white py-3.5 pl-12 pr-5 text-base text-charcoal shadow-card transition-colors placeholder:text-charcoal-muted/70 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20"
+              className="w-full rounded-full border border-gold-200/50 bg-white/95 py-3.5 pl-12 pr-5 text-base text-charcoal shadow-card transition-colors placeholder:text-charcoal-muted/70 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20"
             />
           </div>
         </label>
@@ -74,7 +83,7 @@ export default function Discover({ query = '', onChange, onPick }) {
                 className={`rounded-full border px-5 py-2 text-sm font-medium transition-all ${
                   isActive
                     ? 'border-gold-500 bg-gold-500 text-charcoal'
-                    : 'border-gold-200 bg-white text-charcoal-light hover:border-gold-400 hover:text-gold-600'
+                    : 'border-gold-200 bg-white/95 text-charcoal-light hover:border-gold-400 hover:text-gold-600'
                 }`}
               >
                 {tag}
