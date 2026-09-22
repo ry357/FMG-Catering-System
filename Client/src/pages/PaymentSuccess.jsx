@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { verifyGCashPayment } from '../services/paymentService';
 import { formatCurrency } from '../utils/helpers';
 import Button from '../components/ui/Button';
+import Skeleton from '../components/ui/Skeleton';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -66,8 +67,19 @@ export default function PaymentSuccess() {
       <div className="max-w-lg w-full bg-white rounded-2xl shadow-elevated p-8 text-center">
         {status === 'loading' && (
           <>
-            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gold-200 border-t-gold-500" />
-            <p className="mt-4 text-charcoal-muted">Verifying your payment...</p>
+            <div className="mx-auto w-fit animate-pulse">
+              <Skeleton className="h-16 w-16 rounded-full" />
+            </div>
+            <div className="mt-6 animate-pulse space-y-2">
+              <Skeleton className="mx-auto h-6 w-56" />
+              <Skeleton className="mx-auto h-4 w-72" />
+            </div>
+            <div className="mt-6 animate-pulse space-y-3 rounded-xl bg-gold-50 p-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+            <p className="mt-4 text-sm text-charcoal-muted">Verifying your payment...</p>
           </>
         )}
 

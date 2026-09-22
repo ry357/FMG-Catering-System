@@ -46,7 +46,7 @@ export default function Hero() {
           <Button onClick={handleBook} size="lg">
             Book Your Event
           </Button>
-          <Button onClick={() => navigate('/menus')} variant="secondary" size="lg">
+          <Button onClick={() => navigate('/services')} variant="secondary" size="lg">
             Browse the Menus
           </Button>
         </div>

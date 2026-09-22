@@ -3,7 +3,7 @@ import { CONTACT_INFO, NAV_LINKS } from '../../data/landingData';
 
 export default function Footer() {
   return (
-    <footer className="bg-charcoal text-white">
+    <footer className="bg-black text-white">
       <div className="section-container section-padding pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
           <div className="lg:col-span-1">

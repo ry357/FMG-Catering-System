@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import Button from '../ui/Button';
+import useBookingNav from '../../hooks/useBookingNav';
 import mainDishesImage from '../../assets/fa79860c-4838-4d40-90c3-6e305761dace.jpg';
 
 const STEPS = [
@@ -20,7 +20,7 @@ const STEPS = [
 ];
 
 export default function HowItWorks() {
-  const navigate = useNavigate();
+  const book = useBookingNav();
 
   return (
     <section id="how-it-works" className="section-padding bg-white">
@@ -74,7 +74,7 @@ export default function HowItWorks() {
           </p>
 
           <div className="mt-8">
-            <Button onClick={() => navigate('/book')} size="lg">
+            <Button onClick={() => book() } size="lg">
               Get Started
             </Button>
           </div>

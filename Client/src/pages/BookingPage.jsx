@@ -28,7 +28,9 @@ export default function BookingPage() {
       <Navbar />
       <main className="pt-16 md:pt-20">
         <MenuSection initialPackage={selectedPackage} />
-        <BookNow initialMenuBooking={bookingDetails} />
+        {bookingDetails ? (
+          <BookNow initialMenuBooking={bookingDetails} />
+        ) : null}
       </main>
       <Footer />
     </>

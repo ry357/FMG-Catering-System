@@ -798,7 +798,7 @@ export default function BookNow({ initialMenuBooking }) {
                   <div className="grid sm:grid-cols-2 gap-5">
                     {!isDropOff && (
                       <FormField label="Number of Guests" error={errors.numberOfGuests} required>
-                        <input type="number" name="numberOfGuests" value={form.numberOfGuests} onChange={handleChange} min="1" step="1" className={inputClass} />
+                        <input type="number" name="numberOfGuests" value={form.numberOfGuests} onChange={handleChange} min="70" step="1" className={inputClass} />
                       </FormField>
                     )}
                     {!isDropOff && (

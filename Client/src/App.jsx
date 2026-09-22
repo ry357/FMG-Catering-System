@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import BookingPage from './pages/BookingPage';
 import PaymentSuccess from './pages/PaymentSuccess';
@@ -8,7 +8,6 @@ import CustomerLogin from './pages/CustomerLogin';
 import AboutPage from './pages/AboutPage';
 import ServicesPage from './pages/ServicesPage';
 import DiscoverPage from './pages/DiscoverPage';
-import MenusPage from './pages/MenusPage';
 import ReviewsPage from './pages/ReviewsPage';
 import ContactPage from './pages/ContactPage';
 import StaffDashboard from './pages/StaffDashboard';
@@ -25,7 +24,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/discover" element={<DiscoverPage />} />
-        <Route path="/menus" element={<MenusPage />} />
+        <Route path="/menus" element={<Navigate to="/services" replace />} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/book" element={<BookingPage />} />

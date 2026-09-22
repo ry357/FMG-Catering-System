@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import logoImage from '../../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 import { NAV_LINKS } from '../../data/landingData';
 import { useAuth } from '../../context/AuthContext';
@@ -9,21 +9,10 @@ import Button from '../ui/Button';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const { openLogin } = useLoginModal();
   const { customer, logoutCustomer } = useAuth();
 
   const closeMenu = () => setIsOpen(false);
-
-  const handleBookClick = (e) => {
-    e.preventDefault();
-    closeMenu();
-    if (customer) {
-      navigate('/book');
-    } else {
-      openLogin(() => navigate('/book'));
-    }
-  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-white/95 shadow-[0_8px_30px_rgba(36,27,18,0.08)] backdrop-blur-md">
@@ -75,9 +64,6 @@ export default function Navbar() {
               Log in
             </Button>
           )}
-          <Button onClick={handleBookClick} size="sm">
-            Book your event
-          </Button>
         </div>
 
         <button
@@ -137,11 +123,6 @@ export default function Navbar() {
                   Log in
                 </Button>
               )}
-            </li>
-            <li>
-              <Button onClick={handleBookClick} className="w-full">
-                Book Now
-              </Button>
             </li>
           </ul>
         </div>

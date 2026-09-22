@@ -54,8 +54,8 @@ export const validateBooking = [
       if (req.body.booking_category === 'drop-off') return true;
       if (!value) throw new Error('Number of guests is required');
       const guests = Number(value);
-      if (!Number.isInteger(guests) || guests < 1 || guests > 10000) {
-        throw new Error('Guests must be between 1 and 10000');
+      if (!Number.isInteger(guests) || guests < 70 || guests > 10000) {
+        throw new Error('Guests must be between 70 and 10000');
       }
       return true;
     }),
@@ -170,8 +170,8 @@ export const validatePayment = [
       if (req.body.bookingData?.bookingCategory === 'drop-off') return true;
       if (!value) throw new Error('Number of guests is required');
       const guests = Number(value);
-      if (!Number.isInteger(guests) || guests < 1 || guests > 10000) {
-        throw new Error('Guests must be between 1 and 10000');
+      if (!Number.isInteger(guests) || guests < 70 || guests > 10000) {
+        throw new Error('Guests must be between 70 and 10000');
       }
       return true;
     }),

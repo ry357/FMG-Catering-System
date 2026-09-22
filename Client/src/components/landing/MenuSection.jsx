@@ -22,6 +22,16 @@ function tierLabel(tierId) {
   return tierId || '';
 }
 
+const SERVICE_BASE_FEE = 5000;
+const SERVICE_BASE_GUESTS = 70;
+const SERVICE_GROWTH_RATE = 0.02;
+const MIN_GUESTS = 70;
+
+function calculateServiceVenueFee(guests) {
+  if (!Number.isFinite(guests) || guests <= 0) return 0;
+  return Math.round(SERVICE_BASE_FEE * Math.pow(1 + SERVICE_GROWTH_RATE, Math.max(0, guests - SERVICE_BASE_GUESTS)));
+}
+
 export default function MenuSection({ initialPackage = null }) {
   const [category, setCategory] = useState('natural');
   const [budgetInput, setBudgetInput] = useState('');
@@ -33,10 +43,10 @@ export default function MenuSection({ initialPackage = null }) {
   const packageMode = Boolean(initialPackage);
   const naturalOffers = MENU_OFFERS.filter((offer) => offer.category === 'natural');
   const hasValidInputs = packageMode
-    ? Number.isInteger(guests) && guests > 0
+    ? Number.isInteger(guests) && guests >= MIN_GUESTS
     : category === 'drop-off'
       ? true
-      : Number.isFinite(budget) && budget > 0 && Number.isInteger(guests) && guests > 0;
+      : Number.isFinite(budget) && budget > 0 && Number.isInteger(guests) && guests >= MIN_GUESTS;
 
   useEffect(() => {
     if (!selectedMenuImage) return undefined;
@@ -53,8 +63,12 @@ export default function MenuSection({ initialPackage = null }) {
 
   const suggestions = useMemo(() => {
     if (!hasValidInputs || packageMode || category !== 'natural') return [];
+    const serviceFee = calculateServiceVenueFee(guests);
     return naturalOffers
-      .map((offer) => ({ ...offer, total: offer.pricePerPax * guests, remaining: budget - offer.pricePerPax * guests }))
+      .map((offer) => {
+        const total = offer.pricePerPax * guests;
+        return { ...offer, total, serviceFee, grandTotal: total + serviceFee, remaining: budget - total };
+      })
       .filter((offer) => offer.total <= budget)
       .sort((a, b) => (b.total / budget) - (a.total / budget) || b.pricePerPax - a.pricePerPax)
       .slice(0, 3);
@@ -121,36 +135,27 @@ export default function MenuSection({ initialPackage = null }) {
           </div>
         )}
 
-        <div className="mt-6 mx-auto max-w-3xl rounded-2xl bg-charcoal p-6 shadow-elevated md:p-8">
-          {!packageMode && category === 'natural' && (
-            <div className="mb-3">
-              <label htmlFor="menu-budget" className="block text-sm font-semibold text-white">Food budget (PHP)
-                <span className="relative mt-2 block"><span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/60">₱</span><input id="menu-budget" type="number" min="1" inputMode="numeric" value={budgetInput} onChange={(event) => setBudgetInput(event.target.value)} className="w-full rounded-lg border border-white/20 bg-white/10 py-3 pl-8 pr-4 text-white placeholder:text-white/45 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/30" /></span>
-              </label>
+        {category !== 'drop-off' && (
+          <div className="mt-6 mx-auto max-w-3xl rounded-2xl border border-gold-100 bg-white p-4 shadow-card md:p-5">
+            <div className={`grid gap-4 ${!packageMode && category === 'natural' ? 'sm:grid-cols-2' : ''}`}>
+              {!packageMode && category === 'natural' && (
+                <div>
+                  <label htmlFor="menu-budget" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-muted">Food budget <span className="text-gold-600">(PHP)</span></label>
+                  <input id="menu-budget" type="number" min="1" inputMode="numeric" value={budgetInput} onChange={(event) => setBudgetInput(event.target.value)} className="w-full rounded-lg border border-gold-200 bg-gold-50/60 px-3 py-2 text-sm text-charcoal placeholder:text-charcoal-muted/50 focus:border-gold-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+                </div>
+              )}
+              <div>
+                <label htmlFor="menu-guests" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-muted">How many guests?</label>
+                <input id="menu-guests" type="number" min="70" step="1" inputMode="numeric" value={guestInput} onChange={(event) => setGuestInput(event.target.value)} className="w-full rounded-lg border border-gold-200 bg-gold-50/60 px-3 py-2 text-sm text-charcoal placeholder:text-charcoal-muted/50 focus:border-gold-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+              </div>
             </div>
-          )}
-          {!packageMode && category === 'drop-off' && (
-            <div className="rounded-xl border border-gold-400/30 bg-white/5 p-5">
-              <p className="text-sm font-semibold text-white">Drop-Off bookings are platter-based</p>
-              <p className="mt-2 text-xs leading-5 text-white/70">
-                No guest count or budget needed. Build a platter checklist
-                (mains, sides, drink jars, fresh fruit) at fixed prices.
-              </p>
-            </div>
-          )}
-          {category !== 'drop-off' && (
-            <label htmlFor="menu-guests" className="block text-sm font-semibold text-white">How many guests?
-              <input id="menu-guests" type="number" min="1" step="1" inputMode="numeric" value={guestInput} onChange={(event) => setGuestInput(event.target.value)} className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/45 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/30" />
-            </label>
-          )}
-          <p className="mt-4 text-xs leading-5 text-white/65">
-            {packageMode
-              ? `Estimated total: ${formatCurrency(packageTotal)}`
-              : category === 'drop-off'
-                ? 'Fixed platter prices — ordered in the booking form.'
-                : "Checks the offer's per-pax cost × guests against your budget."}
-          </p>
-        </div>
+            <p className="mt-3 text-xs leading-5 text-charcoal-muted">
+              {packageMode
+                ? `Estimated total: ${formatCurrency(packageTotal)}`
+                : "Minimum 70 guests. Food cost checks within your budget. A ₱5,000 service & venue fee (from 70 guests, +2% per extra guest) is added to the final payment."}
+            </p>
+          </div>
+        )}
 
         {hasValidInputs && !packageMode && category === 'natural' && (
           <div className="mt-10" aria-live="polite">
@@ -162,7 +167,7 @@ export default function MenuSection({ initialPackage = null }) {
                   <span className="text-xs text-charcoal-muted">{index === 0 ? '· Closest budget match' : ''}</span>
                 </div>
                 <h4 className="mt-4 font-display text-xl font-semibold text-charcoal">{offer.name}</h4><p className="mt-1 text-sm text-charcoal-muted">{formatCurrency(offer.pricePerPax)} per pax</p>
-                <div className="my-5 rounded-xl bg-gold-50 p-4"><p className="text-sm text-charcoal-muted">For {guests} guests</p><p className="font-display text-3xl font-bold text-gold-600">{formatCurrency(offer.total)}</p><p className="mt-1 text-xs text-charcoal-muted">{formatCurrency(offer.remaining)} remaining from your budget</p></div>
+                <div className="my-5 rounded-xl bg-gold-50 p-4"><p className="text-sm text-charcoal-muted">For {guests} guests</p><p className="font-display text-3xl font-bold text-gold-600">{formatCurrency(offer.grandTotal)}</p><p className="mt-1 text-xs text-charcoal-muted">{formatCurrency(offer.total)} food + {formatCurrency(offer.serviceFee)} service &amp; venue</p><p className="mt-1 text-xs text-charcoal-muted">{formatCurrency(offer.remaining)} remaining from your food budget</p></div>
                 <ul className="space-y-2 text-sm text-charcoal-light">{offer.includes.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-600">✓</span><span>{item}</span></li>)}</ul>
                 <Button className="mt-6 w-full" onClick={() => chooseOffer(offer)}>Continue to Booking</Button>
               </article>)}

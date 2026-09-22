@@ -1,7 +1,6 @@
 export const NAV_LINKS = [
   { label: 'About', to: '/about' },
   { label: 'Services', to: '/services' },
-  { label: 'Menus', to: '/menus' },
   { label: 'Discover', to: '/discover' },
   { label: 'Reviews', to: '/reviews' },
 ];
@@ -63,7 +62,7 @@ export const PACKAGES = [
     name: 'Essential Package',
     description: 'For intimate gatherings and casual celebrations.',
     pricePerGuest: 350,
-    minGuests: 20,
+    minGuests: 70,
     maxGuests: 80,
     eventTypes: ['Birthday', 'Corporate', 'Anniversary'],
     features: [
@@ -79,7 +78,7 @@ export const PACKAGES = [
     name: 'Premium Package',
     description: 'Most popular for weddings and milestone events.',
     pricePerGuest: 650,
-    minGuests: 50,
+    minGuests: 70,
     maxGuests: 200,
     eventTypes: ['Wedding', 'Birthday', 'Corporate', 'Anniversary'],
     features: [

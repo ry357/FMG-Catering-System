@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import { TESTIMONIALS } from '../data/landingData';
 import { useAuth } from '../context/AuthContext';
 import { useLoginModal } from '../context/LoginModalContext';
+import Skeleton from '../components/ui/Skeleton';
 
 function StarRating({ rating, onChange = null, size = 'h-5 w-5' }) {
   return (
@@ -174,7 +175,24 @@ export default function ReviewsPage() {
             </div>
 
             {loadingReviews ? (
-              <p className="text-center text-charcoal-muted">Loading reviews...</p>
+              <div className="grid animate-pulse gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="rounded-2xl bg-white p-8 shadow-card">
+                    <div className="flex gap-1">
+                      {[0, 1, 2, 3, 4].map((s) => (
+                        <Skeleton key={s} className="h-4 w-4 rounded-full" />
+                      ))}
+                    </div>
+                    <Skeleton className="mt-5 h-4 w-full" />
+                    <Skeleton className="mt-2 h-4 w-5/6" />
+                    <Skeleton className="mt-2 h-4 w-4/6" />
+                    <div className="mt-6 border-t border-gold-100 pt-6">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="mt-2 h-3 w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {displayReviews.map((review) => (

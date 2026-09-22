@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import logoImage from '../../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 import setupImage from '../../assets/700419340_976158498532796_8998530075443807542_n.jpg';
 import buffetStationImage from '../../assets/700971173_976119165203396_8898856393885039178_n.jpg';
@@ -11,6 +10,7 @@ import sideDishesImage from '../../assets/cbea243e-ca67-44df-b395-f2dc793a2cbd.j
 import buffetDetailImage from '../../assets/715413195_989007987247847_6053587252518028193_n.jpg';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
+import useBookingNav from '../../hooks/useBookingNav';
 
 const AUTHOR = { name: 'FMG Catering', src: logoImage };
 
@@ -114,6 +114,7 @@ function normalize(value) {
 }
 
 export default function MarketGrid({ query, onClear }) {
+  const book = useBookingNav();
   const filtered = useMemo(() => {
     const needle = normalize(query);
     if (!needle) return MARKET_ITEMS;
@@ -142,10 +143,18 @@ export default function MarketGrid({ query, onClear }) {
         {filtered.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {filtered.map((item) => (
-              <Link
+              <article
                 key={item.id}
-                to={item.href}
-                className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-gold-100 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elevated"
+                onClick={() => book(item.href)}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    book(item.href);
+                  }
+                }}
+                className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-gold-100 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-charcoal">
                   <img
@@ -169,7 +178,7 @@ export default function MarketGrid({ query, onClear }) {
                     <span className="text-xs text-charcoal-muted">{AUTHOR.name}</span>
                   </div>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         ) : (

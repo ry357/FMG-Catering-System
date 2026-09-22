@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import Skeleton from '../ui/Skeleton';
 
 const FOOD_GROUPS = [
   { key: 'foods', label: 'Food', badge: 'bg-cyan-400/10 text-cyan-300 border border-cyan-400/30' },
@@ -101,9 +102,26 @@ const Trendnalytics = () => {
 
   if (loading) {
     return (
-      <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)] p-10 flex items-center justify-center text-cyan-300">
-        <span className="inline-block w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin mr-3" />
-        Loading trends…
+      <div className="animate-pulse rounded-xl border border-[#1E2A45] bg-[#101A2E] shadow-[0_0_30px_-14px_rgba(34,211,238,0.2)] p-8">
+        <div className="mb-8 border-b border-[#1E2A45] pb-4">
+          <Skeleton dark className="mb-2 h-6 w-40" />
+          <Skeleton dark className="h-3 w-72" />
+        </div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-xl border border-[#1E2A45] bg-[#0B1220] p-4">
+              <Skeleton dark className="mb-4 h-4 w-32" />
+              <div className="space-y-3">
+                {[0, 1, 2].map((j) => (
+                  <div key={j} className="flex items-center justify-between gap-4">
+                    <Skeleton dark className="h-3 w-24" />
+                    <Skeleton dark className="h-3 w-12" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

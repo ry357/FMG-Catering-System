@@ -156,8 +156,8 @@ export function validateBookingForm(form, { requireBudget = true, requireGuests 
 
   if (requireGuests) {
     const guests = Number(form.numberOfGuests);
-    if (!form.numberOfGuests || guests < 1 || !Number.isInteger(guests)) {
-      errors.numberOfGuests = 'Enter a valid number of guests (minimum 1)';
+    if (!form.numberOfGuests || guests < 70 || !Number.isInteger(guests)) {
+      errors.numberOfGuests = 'Enter a valid number of guests (minimum 70)';
     }
   }
 

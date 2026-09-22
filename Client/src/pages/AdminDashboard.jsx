@@ -5,6 +5,7 @@ import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard
 import Trendnalytics from '../components/admin/TrendAnalytics';
 import BookingDetailModal from '../components/BookingDetailModal';
 import { formatCurrency } from '../utils/helpers';
+import DashboardSkeleton from '../components/ui/DashboardSkeleton';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -328,15 +329,7 @@ const AdminDashboard = () => {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center"
-        style={{ background: 'radial-gradient(900px 500px at 50% 0%, rgba(34,211,238,0.10), transparent 60%), #0B1220' }}>
-        <div className="flex items-center gap-3 text-cyan-300">
-          <span className="inline-block w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
-          Loading…
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

@@ -1,15 +1,15 @@
-import { useNavigate } from 'react-router-dom';
 import { PACKAGES } from '../../data/landingData';
 import { formatCurrency } from '../../utils/helpers';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
+import useBookingNav from '../../hooks/useBookingNav';
 
 export default function Packages() {
-  const navigate = useNavigate();
+  const book = useBookingNav();
 
   const handleBookPackage = (e, packageId) => {
     e.preventDefault();
-    navigate(`/book?package=${packageId}`);
+    book(`/book?package=${packageId}`);
   };
 
   return (
