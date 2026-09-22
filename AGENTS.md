@@ -22,6 +22,12 @@ Web-based catering management for internal sales optimization, analytics, automa
 
 **Never** add customer login. **Never** expose admin/staff routes publicly.
 
+## Deployment
+
+- After every accepted change, commit, push to `main`, and deploy to Vercel (CLI, no Git integration):
+  - Client: `vercel deploy --prod` in `Client/` (live: `https://fmg-catering-client.vercel.app`)
+  - Server: `vercel deploy --prod` in `Server/` (live: `https://fmg-catering-server.vercel.app`)
+
 ## Core Constraints
 
 - Budget recommendations and analytics are **rule-based** — not machine learning. Do not use ML terminology.
