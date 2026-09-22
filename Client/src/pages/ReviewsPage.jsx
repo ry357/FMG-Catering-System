@@ -8,6 +8,7 @@ import { TESTIMONIALS } from '../data/landingData';
 import { useAuth } from '../context/AuthContext';
 import { useLoginModal } from '../context/LoginModalContext';
 import Skeleton from '../components/ui/Skeleton';
+import reviewsBackground from '../assets/reviews-background.jpg';
 
 function StarRating({ rating, onChange = null, size = 'h-5 w-5' }) {
   return (
@@ -96,12 +97,20 @@ export default function ReviewsPage() {
     <>
       <Navbar />
       <main className="pt-16 md:pt-20">
-        <section id="testimonials" className="section-padding bg-gold-50/50">
-          <div className="section-container">
+        <section id="testimonials" className="section-padding relative overflow-hidden bg-charcoal">
+          <img
+            src={reviewsBackground}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover opacity-40"
+            loading="lazy"
+          />
+          <div className="section-container relative z-10">
             <SectionHeading
               label="Testimonials"
               title="What Our Clients Say"
               description="Trusted for weddings, corporate events, and celebrations. Leave a review after booking with us."
+              light
             />
 
             {/* Review submission */}
