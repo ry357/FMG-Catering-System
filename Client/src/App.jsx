@@ -7,7 +7,7 @@ import Login from './pages/Login';
 import CustomerLogin from './pages/CustomerLogin';
 import AboutPage from './pages/AboutPage';
 import ServicesPage from './pages/ServicesPage';
-import DiscoverPage from './pages/DiscoverPage';
+import MenusPage from './pages/MenusPage';
 import ReviewsPage from './pages/ReviewsPage';
 import ContactPage from './pages/ContactPage';
 import StaffDashboard from './pages/StaffDashboard';
@@ -23,8 +23,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
-        <Route path="/discover" element={<DiscoverPage />} />
-        <Route path="/menus" element={<Navigate to="/services" replace />} />
+        <Route path="/discover" element={<Navigate to="/menus" replace />} />
+        <Route path="/menus" element={<MenusPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/book" element={<BookingPage />} />

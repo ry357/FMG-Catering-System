@@ -1,7 +1,7 @@
 export const NAV_LINKS = [
   { label: 'About', to: '/about' },
   { label: 'Services', to: '/services' },
-  { label: 'Discover', to: '/discover' },
+  { label: 'Menus', to: '/menus' },
   { label: 'Reviews', to: '/reviews' },
 ];
 
