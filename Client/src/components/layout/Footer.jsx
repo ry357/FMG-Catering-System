@@ -11,10 +11,10 @@ export default function Footer() {
               <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold-500 text-charcoal font-display text-xl font-bold">
                 F
               </span>
-              <span className="font-display text-2xl font-semibold">FMG Catering</span>
+              <span className="font-display text-2xl font-semibold">FMG Catering Services</span>
             </div>
             <p className="text-white/70 text-sm leading-relaxed">
-              Premium catering for weddings, corporate events, and special celebrations.
+              We value good service, taste, and style.
             </p>
           </div>
 
@@ -48,6 +48,16 @@ export default function Footer() {
                   {CONTACT_INFO.email}
                 </a>
               </li>
+              <li>
+                <a
+                  href={`https://instagram.com/${CONTACT_INFO.instagram}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-gold-300"
+                >
+                  {CONTACT_INFO.instagram}
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -59,10 +69,10 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-white/50">
-            &copy; {new Date().getFullYear()} FMG Catering. All rights reserved.
+            &copy; {new Date().getFullYear()} FMG Catering Services. All rights reserved.
           </p>
           <p className="text-sm text-white/50">
-            Crafted with care for memorable events.
+            {CONTACT_INFO.location}
           </p>
         </div>
       </div>

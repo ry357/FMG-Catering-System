@@ -39,7 +39,7 @@ function createTransporter() {
 async function sendOTP(email, otp) {
   const transporter = createTransporter();
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'FMG Catering <monteronaroljune@gmail.com>',
+    from: process.env.EMAIL_FROM || 'FMG Catering Services <fmgcateringservices@gmail.com>',
     to: email,
     subject: 'FMG Catering — Admin Login OTP',
     text: `Your FMG Catering admin login OTP is: ${otp}\n\nThis code expires in 5 minutes.\nIf you did not request this, please ignore this email.`,

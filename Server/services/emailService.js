@@ -123,8 +123,8 @@ export async function sendAnniversaryEmail(customerName, customerEmail, eventTyp
       <body>
         <div class="container">
           <div class="header">
-            <h1>FMG Catering</h1>
-            <p>Creating Unforgettable Celebrations</p>
+            <h1>FMG Catering Services</h1>
+            <p>We value good service, taste, and style.</p>
           </div>
           <div class="content">
             <p class="greeting">${greeting}</p>
@@ -142,8 +142,8 @@ export async function sendAnniversaryEmail(customerName, customerEmail, eventTyp
             </p>
           </div>
           <div class="footer">
-            <p>FMG Catering | Cebu, Philippines</p>
-            <p>Email: bookings@fmgcatering.com | Phone: +63 32 123 4567</p>
+            <p>FMG Catering Services | Ibabao, Perrelos, Carcar, Philippines 6019</p>
+            <p>Email: fmgcateringservices@gmail.com | Phone: 0917 881 5021</p>
             <p>This email was sent because you had an event with us on ${new Date(eventDate).toLocaleDateString()}.</p>
           </div>
         </div>
@@ -203,7 +203,7 @@ export async function sendBookingConfirmationEmail(customerName, customerEmail, 
       <body>
         <div class="container">
           <div class="header">
-            <h1>FMG Catering</h1>
+            <h1>FMG Catering Services</h1>
             <p>Booking Confirmed</p>
           </div>
           <div class="content">
@@ -221,8 +221,8 @@ export async function sendBookingConfirmationEmail(customerName, customerEmail, 
             <p>If you have any questions or need to make changes, please don't hesitate to contact us.</p>
           </div>
           <div class="footer">
-            <p>FMG Catering | Cebu, Philippines</p>
-            <p>Email: bookings@fmgcatering.com | Phone: +63 32 123 4567</p>
+            <p>FMG Catering Services | Ibabao, Perrelos, Carcar, Philippines 6019</p>
+            <p>Email: fmgcateringservices@gmail.com | Phone: 0917 881 5021</p>
           </div>
         </div>
       </body>
@@ -280,7 +280,7 @@ export async function sendBookingApprovalEmail(customerName, customerEmail, book
       <body>
         <div class="container">
           <div class="header">
-            <h1>FMG Catering</h1>
+            <h1>FMG Catering Services</h1>
             <p>Booking Approved</p>
           </div>
           <div class="content">
@@ -297,8 +297,8 @@ export async function sendBookingApprovalEmail(customerName, customerEmail, book
             <p>If you have any questions, please feel free to contact us.</p>
           </div>
           <div class="footer">
-            <p>FMG Catering | Cebu, Philippines</p>
-            <p>Email: bookings@fmgcatering.com | Phone: +63 32 123 4567</p>
+            <p>FMG Catering Services | Ibabao, Perrelos, Carcar, Philippines 6019</p>
+            <p>Email: fmgcateringservices@gmail.com | Phone: 0917 881 5021</p>
           </div>
         </div>
       </body>
@@ -357,7 +357,7 @@ export async function sendBookingRejectionEmail(customerName, customerEmail, boo
       <body>
         <div class="container">
           <div class="header">
-            <h1>FMG Catering</h1>
+            <h1>FMG Catering Services</h1>
             <p>Booking Update</p>
           </div>
           <div class="content">
@@ -374,8 +374,8 @@ export async function sendBookingRejectionEmail(customerName, customerEmail, boo
             <p>If you have any questions, please don't hesitate to reach out to our team.</p>
           </div>
           <div class="footer">
-            <p>FMG Catering | Cebu, Philippines</p>
-            <p>Email: bookings@fmgcatering.com | Phone: +63 32 123 4567</p>
+            <p>FMG Catering Services | Ibabao, Perrelos, Carcar, Philippines 6019</p>
+            <p>Email: fmgcateringservices@gmail.com | Phone: 0917 881 5021</p>
           </div>
         </div>
       </body>
@@ -461,8 +461,8 @@ export async function sendCustomerOtpEmail(customerEmail, otp) {
     <body>
       <div class="container">
         <div class="header">
-          <h1>FMG Catering</h1>
-          <p>Creating Unforgettable Celebrations</p>
+          <h1>FMG Catering Services</h1>
+          <p>We value good service, taste, and style.</p>
         </div>
         <div class="content">
           <p>Your login verification code is:</p>
@@ -471,7 +471,7 @@ export async function sendCustomerOtpEmail(customerEmail, otp) {
           <p>If you did not request this, please ignore this email.</p>
         </div>
         <div class="footer">
-          <p>FMG Catering · Carcar City, Cebu, Philippines</p>
+          <p>FMG Catering Services · Ibabao, Perrelos, Carcar, Philippines 6019</p>
         </div>
       </div>
     </body>

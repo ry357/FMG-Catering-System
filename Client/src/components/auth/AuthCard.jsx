@@ -179,7 +179,7 @@ export default function AuthCard({ onAuthenticated }) {
       <div className="text-center mb-8">
         <img
           src={logoImage}
-          alt="FMG Catering logo"
+          alt="FMG Catering Services logo"
           className="mx-auto h-16 w-16 rounded-2xl object-cover shadow-[0_0_24px_-6px_rgba(190,149,67,0.6)]"
         />
         <h2 className="mt-4 font-display text-3xl font-semibold text-charcoal">

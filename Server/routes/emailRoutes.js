@@ -59,15 +59,15 @@ router.post('/campaign', authenticateToken, requireRole(['admin']), async (req, 
     const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #C9A227 0%, #D4AF37 100%); color: white; padding: 30px; text-align: center;">
-          <h1 style="margin: 0; font-size: 28px;">FMG Catering</h1>
-          <p style="margin: 4px 0 0;">Creating Unforgettable Celebrations</p>
+          <h1 style="margin: 0; font-size: 28px;">FMG Catering Services</h1>
+          <p style="margin: 4px 0 0;">We value good service, taste, and style.</p>
         </div>
         <div style="background: #f9f9f9; padding: 30px; border-radius: 8px; margin-top: 20px;">
           <p style="white-space: pre-line;">${message}</p>
         </div>
         <div style="text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 14px;">
-          <p>FMG Catering | Cebu, Philippines</p>
-          <p>Email: bookings@fmgcatering.com | Phone: +63 32 123 4567</p>
+          <p>FMG Catering Services | Ibabao, Perrelos, Carcar, Philippines 6019</p>
+          <p>Email: fmgcateringservices@gmail.com | Phone: 0917 881 5021</p>
         </div>
       </div>
     `;

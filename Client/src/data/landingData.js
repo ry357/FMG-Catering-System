@@ -182,9 +182,13 @@ export const MENU_TIERS = [
 // Menu items grouped by course type.
 
 export const CONTACT_INFO = {
-  address: 'Carcar City, Cebu, Philippines',
-  phone: '+63 912 345 6789',
-  email: 'hello@fmgcatering.com',
+  name: 'FMG Catering Services',
+  tagline: 'We value good service, taste, and style.',
+  address: 'Ibabao, Perrelos, Carcar, Philippines 6019',
+  location: 'Cebu City, Philippines · Carcar, Philippines',
+  phone: '0917 881 5021',
+  email: 'fmgcateringservices@gmail.com',
+  instagram: 'fmgcateringservices',
   hours: 'Mon – Sat: 8:00 AM – 6:00 PM',
 };
 

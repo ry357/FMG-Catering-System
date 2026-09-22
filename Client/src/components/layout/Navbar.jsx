@@ -24,7 +24,7 @@ export default function Navbar() {
         >
           <img src={logoImage} alt="FMG Catering Services logo" className="h-10 w-10 rounded-xl object-cover shadow-sm transition-transform group-hover:rotate-3 md:h-12 md:w-12" />
           <span className="font-display text-lg font-semibold text-charcoal md:text-2xl">
-            FMG Catering
+            FMG Catering Services
           </span>
         </Link>
 

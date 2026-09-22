@@ -41,6 +41,16 @@ const contactItems = [
       </svg>
     ),
   },
+  {
+    label: 'Instagram',
+    value: `@${CONTACT_INFO.instagram}`,
+    href: `https://instagram.com/${CONTACT_INFO.instagram}`,
+    icon: (
+      <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+        <path fillRule="evenodd" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 1.802c-3.15 0-3.522.011-4.767.068-2.431.111-3.557 1.26-3.667 3.666-.057 1.244-.068 1.616-.068 4.767 0 3.15.011 3.522.068 4.767.11 2.404 1.233 3.556 3.667 3.667 1.244.056 1.616.067 4.767.067 3.15 0 3.522-.011 4.767-.067 2.431-.111 3.557-1.26 3.667-3.667.056-1.244.067-1.616.067-4.767 0-3.15-.011-3.522-.067-4.767-.11-2.404-1.233-3.556-3.667-3.666-1.244-.057-1.616-.068-4.767-.068zm0 3.063a5.972 5.972 0 100 11.944 5.972 5.972 0 000-11.944zm0 9.853a3.881 3.881 0 110-7.762 3.881 3.881 0 010 7.762zm6.25-10.12a1.395 1.395 0 11-2.79 0 1.395 1.395 0 012.79 0z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
 ];
 
 export default function Contact() {
@@ -80,8 +90,8 @@ export default function Contact() {
 
           <div className="relative rounded-2xl overflow-hidden shadow-card h-64 lg:h-full min-h-[300px]">
             <iframe
-              title="FMG Catering location map"
-              src="https://maps.google.com/maps?q=Carcar+City+Cebu+Philippines&output=embed"
+              title="FMG Catering Services location map"
+              src="https://maps.google.com/maps?q=Ibabao%2C+Perrelos%2C+Carcar%2C+Cebu+Philippines&output=embed"
               className="absolute inset-0 w-full h-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

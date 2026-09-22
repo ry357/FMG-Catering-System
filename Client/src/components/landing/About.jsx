@@ -22,7 +22,7 @@ export default function About() {
         <SectionHeading
           label="About Us"
           title="Crafting Memorable Dining Experiences"
-          description="Exceptional food and flawless event service for over 15 years."
+            description="We value good service, taste, and style."
           light
         />
 

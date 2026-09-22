@@ -12,7 +12,7 @@ async function setupEmailAccount() {
     console.log(`EMAIL_PORT=587`);
     console.log(`EMAIL_USER=${testAccount.user}`);
     console.log(`EMAIL_PASS=${testAccount.pass}`);
-    console.log(`EMAIL_FROM=FMG Catering <noreply@fmgcatering.com>`);
+    console.log(`EMAIL_FROM=FMG Catering Services <fmgcateringservices@gmail.com>`);
     console.log('\nYou can view sent emails at: ' + testAccount.web);
     console.log('===============================\n');
     

@@ -3,6 +3,7 @@ import Button from '../ui/Button';
 import backgroundImage from '../../assets/background.jpg';
 import { useAuth } from '../../context/AuthContext';
 import { useLoginModal } from '../../context/LoginModalContext';
+import { CONTACT_INFO } from '../../data/landingData';
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -29,11 +30,11 @@ export default function Hero() {
 
       <div className="section-container relative z-10 px-4 pb-20 pt-28 text-center md:pb-28 md:pt-40">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-gold-300 md:text-sm">
-          FMG Catering &middot; Carcar City, Cebu
+          {CONTACT_INFO.name} &middot; Carcar, Philippines
         </p>
 
         <h1 className="mx-auto mt-6 max-w-4xl font-display text-5xl font-semibold leading-[1.02] text-white sm:text-6xl lg:text-7xl">
-          Catering for Every <span className="text-gold-400">Celebration</span>
+          We value good service, <span className="text-gold-400">taste</span>, and style.
         </h1>
 
         <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-white/90 md:text-xl">
