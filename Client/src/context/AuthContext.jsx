@@ -87,32 +87,6 @@ const sendOTP = async (username) => {
   await axios.post('/api/auth/otp/send', { username });
 };
 
-// ── Customer email + password login ────────────────────────────
-const customerLogin = async (email, password) => {
-  const response = await axios.post('/api/customer/login', { email, password });
-  setCustomerSession(response.data.token, response.data.customer);
-  return response.data;
-};
-
-// ── Customer email + password registration ─────────────────────
-const customerRegister = async (name, email, password) => {
-  const response = await axios.post('/api/customer/register', { name, email, password });
-  setCustomerSession(response.data.token, response.data.customer);
-  return response.data;
-};
-
-// ── Customer OTP login ─────────────────────────────────────────
-const sendCustomerOtp = async (email) => {
-  const response = await axios.post('/api/customer/otp/send', { email });
-  return response.data;
-};
-
-const verifyCustomerOtp = async (otpId, otp) => {
-  const response = await axios.post('/api/customer/otp/verify', { otpId, otp });
-  setCustomerSession(response.data.token, response.data.customer);
-  return response.data;
-};
-
 const loginWithGoogle = useCallback(async (credential) => {
   const response = await googleAuthService.verifyCredential(credential);
   if (response.success) {
@@ -135,7 +109,7 @@ const logout = () => {
 };
 
 return (
-  <AuthContext.Provider value={{ user, customer, customerToken, login, customerLogin, customerRegister, sendCustomerOtp, verifyCustomerOtp, loginWithGoogle, logoutCustomer, verifyOTP, sendOTP, logout, loading }}>
+  <AuthContext.Provider value={{ user, customer, customerToken, login, loginWithGoogle, logoutCustomer, verifyOTP, sendOTP, logout, loading }}>
     {children}
   </AuthContext.Provider>
 );
