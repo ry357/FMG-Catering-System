@@ -138,6 +138,19 @@ export const SCHEMA_STATEMENTS = [
       FOREIGN KEY (customer_id) REFERENCES Customers(id) ON DELETE SET NULL
     )
   `,
+
+  // Activity Logs Table (admin audit trail)
+  `
+    CREATE TABLE IF NOT EXISTS ActivityLogs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      action TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT 'system',
+      description TEXT NOT NULL,
+      performed_by TEXT,
+      details TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `,
 ];
 
 export const INDEX_STATEMENTS = [
@@ -154,6 +167,9 @@ export const INDEX_STATEMENTS = [
   'CREATE INDEX IF NOT EXISTS idx_otpsessions_user ON OtpSessions(user_id)',
   'CREATE INDEX IF NOT EXISTS idx_customer_otp_customer ON CustomerOtpSessions(customer_id)',
   'CREATE INDEX IF NOT EXISTS idx_reviews_status ON Reviews(status)',
+  'CREATE INDEX IF NOT EXISTS idx_activitylogs_created ON ActivityLogs(created_at)',
+  'CREATE INDEX IF NOT EXISTS idx_activitylogs_category ON ActivityLogs(category)',
+  'CREATE INDEX IF NOT EXISTS idx_activitylogs_action ON ActivityLogs(action)',
 ];
 
 // Post-CREATE migrations for databases that already exist. Each entry is a

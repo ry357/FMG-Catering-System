@@ -1,6 +1,7 @@
 import express from 'express';
 import { query, queryOne, execute, executeWithId } from '../config/dbHelper.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
+import { logActivity } from '../services/activityLogService.js';
 
 const router = express.Router();
 
@@ -69,6 +70,14 @@ router.post('/', authenticateToken, requireRole(['staff', 'admin']), async (req,
       [booking_id, amount, payment_method, payment_status]
     );
 
+    await logActivity({
+      action: 'sale_recorded',
+      category: 'sales',
+      description: `Sale recorded for Booking #${booking_id} — ₱${Number(amount).toLocaleString()} via ${payment_method || 'N/A'} (${payment_status})`,
+      performed_by: req.user?.username || req.user?.email || 'staff',
+      details: { saleId, booking_id, amount, payment_method, payment_status },
+    });
+
     res.json({ success: true, saleId });
   } catch (error) {
     console.error('Create sale error:', error);
@@ -89,6 +98,14 @@ router.patch('/:id/status', authenticateToken, requireRole(['staff', 'admin']), 
       'UPDATE Sales SET payment_status = ? WHERE id = ?',
       [payment_status, req.params.id]
     );
+
+    await logActivity({
+      action: 'sale_status_updated',
+      category: 'sales',
+      description: `Sale #${req.params.id} payment status changed to "${payment_status}"`,
+      performed_by: req.user?.username || req.user?.email || 'staff',
+      details: { saleId: req.params.id, payment_status },
+    });
 
     res.json({ success: true });
   } catch (error) {

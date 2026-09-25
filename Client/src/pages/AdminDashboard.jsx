@@ -171,6 +171,16 @@ const AdminDashboard = () => {
     full_name: ''
   });
 
+  // Activity logs state
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsTotal, setLogsTotal] = useState(0);
+  const [logsPage, setLogsPage] = useState(1);
+  const [logsTotalPages, setLogsTotalPages] = useState(1);
+  const [logsCategory, setLogsCategory] = useState('all');
+  const [logsSearch, setLogsSearch] = useState('');
+  const [logsSearchInput, setLogsSearchInput] = useState('');
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -204,6 +214,22 @@ const AdminDashboard = () => {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchActivityLogs = async ({ page = 1, category = 'all', search = '' } = {}) => {
+    setLogsLoading(true);
+    try {
+      const params = new URLSearchParams({ page, limit: 50, category, search });
+      const res = await axios.get(`/api/activity-logs?${params}`, authHeader());
+      setActivityLogs(res.data.logs || []);
+      setLogsTotal(res.data.total || 0);
+      setLogsPage(res.data.page || 1);
+      setLogsTotalPages(res.data.totalPages || 1);
+    } catch (err) {
+      console.error('Failed to fetch activity logs:', err);
+    } finally {
+      setLogsLoading(false);
     }
   };
 
@@ -408,6 +434,19 @@ const AdminDashboard = () => {
             }`}
           >
             Trendnalytics
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('activity-logs');
+              fetchActivityLogs({ page: 1, category: logsCategory, search: logsSearch });
+            }}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === 'activity-logs'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Activity Logs
           </button>
         </div>
 
@@ -826,6 +865,207 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'activity-logs' && (() => {
+          const CATEGORIES = [
+            { key: 'all',      label: 'All',       color: 'text-slate-300  border-slate-500/40  bg-slate-700/30' },
+            { key: 'bookings', label: 'Bookings',  color: 'text-cyan-300   border-cyan-400/40   bg-cyan-400/10' },
+            { key: 'sales',    label: 'Sales',     color: 'text-emerald-300 border-emerald-400/40 bg-emerald-400/10' },
+            { key: 'users',    label: 'Users',     color: 'text-purple-300 border-purple-400/40 bg-purple-400/10' },
+            { key: 'auth',     label: 'Auth',      color: 'text-amber-300  border-amber-400/40  bg-amber-400/10' },
+            { key: 'system',   label: 'System',    color: 'text-slate-400  border-slate-600/40  bg-slate-800/30' },
+          ];
+
+          const ACTION_ICONS = {
+            booking_created:      '📋',
+            booking_status_updated: '🔄',
+            booking_deleted:      '🗑️',
+            sale_recorded:        '💰',
+            sale_status_updated:  '💳',
+            user_created:         '👤',
+            user_deleted:         '🚫',
+            user_login:           '🔑',
+          };
+
+          const catMeta = (cat) => CATEGORIES.find((c) => c.key === cat) || CATEGORIES[0];
+
+          const fmtDate = (iso) => {
+            const d = new Date(iso);
+            return isNaN(d) ? iso : d.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' });
+          };
+
+          return (
+            <div className="space-y-4">
+              {/* Header */}
+              <div className="rounded-xl border border-[#1E2A45] bg-[#101A2E] p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <div>
+                    <h2 className="text-base font-semibold text-white">Activity Logs</h2>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Audit trail of all admin, staff, and system actions — {logsTotal.toLocaleString()} total records
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => fetchActivityLogs({ page: logsPage, category: logsCategory, search: logsSearch })}
+                    disabled={logsLoading}
+                    className="text-xs border border-cyan-400/40 text-cyan-300 px-3 py-1.5 rounded hover:bg-cyan-400/10 disabled:opacity-50 transition-all"
+                  >
+                    {logsLoading ? 'Refreshing…' : '⟳ Refresh'}
+                  </button>
+                </div>
+
+                {/* Category filter pills */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.key}
+                      onClick={() => {
+                        setLogsCategory(cat.key);
+                        setLogsPage(1);
+                        fetchActivityLogs({ page: 1, category: cat.key, search: logsSearch });
+                      }}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                        logsCategory === cat.key
+                          ? cat.color
+                          : 'text-slate-500 border-slate-700 bg-transparent hover:text-slate-300'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setLogsSearch(logsSearchInput);
+                    setLogsPage(1);
+                    fetchActivityLogs({ page: 1, category: logsCategory, search: logsSearchInput });
+                  }}
+                  className="flex gap-2"
+                >
+                  <input
+                    type="text"
+                    value={logsSearchInput}
+                    onChange={(e) => setLogsSearchInput(e.target.value)}
+                    placeholder="Search by description, user, or action…"
+                    className="flex-1 px-3 py-2 bg-[#0B1220] border border-[#1E2A45] text-white text-xs placeholder:text-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-cyan-400/50"
+                  />
+                  <button
+                    type="submit"
+                    className="px-3 py-2 text-xs bg-cyan-500/10 border border-cyan-400/40 text-cyan-300 rounded hover:bg-cyan-400/20 transition-all"
+                  >
+                    Search
+                  </button>
+                  {logsSearch && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLogsSearchInput('');
+                        setLogsSearch('');
+                        setLogsPage(1);
+                        fetchActivityLogs({ page: 1, category: logsCategory, search: '' });
+                      }}
+                      className="px-3 py-2 text-xs bg-slate-700/30 border border-slate-600/40 text-slate-400 rounded hover:bg-slate-700/60 transition-all"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </form>
+              </div>
+
+              {/* Logs table */}
+              <div className="rounded-xl border border-[#1E2A45] bg-[#101A2E] overflow-hidden shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+                {logsLoading ? (
+                  <div className="flex items-center justify-center py-16 text-slate-500 text-sm">
+                    <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent mr-3" />
+                    Loading activity logs…
+                  </div>
+                ) : activityLogs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+                    <span className="text-3xl mb-3">📭</span>
+                    <p className="text-sm">No activity logs found.</p>
+                    {logsSearch && <p className="text-xs mt-1">Try clearing the search filter.</p>}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#1E2A45]">
+                          <th className="text-left py-3 px-4 text-xs font-medium text-slate-500 w-8"></th>
+                          <th className="text-left py-3 px-4 text-xs font-medium text-slate-500">Description</th>
+                          <th className="text-left py-3 px-4 text-xs font-medium text-slate-500">Category</th>
+                          <th className="text-left py-3 px-4 text-xs font-medium text-slate-500">Performed By</th>
+                          <th className="text-left py-3 px-4 text-xs font-medium text-slate-500">Timestamp</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activityLogs.map((log) => {
+                          const cm = catMeta(log.category);
+                          return (
+                            <tr key={log.id} className="border-b border-[#17233C] hover:bg-cyan-400/5 transition-colors">
+                              <td className="py-3 px-4 text-lg">
+                                {ACTION_ICONS[log.action] || '📌'}
+                              </td>
+                              <td className="py-3 px-4 text-slate-200 max-w-xs lg:max-w-md">
+                                <p className="text-xs leading-relaxed">{log.description}</p>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${cm.color}`}>
+                                  {log.category}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="text-xs text-slate-400 font-mono">{log.performed_by || '—'}</span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="text-xs text-slate-500 whitespace-nowrap">{fmtDate(log.created_at)}</span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {logsTotalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-[#1E2A45]">
+                    <span className="text-xs text-slate-500">
+                      Page {logsPage} of {logsTotalPages} · {logsTotal.toLocaleString()} records
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          const p = Math.max(1, logsPage - 1);
+                          setLogsPage(p);
+                          fetchActivityLogs({ page: p, category: logsCategory, search: logsSearch });
+                        }}
+                        disabled={logsPage <= 1 || logsLoading}
+                        className="px-3 py-1 text-xs border border-[#1E2A45] text-slate-400 rounded hover:bg-slate-700/40 disabled:opacity-40 transition-all"
+                      >
+                        ← Prev
+                      </button>
+                      <button
+                        onClick={() => {
+                          const p = Math.min(logsTotalPages, logsPage + 1);
+                          setLogsPage(p);
+                          fetchActivityLogs({ page: p, category: logsCategory, search: logsSearch });
+                        }}
+                        disabled={logsPage >= logsTotalPages || logsLoading}
+                        className="px-3 py-1 text-xs border border-[#1E2A45] text-slate-400 rounded hover:bg-slate-700/40 disabled:opacity-40 transition-all"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {selectedBooking && (

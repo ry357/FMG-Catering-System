@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { query, queryOne, execute, executeWithId } from '../config/dbHelper.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 import { validateUserCreation } from '../middleware/validator.js';
+import { logActivity } from '../services/activityLogService.js';
 
 const router = express.Router();
 
@@ -30,6 +31,14 @@ router.post('/', authenticateToken, requireRole(['admin']), validateUserCreation
       'INSERT INTO Users (username, email, password_hash, role, full_name) VALUES (?, ?, ?, ?, ?)',
       [username, email, password_hash, role, full_name]
     );
+
+    await logActivity({
+      action: 'user_created',
+      category: 'users',
+      description: `New ${role} account created — ${full_name} (${username} / ${email})`,
+      performed_by: req.user?.username || 'admin',
+      details: { userId, username, email, role, full_name },
+    });
 
     res.json({ success: true, userId });
   } catch (error) {
@@ -68,7 +77,17 @@ router.put('/:id', authenticateToken, requireRole(['admin']), updateUserHandler)
 // Delete user (admin only)
 router.delete('/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
+    const existing = await queryOne('SELECT username, email, role FROM Users WHERE id = ?', [req.params.id]);
     await execute('DELETE FROM Users WHERE id = ?', [req.params.id]);
+
+    await logActivity({
+      action: 'user_deleted',
+      category: 'users',
+      description: `User account deleted — ${existing?.full_name || existing?.username || req.params.id} (${existing?.role || 'unknown'})`,
+      performed_by: req.user?.username || 'admin',
+      details: { deletedUserId: req.params.id, username: existing?.username, email: existing?.email, role: existing?.role },
+    });
+
     res.json({ success: true });
   } catch (error) {
     console.error('Delete user error:', error);

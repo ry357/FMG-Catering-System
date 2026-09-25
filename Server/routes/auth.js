@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer';
 import { queryOne, query, execute, executeWithId } from '../config/dbHelper.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { validateLogin } from '../middleware/validator.js';
+import { logActivity } from '../services/activityLogService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -92,6 +93,14 @@ router.post('/login', validateLogin, async (req, res) => {
       JWT_SECRET,
       { expiresIn: '8h' }
     );
+
+    await logActivity({
+      action: 'user_login',
+      category: 'auth',
+      description: `${user.role === 'admin' ? 'Admin' : 'Staff'} "${user.username}" signed in`,
+      performed_by: user.username,
+      details: { userId: user.id, role: user.role, email: user.email },
+    });
 
     res.json({
       success: true,

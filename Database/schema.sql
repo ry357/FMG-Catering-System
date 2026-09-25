@@ -111,6 +111,18 @@ CREATE TABLE IF NOT EXISTS Reviews (
 );
 
 
+-- Activity Logs Table (admin audit trail)
+CREATE TABLE IF NOT EXISTS ActivityLogs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    action VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL DEFAULT 'system',
+    description TEXT NOT NULL,
+    performed_by VARCHAR(150),
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 CREATE INDEX IF NOT EXISTS idx_customers_email ON Customers(email);
 -- Indexes for better performance
 CREATE INDEX idx_bookings_customer ON Bookings(customer_id);
