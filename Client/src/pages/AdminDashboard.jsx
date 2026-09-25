@@ -16,7 +16,7 @@ const renderInline = (text) => {
   );
 };
 
-const isSeparatorRow = (line) => /^\s*\|[\s\:-]+\|\s*$/.test(line);
+const isSeparatorRow = (line) => /^\s*\|[\s|:\-]+\|\s*$/.test(line);
 
 const parseCells = (row) =>
   row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
