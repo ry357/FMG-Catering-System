@@ -308,6 +308,32 @@ const AdminDashboard = () => {
     }
   };
 
+  const downloadDocx = async (report) => {
+    try {
+      const response = await axios.get(`/api/reports/${report.id}/download-docx`, {
+        ...authHeader(),
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      }));
+      const link = document.createElement('a');
+      link.href = url;
+      const disposition = response.headers['content-disposition'];
+      const baseName = (report?.file_path || `report-${report?.id || ''}`).replace(/\.md$/, '');
+      link.download = disposition
+        ? disposition.match(/filename="([^"]+)"/)?.[1]
+        : `${baseName}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download docx error:', error);
+      alert('Word document not found. Please click "Generate / Refresh" first to create it.');
+    }
+  };
+
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
@@ -630,8 +656,14 @@ const AdminDashboard = () => {
                   <div className="border-t border-gray-200 px-8 py-3 bg-gray-50">
                     <div className="flex flex-wrap items-center gap-4">
                       <button
+                        onClick={() => downloadDocx(monthlySummary.report)}
+                        className="text-sm bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors"
+                      >
+                        <span>📄</span> Download Word (.docx)
+                      </button>
+                      <button
                         onClick={() => downloadReport(monthlySummary.report)}
-                        className="text-sm bg-gold-500 text-white px-4 py-2 rounded hover:bg-gold-400 transition-colors"
+                        className="text-xs border border-slate-500/60 text-slate-400 px-3 py-1.5 rounded hover:bg-slate-700/40 transition-all"
                       >
                         Download (.md)
                       </button>

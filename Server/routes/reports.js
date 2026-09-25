@@ -24,9 +24,10 @@ const REPORTS_DIR = path.join(__dirname, '..', 'reports-output');
 const REPORT_TYPES = ['daily', 'weekly', 'monthly', 'annual'];
 
 const MIME_BY_EXTENSION = {
-  '.csv': 'text/csv',
-  '.md': 'text/markdown',
-  '.txt': 'text/plain',
+  '.csv':  'text/csv',
+  '.md':   'text/markdown',
+  '.txt':  'text/plain',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 };
 
 function getPeriodBounds(type) {
@@ -212,6 +213,7 @@ router.post('/monthly-summary', authenticateToken, requireRole(['staff', 'admin'
       reportId: result.reportId,
       refreshed: result.refreshed,
       summary: result.summary,
+      docxFilename: result.docxFilename || null,
       googleDoc,
     });
   } catch (error) {
@@ -328,6 +330,52 @@ router.post('/:id/google-doc', authenticateToken, requireRole(['staff', 'admin']
   }
 });
 
+// Download the Word (.docx) version of a monthly summary report (staff/admin)
+router.get('/:id/download-docx', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
+  try {
+    const report = await queryOne('SELECT * FROM Reports WHERE id = ?', [req.params.id]);
+    if (!report) {
+      return res.status(404).json({ success: false, error: 'Report not found' });
+    }
+
+    // Derive the .docx filename from the stored .md filename
+    const baseName = path.basename(report.file_path || '', '.md');
+    const docxName = `${baseName}.docx`;
+    const absolutePath = path.resolve(REPORTS_DIR, docxName);
+
+    let fileContent;
+    try {
+      fileContent = await fs.readFile(absolutePath);
+    } catch {
+      // If the file does not exist on disk (e.g. serverless cold start), regenerate it!
+      if (report.report_type === 'monthly_summary' && report.report_date) {
+        const [yearStr, monthStr] = String(report.report_date).split('-');
+        const year = parseInt(yearStr, 10);
+        const month = parseInt(monthStr, 10);
+        if (year && month) {
+          try {
+            await generateMonthlyReport({ year, month, generatedBy: report.generated_by });
+            fileContent = await fs.readFile(absolutePath);
+          } catch (genErr) {
+            console.error('Failed to regenerate report docx on the fly:', genErr);
+          }
+        }
+      }
+    }
+
+    if (!fileContent) {
+      return res.status(404).json({ success: false, error: 'Word document not found. Please regenerate the report.' });
+    }
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="${docxName}"`);
+    res.send(fileContent);
+  } catch (error) {
+    console.error('Download docx error:', error);
+    res.status(500).json({ success: false, error: 'Failed to download Word document' });
+  }
+});
+
 // Download a generated report source file (staff/admin)
 router.get('/:id/download', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
@@ -341,6 +389,22 @@ router.get('/:id/download', authenticateToken, requireRole(['staff', 'admin']), 
     try {
       fileContent = await fs.readFile(absolutePath);
     } catch {
+      if (report.report_type === 'monthly_summary' && report.report_date) {
+        const [yearStr, monthStr] = String(report.report_date).split('-');
+        const year = parseInt(yearStr, 10);
+        const month = parseInt(monthStr, 10);
+        if (year && month) {
+          try {
+            await generateMonthlyReport({ year, month, generatedBy: report.generated_by });
+            fileContent = await fs.readFile(absolutePath);
+          } catch (genErr) {
+            console.error('Failed to regenerate report file on the fly:', genErr);
+          }
+        }
+      }
+    }
+
+    if (!fileContent) {
       return res.status(404).json({ success: false, error: 'Report file not found' });
     }
 

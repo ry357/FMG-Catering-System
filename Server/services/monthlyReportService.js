@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { query, queryOne, execute, executeWithId } from '../config/dbHelper.js';
 import { PACKAGES } from '../data/catalog.js';
+import { buildWordDocument } from './wordReportService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const MONTHLY_REPORTS_DIR = path.join(__dirname, '..', 'reports-output');
@@ -762,6 +763,15 @@ export async function generateMonthlyReport({ year, month, generatedBy = null })
   const filename = `fmg-monthly-sales-${startDate.toISOString().slice(0, 7)}.md`;
   await fs.writeFile(path.join(MONTHLY_REPORTS_DIR, filename), content, 'utf8');
 
+  // Generate the professional Word document (.docx)
+  const docxFilename = `fmg-monthly-sales-${startDate.toISOString().slice(0, 7)}.docx`;
+  try {
+    const docxBuffer = await buildWordDocument(metrics, prevMetrics, meta);
+    await fs.writeFile(path.join(MONTHLY_REPORTS_DIR, docxFilename), docxBuffer);
+  } catch (docxErr) {
+    console.error('[wordReport] Failed to generate .docx:', docxErr.message);
+  }
+
   await execute(
     'UPDATE Reports SET file_path = ?, created_at = ? WHERE id = ?',
     [filename, generatedAt.toISOString(), reportId]
@@ -771,6 +781,7 @@ export async function generateMonthlyReport({ year, month, generatedBy = null })
     reportId,
     refreshed,
     filename,
+    docxFilename,
     summary: { ...metrics, report_date: reportDate },
   };
 }
@@ -798,10 +809,23 @@ export async function getLatestMonthlyReport() {
   if (!report) return null;
 
   let markdown = null;
+  const filePath = path.join(MONTHLY_REPORTS_DIR, path.basename(report.file_path));
   try {
-    markdown = await fs.readFile(path.join(MONTHLY_REPORTS_DIR, path.basename(report.file_path)), 'utf8');
+    markdown = await fs.readFile(filePath, 'utf8');
   } catch {
-    markdown = null;
+    if (report.report_date) {
+      const [yearStr, monthStr] = String(report.report_date).split('-');
+      const year = parseInt(yearStr, 10);
+      const month = parseInt(monthStr, 10);
+      if (year && month) {
+        try {
+          await generateMonthlyReport({ year, month, generatedBy: null });
+          markdown = await fs.readFile(filePath, 'utf8');
+        } catch {
+          markdown = null;
+        }
+      }
+    }
   }
 
   return { report, markdown };
