@@ -6,7 +6,8 @@ import { PACKAGES } from '../data/catalog.js';
 import { buildWordDocument } from './wordReportService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const MONTHLY_REPORTS_DIR = path.join(__dirname, '..', 'reports-output');
+const LOCAL_REPORTS_DIR = path.join(__dirname, '..', 'reports-output');
+export const MONTHLY_REPORTS_DIR = process.env.VERCEL ? path.join('/tmp', 'reports-output') : LOCAL_REPORTS_DIR;
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',

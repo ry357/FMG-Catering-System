@@ -19,7 +19,7 @@ import {
 
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPORTS_DIR = path.join(__dirname, '..', 'reports-output');
+const REPORTS_DIR = process.env.VERCEL ? path.join('/tmp', 'reports-output') : path.join(__dirname, '..', 'reports-output');
 
 const REPORT_TYPES = ['daily', 'weekly', 'monthly', 'annual'];
 

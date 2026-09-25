@@ -15,7 +15,7 @@ import {
 } from 'docx';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPORTS_DIR = path.join(__dirname, '..', 'reports-output');
+const REPORTS_DIR = process.env.VERCEL ? path.join('/tmp', 'reports-output') : path.join(__dirname, '..', 'reports-output');
 
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive';
 const GOOGLE_DOC_MIME = 'application/vnd.google-apps.document';
