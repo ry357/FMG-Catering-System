@@ -15,7 +15,6 @@ import {
   TableRow,
   TableCell,
   TextRun,
-  HeadingLevel,
   AlignmentType,
   WidthType,
   BorderStyle,
@@ -23,8 +22,6 @@ import {
   Header,
   Footer,
   PageNumber,
-  NumberFormat,
-  SectionType,
   TableLayoutType,
   VerticalAlign,
   convertInchesToTwip,
@@ -505,7 +502,7 @@ export async function buildWordDocument(metrics, prevMetrics, meta) {
       new Paragraph({
         children: [
           new TextRun({ text: `Report ID: ${meta.reportId}  |  Page `, size: pt(9), color: '888888', font: bodyFont }),
-          new PageNumber({ number: NumberFormat.DECIMAL }),
+          new TextRun({ children: [PageNumber.CURRENT], size: pt(9), color: '888888', font: bodyFont }),
         ],
         alignment: AlignmentType.CENTER,
       }),
