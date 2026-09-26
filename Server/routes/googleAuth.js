@@ -2,6 +2,7 @@ import express from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { queryOne, executeWithId, execute } from '../config/dbHelper.js';
 import jwt from 'jsonwebtoken';
+import { logActivity } from '../services/activityLogService.js';
 
 const router = express.Router();
 
@@ -88,6 +89,15 @@ router.post('/verify', async (req, res) => {
     );
 
     console.log(`✅ Authentication successful for ${email}`);
+
+    await logActivity({
+      action: 'customer_login',
+      category: 'auth',
+      description: `Customer "${customer.name}" signed in via Google`,
+      performed_by: customer.email,
+      details: { customerId: customer.id, method: 'google' },
+    });
+
     res.json({
       success: true,
       token,

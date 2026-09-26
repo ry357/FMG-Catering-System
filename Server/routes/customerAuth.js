@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { queryOne, execute, executeWithId } from '../config/dbHelper.js';
 import { sendCustomerOtpEmail } from '../services/emailService.js';
+import { logActivity } from '../services/activityLogService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -78,6 +79,15 @@ router.post('/register', async (req, res) => {
       );
       const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [existing.id]);
       const token = issueCustomerToken(updated);
+
+      await logActivity({
+        action: 'customer_register',
+        category: 'auth',
+        description: `Customer "${updated.name}" registered (linked existing account)`,
+        performed_by: updated.email,
+        details: { customerId: updated.id, method: 'email_password' },
+      });
+
       return res.status(201).json({ success: true, token, customer: serializeCustomer(updated) });
     }
 
@@ -88,6 +98,14 @@ router.post('/register', async (req, res) => {
     );
     const customer = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
     const token = issueCustomerToken(customer);
+
+    await logActivity({
+      action: 'customer_register',
+      category: 'auth',
+      description: `New customer "${customer.name}" registered`,
+      performed_by: customer.email,
+      details: { customerId: customer.id, method: 'email_password' },
+    });
 
     res.status(201).json({ success: true, token, customer: serializeCustomer(customer) });
   } catch (error) {
@@ -118,6 +136,15 @@ router.post('/login', async (req, res) => {
     }
 
     const token = issueCustomerToken(customer);
+
+    await logActivity({
+      action: 'customer_login',
+      category: 'auth',
+      description: `Customer "${customer.name}" logged in via email/password`,
+      performed_by: customer.email,
+      details: { customerId: customer.id, method: 'email_password' },
+    });
+
     res.json({ success: true, token, customer: serializeCustomer(customer) });
   } catch (error) {
     console.error('Customer login error:', error);
@@ -204,6 +231,15 @@ router.post('/otp/verify', async (req, res) => {
     }
 
     const token = issueCustomerToken(customer);
+
+    await logActivity({
+      action: 'customer_login',
+      category: 'auth',
+      description: `Customer "${customer.name}" logged in via email OTP`,
+      performed_by: customer.email,
+      details: { customerId: customer.id, method: 'email_otp' },
+    });
+
     res.json({ success: true, token, customer: serializeCustomer(customer) });
   } catch (error) {
     console.error('Customer OTP verify error:', error);
