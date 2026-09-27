@@ -28,6 +28,7 @@ import { getPaymentConfig } from '../../services/paymentService';
 import { useAuth } from '../../context/AuthContext';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
+import AddressAutocomplete from '../ui/AddressAutocomplete';
 import PaymentSummary from '../payment/PaymentSummary';
 import PaymentMethodSelector from '../payment/PaymentMethodSelector';
 import GCashCheckout from '../payment/GCashCheckout';
@@ -776,7 +777,7 @@ export default function BookNow({ initialMenuBooking }) {
                   </FormField>
 
                   <FormField label="Event Venue or Establishment" error={errors.address} required>
-                    <input type="text" name="address" value={form.address} onChange={handleChange} className={inputClass} placeholder="e.g. Grand Convention Center, Cebu City" />
+                    <AddressAutocomplete name="address" value={form.address} onChange={handleChange} className={inputClass} placeholder="e.g. Grand Convention Center, Cebu City" />
                   </FormField>
 
                   <div className="grid sm:grid-cols-2 gap-5">
