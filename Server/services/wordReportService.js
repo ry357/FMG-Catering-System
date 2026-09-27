@@ -29,11 +29,11 @@ import {
 } from 'docx';
 
 // ── Colour palette ─────────────────────────────────────────────────────────
-const GOLD        = 'B8921F';   // header fill
+const GOLD        = '000000';   // header fill
 const GOLD_LIGHT  = 'FDF3D7';   // alternating row (odd)
 const WHITE       = 'FFFFFF';
 const DARK        = '1C1C1C';
-const BORDER_COLOR= 'D4A017';
+const BORDER_COLOR= '000000';
 
 // ── Typography helpers ─────────────────────────────────────────────────────
 const bodyFont  = 'Calibri';
@@ -75,7 +75,7 @@ const sectionHeading = (text) =>
         text: String(text),
         bold: true,
         size: pt(13),
-        color: GOLD,
+        color: '000000',
         font: titleFont,
       }),
     ],
@@ -100,8 +100,8 @@ const tableBorder = {
   bottom: { style: BorderStyle.SINGLE, size: 4, color: BORDER_COLOR },
   left:   { style: BorderStyle.SINGLE, size: 4, color: BORDER_COLOR },
   right:  { style: BorderStyle.SINGLE, size: 4, color: BORDER_COLOR },
-  insideH:{ style: BorderStyle.SINGLE, size: 2, color: 'E5D5A0' },
-  insideV:{ style: BorderStyle.SINGLE, size: 2, color: 'E5D5A0' },
+  insideH:{ style: BorderStyle.SINGLE, size: 2, color: '000000' },
+  insideV:{ style: BorderStyle.SINGLE, size: 2, color: '000000' },
 };
 
 /** Gold header row */
@@ -124,7 +124,7 @@ const headerRow = (labels, widths) =>
             alignment: AlignmentType.CENTER,
           }),
         ],
-        shading: { fill: GOLD, type: ShadingType.CLEAR, color: GOLD },
+        shading: { fill: '000000', type: ShadingType.CLEAR, color: '000000' },
         verticalAlign: VerticalAlign.CENTER,
         margins: { top: 60, bottom: 60, left: 80, right: 80 },
         width: widths ? { size: widths[i], type: WidthType.PERCENTAGE } : undefined,
@@ -145,9 +145,9 @@ const dataRow = (cells, rowIndex, alignments = []) =>
           }),
         ],
         shading: {
-          fill: rowIndex % 2 === 0 ? GOLD_LIGHT : WHITE,
+          fill: WHITE,
           type: ShadingType.CLEAR,
-          color: rowIndex % 2 === 0 ? GOLD_LIGHT : WHITE,
+          color: WHITE,
         },
         verticalAlign: VerticalAlign.CENTER,
         margins: { top: 50, bottom: 50, left: 80, right: 80 },
@@ -194,7 +194,7 @@ function buildCoverPage(metrics, meta) {
   return [
     p([]),
     p([]),
-    centered([new TextRun({ text: 'FMG CATERING SERVICES', bold: true, size: pt(28), font: titleFont, color: GOLD })]),
+    centered([new TextRun({ text: 'FMG CATERING SERVICES', bold: true, size: pt(28), font: titleFont, color: '000000' })]),
     p([]),
     centered([new TextRun({ text: 'Monthly Sales Report', bold: true, size: pt(20), font: titleFont, color: DARK })]),
     p([]),
@@ -288,7 +288,7 @@ function buildSection3(metrics) {
       ].map((cell) =>
         new TableCell({
           children: [new Paragraph({ children: [bold(cell, 10)], alignment: AlignmentType.RIGHT })],
-          shading: { fill: 'E8D8A0', type: ShadingType.CLEAR, color: 'E8D8A0' },
+          shading: { fill: 'F2F2F2', type: ShadingType.CLEAR, color: 'F2F2F2' },
           verticalAlign: VerticalAlign.CENTER,
           margins: { top: 60, bottom: 60, left: 80, right: 80 },
           borders: tableBorder,
