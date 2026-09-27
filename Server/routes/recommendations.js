@@ -26,20 +26,28 @@ router.post('/', async (req, res) => {
 
     const normalizedEventType = String(eventType).toLowerCase();
 
-    const candidates = PACKAGES.map((pkg) => ({
-      ...pkg,
-      estimatedTotal: pkg.pricePerGuest * guestCount,
-    })).filter((pkg) => {
+    const candidates = PACKAGES.map((pkg) => {
+      const baseTotal = pkg.pricePerGuest * guestCount;
+      const estimatedTotal = Math.max(baseTotal, totalBudget);
+      const additionalFoodAllowance = Math.max(0, totalBudget - baseTotal);
+      return {
+        ...pkg,
+        baseTotal,
+        estimatedTotal,
+        additionalFoodAllowance
+      };
+    }).filter((pkg) => {
       const supportsEvent = (pkg.eventTypes || []).some((t) => String(t).toLowerCase() === normalizedEventType);
       if (!supportsEvent) return false;
       if (guestCount < pkg.minGuests || guestCount > pkg.maxGuests) return false;
-      if (pkg.estimatedTotal > totalBudget) return false;
+      // We only exclude if their budget is smaller than the base total.
+      if (pkg.baseTotal > totalBudget) return false;
       return true;
     });
 
     const ranked = candidates
       .map((pkg) => {
-        const budgetUtilization = pkg.estimatedTotal / totalBudget;
+        const budgetUtilization = pkg.baseTotal / totalBudget;
         const sweetSpot = (pkg.minGuests + pkg.maxGuests) / 2;
         const spread = Math.max(1, pkg.maxGuests - pkg.minGuests);
         const guestCapacityMatch = Math.max(0, 1 - Math.abs(guestCount - sweetSpot) / spread);

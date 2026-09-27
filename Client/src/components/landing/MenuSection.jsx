@@ -64,13 +64,32 @@ export default function MenuSection({ initialPackage = null }) {
   const suggestions = useMemo(() => {
     if (!hasValidInputs || packageMode || category !== 'natural') return [];
     const serviceFee = calculateServiceVenueFee(guests);
+    
+    // The target budget for food is what's left after the service fee.
+    const targetFoodBudget = Math.max(0, budget - serviceFee);
+
     return naturalOffers
       .map((offer) => {
-        const total = offer.pricePerPax * guests;
-        return { ...offer, total, serviceFee, grandTotal: total + serviceFee, remaining: budget - total };
+        const baseTotal = offer.pricePerPax * guests;
+        
+        // If they have more budget than the base total, we scale the total up to their target food budget
+        // because they can add more food/platters to reach their budget.
+        const total = Math.max(baseTotal, targetFoodBudget);
+        const additionalFoodAllowance = Math.max(0, targetFoodBudget - baseTotal);
+        const grandTotal = total + serviceFee;
+        
+        return { 
+          ...offer, 
+          baseTotal,
+          additionalFoodAllowance,
+          total, 
+          serviceFee, 
+          grandTotal, 
+          remaining: budget - grandTotal 
+        };
       })
-      .filter((offer) => offer.total <= budget)
-      .sort((a, b) => (b.total / budget) - (a.total / budget) || b.pricePerPax - a.pricePerPax)
+      .filter((offer) => offer.baseTotal <= targetFoodBudget) // they must at least afford the base package
+      .sort((a, b) => b.pricePerPax - a.pricePerPax) // highest base tier first
       .slice(0, 3);
   }, [budget, guests, hasValidInputs, packageMode, category, naturalOffers]);
 
@@ -166,9 +185,23 @@ export default function MenuSection({ initialPackage = null }) {
                   <span className="w-fit rounded-full bg-gold-50 px-3 py-1 text-xs font-semibold text-gold-700">{tierLabel(offer.tier)}</span>
                   <span className="text-xs text-charcoal-muted">{index === 0 ? '· Closest budget match' : ''}</span>
                 </div>
-                <h4 className="mt-4 font-display text-xl font-semibold text-charcoal">{offer.name}</h4><p className="mt-1 text-sm text-charcoal-muted">{formatCurrency(offer.pricePerPax)} per pax</p>
-                <div className="my-5 rounded-xl bg-gold-50 p-4"><p className="text-sm text-charcoal-muted">For {guests} guests</p><p className="font-display text-3xl font-bold text-gold-600">{formatCurrency(offer.grandTotal)}</p><p className="mt-1 text-xs text-charcoal-muted">{formatCurrency(offer.total)} food + {formatCurrency(offer.serviceFee)} service &amp; venue</p><p className="mt-1 text-xs text-charcoal-muted">{formatCurrency(offer.remaining)} remaining from your food budget</p></div>
-                <ul className="space-y-2 text-sm text-charcoal-light">{offer.includes.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-600">✓</span><span>{item}</span></li>)}</ul>
+                <h4 className="mt-4 font-display text-xl font-semibold text-charcoal">{offer.name}</h4><p className="mt-1 text-sm text-charcoal-muted">Base rate: {formatCurrency(offer.pricePerPax)} per pax</p>
+                <div className="my-5 rounded-xl bg-gold-50 p-4">
+                  <p className="text-sm text-charcoal-muted">Total for {guests} guests</p>
+                  <p className="font-display text-3xl font-bold text-gold-600">{formatCurrency(offer.grandTotal)}</p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-charcoal-muted flex justify-between"><span>Base food cost:</span> <span>{formatCurrency(offer.baseTotal)}</span></p>
+                    {offer.additionalFoodAllowance > 0 && (
+                      <p className="text-xs text-green-700 font-medium flex justify-between"><span>Extra food allowance:</span> <span>+{formatCurrency(offer.additionalFoodAllowance)}</span></p>
+                    )}
+                    <p className="text-xs text-charcoal-muted flex justify-between"><span>Service &amp; venue:</span> <span>{formatCurrency(offer.serviceFee)}</span></p>
+                  </div>
+                  {offer.remaining > 0 && <p className="mt-2 text-xs font-medium text-gold-700">{formatCurrency(offer.remaining)} under budget</p>}
+                </div>
+                <ul className="space-y-2 text-sm text-charcoal-light flex-grow">
+                  {offer.includes.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-600">✓</span><span>{item}</span></li>)}
+                  {offer.additionalFoodAllowance > 0 && <li className="flex gap-2 font-medium text-charcoal"><span className="text-green-600">✓</span><span>Plus {formatCurrency(offer.additionalFoodAllowance)} for additional food choices</span></li>}
+                </ul>
                 <Button className="mt-6 w-full" onClick={() => chooseOffer(offer)}>Continue to Booking</Button>
               </article>)}
             </div> : <div className="rounded-xl border border-amber-200 bg-white p-6 text-center text-charcoal-muted">No listed offer fits both your budget and guest count. Increase the budget, reduce the guest count, or contact FMG for a custom quote.</div>}
