@@ -775,8 +775,8 @@ export default function BookNow({ initialMenuBooking }) {
                     <input type="email" name="email" value={form.email} onChange={handleChange} className={inputClass} />
                   </FormField>
 
-                  <FormField label="Complete Address" error={errors.address} required>
-                    <input type="text" name="address" value={form.address} onChange={handleChange} className={inputClass} />
+                  <FormField label="Event Venue or Establishment" error={errors.address} required>
+                    <input type="text" name="address" value={form.address} onChange={handleChange} className={inputClass} placeholder="e.g. Grand Convention Center, Cebu City" />
                   </FormField>
 
                   <div className="grid sm:grid-cols-2 gap-5">

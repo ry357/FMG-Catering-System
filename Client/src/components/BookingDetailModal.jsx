@@ -210,7 +210,7 @@ export default function BookingDetailModal({ booking, sale, onClose }) {
               <p className="text-xs text-slate-400 mt-1">{booking.customer_phone}</p>
               <p className="text-xs text-slate-400">{booking.customer_email}</p>
               <p className="text-xs text-slate-300 mt-2">
-                <span className="text-slate-500">Address: </span>
+                <span className="text-slate-500">Event Venue: </span>
                 {booking.customer_address || '—'}
               </p>
             </div>
