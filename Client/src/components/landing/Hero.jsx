@@ -44,10 +44,10 @@ export default function Hero() {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button onClick={handleBook} size="lg">
+          <Button onClick={handleBook} size="lg" className="px-10 py-5 text-lg shadow-[0_0_40px_-10px_rgba(251,191,36,0.6)]">
             Book Your Event
           </Button>
-          <Button onClick={() => navigate('/services')} variant="secondary" size="lg">
+          <Button onClick={() => navigate('/services')} variant="outline" size="md" className="opacity-80 hover:opacity-100">
             Browse the Menus
           </Button>
         </div>
