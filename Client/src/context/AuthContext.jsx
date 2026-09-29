@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     const savedCustomer = localStorage.getItem('customer');
     const savedToken = localStorage.getItem('customerToken');
 
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       });
       setUser(response.data.user);
     } catch (error) {
-      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ const login = async (username, password) => {
   if (response.data.requiresOtp) {
     return response.data;
   }
-  localStorage.setItem('token', response.data.token);
+  sessionStorage.setItem('token', response.data.token);
   setUser(response.data.user);
   return response.data;
 };
@@ -81,7 +81,7 @@ const login = async (username, password) => {
 // TEMP: OTP flow disabled for testing. verifyOTP/sendOTP kept for re-wiring later.
 const verifyOTP = async (otpId, otp) => {
   const response = await axios.post('/api/auth/otp/verify', { otpId, otp });
-  localStorage.setItem('token', response.data.token);
+  sessionStorage.setItem('token', response.data.token);
   setUser(response.data.user);
   return response.data;
 };
@@ -102,7 +102,7 @@ const loginWithGoogle = useCallback(async (credential) => {
 const adminGoogleLogin = useCallback(async (credential) => {
   const response = await axios.post('/api/google-auth/admin-verify', { credential });
   if (response.data.token && response.data.user) {
-    localStorage.setItem('token', response.data.token);
+    sessionStorage.setItem('token', response.data.token);
     setUser(response.data.user);
   }
   return response.data;
@@ -116,7 +116,7 @@ const logoutCustomer = useCallback(() => {
 }, []);
 
 const logout = () => {
-  localStorage.removeItem('token');
+  sessionStorage.removeItem('token');
   setUser(null);
 };
 

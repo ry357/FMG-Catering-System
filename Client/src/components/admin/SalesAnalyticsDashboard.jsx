@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import {
   ResponsiveContainer,
@@ -13,7 +13,7 @@ import {
   ReferenceDot,
 } from 'recharts';
 
-const PESO = (value) => `₱${Number(value || 0).toLocaleString(undefined, {
+const PESO = (value) => `?${Number(value || 0).toLocaleString(undefined, {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 })}`;
@@ -38,7 +38,7 @@ const renderPeakDot = (props) => {
             fontWeight={700}
             style={{ filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.9))' }}
           >
-            {payload.label} ★
+            {payload.label} ?
           </text>
         )}
       </g>
@@ -74,7 +74,7 @@ const fullMonthLabel = (key) => {
 };
 
 const authHeader = () => ({
-  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
 });
 
 // ---- Icons (inline, stroke-based) ----
@@ -96,7 +96,7 @@ const TrendBadge = ({ value, invert = false, className = '' }) => {
     return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-700/50 text-slate-400 ${className}`}>Baseline</span>;
   }
   const isGood = invert ? value <= 0 : value >= 0;
-  const arrow = value >= 0 ? '▲' : '▼';
+  const arrow = value >= 0 ? '?' : '?';
   return (
     <span
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
@@ -233,7 +233,7 @@ const SalesAnalyticsDashboard = () => {
 
   const liveMonthly = useMemo(() => data?.monthly || [], [data]);
 
-  // Always display months in calendar order (January → December) regardless of
+  // Always display months in calendar order (January ? December) regardless of
   // the data window, so per-month changes are easy to track on the x-axis.
   const monthlyLineData = useMemo(() => {
     const base = liveMonthly;
@@ -274,7 +274,7 @@ const SalesAnalyticsDashboard = () => {
         <div>
           <h2 className="font-display text-xl font-semibold text-white">Sales Analytics</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            {data ? `${data.range.label} · ${data.range.start} to ${data.range.end}` : 'Loading range…'}
+            {data ? `${data.range.label} � ${data.range.start} to ${data.range.end}` : 'Loading range�'}
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-400">
@@ -345,7 +345,7 @@ const SalesAnalyticsDashboard = () => {
                 <h3 className="font-display text-lg font-semibold text-white">
                   Monthly Sales Performance
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Time-series of revenue &amp; bookings · trailing 12 months · ★ peak month</p>
+                <p className="text-xs text-slate-400 mt-0.5">Time-series of revenue &amp; bookings � trailing 12 months � ? peak month</p>
               </div>
             </div>
             {monthlyLineData.length ? (
@@ -405,7 +405,7 @@ const SalesAnalyticsDashboard = () => {
                         const item = payload[0]?.payload;
                         return (
                           <div className="bg-[#0B1220] text-white text-xs rounded-lg px-3 py-2.5 shadow-xl border border-amber-400/30">
-                            <p className="font-semibold mb-1.5 text-amber-300">{label}{item?.isPeak ? '  ★ Peak' : ''}</p>
+                            <p className="font-semibold mb-1.5 text-amber-300">{label}{item?.isPeak ? '  ? Peak' : ''}</p>
                             <p className="text-slate-300 py-0.5">Revenue: <span className="font-medium text-amber-300">{PESO(item?.revenue)}</span></p>
                             <p className="text-slate-300 py-0.5">Bookings: <span className="font-medium text-pink-300">{item?.events}</span></p>
                             <p className="text-slate-300 py-0.5">Demand Score: <span className="font-medium text-white">{item?.demandScore}</span></p>
@@ -466,7 +466,7 @@ const SalesAnalyticsDashboard = () => {
           {/* Booking Pipeline */}
           <div className="bg-[#101A2E] rounded-xl border border-[#1E2A45] p-4 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
             <h3 className="font-display text-lg font-semibold text-white mb-1">Booking Pipeline</h3>
-            <p className="text-xs text-slate-400 mb-5">Inquiries → Confirmed → Completed · all bookings in the database</p>
+            <p className="text-xs text-slate-400 mb-5">Inquiries ? Confirmed ? Completed � all bookings in the database</p>
             <PipelineFunnel data={data.pipeline} />
           </div>
 

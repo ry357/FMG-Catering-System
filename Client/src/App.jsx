@@ -48,6 +48,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/admin/admindashboard" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

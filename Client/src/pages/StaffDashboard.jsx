@@ -88,7 +88,7 @@ const StaffDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       const [bookingsRes, salesRes] = await Promise.all([
         axios.get('/api/bookings', {
           headers: { Authorization: `Bearer ${token}` }
@@ -108,7 +108,7 @@ const StaffDashboard = () => {
 
   const updateBookingStatus = async (bookingId, status) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       await axios.patch(`/api/bookings/${bookingId}/status`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });

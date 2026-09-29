@@ -53,7 +53,7 @@ const Trendnalytics = () => {
 
   useEffect(() => {
     let cancelled = false;
-    const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+    const headers = { Authorization: `Bearer ${sessionStorage.getItem('token')}` };
 
     Promise.all([
       axios.get('/api/analytics/packages', { headers }),
