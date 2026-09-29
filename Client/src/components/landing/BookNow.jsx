@@ -28,6 +28,7 @@ import { getPaymentConfig } from '../../services/paymentService';
 import { useAuth } from '../../context/AuthContext';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
+import FoodDishCard from '../ui/FoodDishCard';
 import AddressAutocomplete from '../ui/AddressAutocomplete';
 import PaymentSummary from '../payment/PaymentSummary';
 import PaymentMethodSelector from '../payment/PaymentMethodSelector';
@@ -195,15 +196,21 @@ function ChoiceGroup({ title, choices, selected, limit, onToggle }) {
         <span>{title}</span>
         <span className="text-gold-600">Choose {limit} · {selected.length}/{limit}</span>
       </legend>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
         {choices.map((choice) => {
           const checked = selected.includes(choice);
           const unavailable = !checked && selected.length >= limit;
           return (
-            <label key={choice} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition ${checked ? 'border-gold-400 bg-gold-50 text-charcoal' : 'border-gray-200 bg-white text-charcoal-light'} ${unavailable ? 'cursor-not-allowed opacity-45' : 'hover:border-gold-300'}`}>
-              <input type="checkbox" checked={checked} disabled={unavailable} onChange={() => onToggle(choice)} className="h-4 w-4 rounded border-gray-300 text-gold-600 focus:ring-gold-500" />
-              {choice}
-            </label>
+            <FoodDishCard
+              key={choice}
+              dish={{ name: choice }}
+              selectable={true}
+              selected={checked}
+              disabled={unavailable}
+              onSelect={() => onToggle(choice)}
+              compact={true}
+              showPrice={false}
+            />
           );
         })}
       </div>
@@ -277,22 +284,20 @@ function DropOffChecklist({ selections, onToggle, total, itemCount }) {
                 {subs.length > 1 && (
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">{sub}</p>
                 )}
-                <div className={`mt-2 grid gap-2 sm:grid-cols-2`}>
+                <div className="mt-2.5 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                   {groupItems.map((item) => {
                     const checked = selections[key]?.includes(item.id);
                     return (
-                      <label
+                      <FoodDishCard
                         key={item.id}
-                        className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm transition ${checked ? 'border-gold-400 bg-gold-50 text-charcoal' : 'border-gray-200 bg-white text-charcoal-light hover:border-gold-300'}`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => onToggle(key, item.id)}
-                          className="h-4 w-4 rounded border-gray-300 text-gold-600 focus:ring-gold-500"
-                        />
-                        <span className="font-medium">{item.name}</span>
-                      </label>
+                        dish={item}
+                        price={item.price}
+                        selectable={true}
+                        selected={checked}
+                        onSelect={() => onToggle(key, item.id)}
+                        compact={true}
+                        showPrice={true}
+                      />
                     );
                   })}
                 </div>

@@ -6,6 +6,7 @@ import Footer from '../components/layout/Footer';
 import Packages from '../components/landing/Packages';
 import SectionHeading from '../components/ui/SectionHeading';
 import Button from '../components/ui/Button';
+import FoodDishCard from '../components/ui/FoodDishCard';
 import { MENU_OFFERS, MENU_TIERS, PLATTER_MENU, SERVICES } from '../data/landingData';
 import { formatCurrency } from '../utils/helpers';
 import foodPerPaxImage from '../assets/5b4b7960-0099-4363-9d98-ac7814b440f6.jpg';
@@ -59,19 +60,19 @@ function SetCard({ offer, onBook }) {
   );
 }
 
-function DishChips({ dishes }) {
+function DishGrid({ dishes }) {
   return (
-    <ul className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
       {dishes.map((dish) => (
-        <li
+        <FoodDishCard
           key={dish.id}
-          className="flex items-center gap-2 rounded-full border border-gold-200 bg-white px-3.5 py-1.5 text-sm text-charcoal-light"
-        >
-          {dish.name}
-          <span className="font-semibold text-gold-600">{formatCurrency(dish.price)}</span>
-        </li>
+          dish={dish}
+          price={dish.price}
+          selectable={false}
+          compact={true}
+        />
       ))}
-    </ul>
+    </div>
   );
 }
 
@@ -220,7 +221,7 @@ export default function ServicesPage() {
                     <div key={sub}>
                       <h4 className="text-sm font-semibold uppercase tracking-widest text-gold-600">{sub}</h4>
                       <div className="mt-3">
-                        <DishChips dishes={dishes} />
+                        <DishGrid dishes={dishes} />
                       </div>
                     </div>
                   ))}
@@ -230,7 +231,7 @@ export default function ServicesPage() {
               <div>
                 <h3 className="font-display text-2xl font-semibold text-charcoal">Special</h3>
                 <div className="mt-4">
-                  <DishChips dishes={PLATTER_MENU.specials} />
+                  <DishGrid dishes={PLATTER_MENU.specials} />
                 </div>
               </div>
 
@@ -241,7 +242,7 @@ export default function ServicesPage() {
                     <div key={sub}>
                       <h4 className="text-sm font-semibold uppercase tracking-widest text-gold-600">{sub}</h4>
                       <div className="mt-3">
-                        <DishChips dishes={dishes} />
+                        <DishGrid dishes={dishes} />
                       </div>
                     </div>
                   ))}
@@ -252,13 +253,13 @@ export default function ServicesPage() {
                 <div>
                   <h3 className="font-display text-2xl font-semibold text-charcoal">Drinks</h3>
                   <div className="mt-4">
-                    <DishChips dishes={PLATTER_MENU.drinks} />
+                    <DishGrid dishes={PLATTER_MENU.drinks} />
                   </div>
                 </div>
                 <div>
                   <h3 className="font-display text-2xl font-semibold text-charcoal">Fresh Fruit</h3>
                   <div className="mt-4">
-                    <DishChips dishes={PLATTER_MENU.fruits} />
+                    <DishGrid dishes={PLATTER_MENU.fruits} />
                   </div>
                 </div>
               </div>
