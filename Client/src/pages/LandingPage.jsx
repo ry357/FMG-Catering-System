@@ -6,16 +6,19 @@ import HowItWorks from '../components/landing/HowItWorks';
 import ReadySection from '../components/landing/ReadySection';
 import Gallery from '../components/landing/Gallery';
 
+import Testimonials from '../components/landing/Testimonials';
+
 export default function LandingPage() {
   return (
     <>
       <Navbar />
       <main>
         <Hero />
+        <Gallery />
         <OffersSection />
         <HowItWorks />
+        <Testimonials />
         <ReadySection />
-        <Gallery />
       </main>
       <Footer />
     </>
