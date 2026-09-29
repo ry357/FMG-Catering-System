@@ -136,30 +136,15 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5 max-w-md mx-auto">
             {!requiresOtp ? (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Username</label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
-                    className="w-full px-4 py-3 bg-[#0B1220] border border-[#1E2A45] text-white placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent transition-all"
-                    required
-                  />
+              <div className="space-y-6">
+                <div className="flex justify-center">
+                  {GOOGLE_CLIENT_ID ? (
+                    <div ref={googleButtonRef}></div>
+                  ) : (
+                    <p className="text-xs text-rose-400">Google Sign-In not configured.</p>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="w-full px-4 py-3 bg-[#0B1220] border border-[#1E2A45] text-white placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent transition-all"
-                    required
-                  />
-                </div>
-              </>
+              </div>
             ) : (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">6-Digit Code</label>
@@ -181,33 +166,14 @@ const Login = () => {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={busy}
-              className={`w-full bg-gradient-to-r from-amber-500 to-amber-400 text-white py-3 rounded-lg font-semibold transition-all ${busy ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 hover:shadow-[0_0_24px_-6px_rgba(251,191,36,0.7)]'}`}
-            >
-              {busy ? 'Processing...' : requiresOtp ? 'Verify & Sign In' : 'Sign In'}
-            </button>
-
-            {!requiresOtp && (
-              <>
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#1E2A45]"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-[#101A2E] text-slate-500">Or admin login with</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-center">
-                  {GOOGLE_CLIENT_ID ? (
-                    <div ref={googleButtonRef}></div>
-                  ) : (
-                    <p className="text-xs text-rose-400">Google Sign-In not configured.</p>
-                  )}
-                </div>
-              </>
+            {requiresOtp && (
+              <button
+                type="submit"
+                disabled={busy}
+                className={`w-full bg-gradient-to-r from-amber-500 to-amber-400 text-white py-3 rounded-lg font-semibold transition-all ${busy ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 hover:shadow-[0_0_24px_-6px_rgba(251,191,36,0.7)]'}`}
+              >
+                {busy ? 'Processing...' : 'Verify & Sign In'}
+              </button>
             )}
 
             {requiresOtp && (

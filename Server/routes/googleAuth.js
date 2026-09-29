@@ -166,8 +166,36 @@ router.post('/admin-verify', async (req, res) => {
     // Look for this user in the Users table (Admin/Staff)
     const user = await queryOne('SELECT id, username, email, role, full_name FROM Users WHERE email = ?', [email]);
 
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Admin access denied for this Google account.' });
+    if (!user) {
+      return res.status(403).json({ success: false, error: 'Access denied for this Google account.' });
+    }
+
+    if (user.role === 'staff') {
+      const token = jwt.sign(
+        { id: user.id, username: user.username, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '8h' }
+      );
+
+      await logActivity({
+        action: 'user_login',
+        category: 'auth',
+        description: `Staff "${user.username}" signed in via Google`,
+        performed_by: user.username,
+        details: { userId: user.id, role: user.role, email: user.email },
+      });
+
+      return res.json({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          full_name: user.full_name,
+        },
+      });
     }
 
     // Generate and send OTP for admin
