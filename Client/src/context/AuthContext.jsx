@@ -101,7 +101,10 @@ const loginWithGoogle = useCallback(async (credential) => {
 
 const adminGoogleLogin = useCallback(async (credential) => {
   const response = await axios.post('/api/google-auth/admin-verify', { credential });
-  // It returns requiresOtp: true and otpId
+  if (response.data.token && response.data.user) {
+    localStorage.setItem('token', response.data.token);
+    setUser(response.data.user);
+  }
   return response.data;
 }, []);
 

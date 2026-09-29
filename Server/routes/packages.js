@@ -1,6 +1,6 @@
 import express from 'express';
 import { query, execute, executeWithId } from '../config/dbHelper.js';
-import { verifyToken, isAdmin } from '../middleware/auth.js';
+import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST a new package (Admin only)
-router.post('/', verifyToken, isAdmin, async (req, res) => {
+router.post('/', authenticateToken, requireRole(['admin']), async (req, res) => {
   const { name, description, price_per_guest, min_guests, max_guests, event_types, features, featured } = req.body;
   if (!name) return res.status(400).json({ error: 'Name is required' });
 
@@ -50,7 +50,7 @@ router.post('/', verifyToken, isAdmin, async (req, res) => {
 });
 
 // PUT (update) an existing package (Admin only)
-router.put('/:id', verifyToken, isAdmin, async (req, res) => {
+router.put('/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
   const { id } = req.params;
   const { name, description, price_per_guest, min_guests, max_guests, event_types, features, featured } = req.body;
 
@@ -83,7 +83,7 @@ router.put('/:id', verifyToken, isAdmin, async (req, res) => {
 });
 
 // DELETE a package (Admin only)
-router.delete('/:id', verifyToken, isAdmin, async (req, res) => {
+router.delete('/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
   const { id } = req.params;
   try {
     const changes = await execute('DELETE FROM Packages WHERE id = ?', [id]);

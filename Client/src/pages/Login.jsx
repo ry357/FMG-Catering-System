@@ -36,6 +36,8 @@ const Login = () => {
         setRequiresOtp(true);
         setOtpId(data.otpId);
         // OTP was already sent by the server via /admin-verify
+      } else if (data.user) {
+        handleSuccessfulLogin(data.user);
       }
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Google sign-in failed.');
