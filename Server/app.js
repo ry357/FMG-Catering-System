@@ -60,7 +60,7 @@ app.use('/api/google-auth', googleAuthRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api', contentRoutes);
+// contentRoutes moved below to avoid shadowing
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/reports', reportRoutes);
@@ -69,6 +69,7 @@ app.use('/api/customer', authLimiter, customerAuthRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/activity-logs', activityLogRoutes);
 app.use('/api/packages', packagesRoutes);
+app.use('/api', contentRoutes);
 
 // Monthly report trigger for Vercel Cron (replaces the local setInterval job).
 // Generates the summary report for the previous, now-completed month.
