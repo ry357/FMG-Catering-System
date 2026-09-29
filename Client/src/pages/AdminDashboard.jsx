@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard';
@@ -142,6 +142,17 @@ const AdminDashboard = () => {
   const [logsSearch, setLogsSearch] = useState('');
   const [logsSearchInput, setLogsSearchInput] = useState('');
   const [managementDropdownOpen, setManagementDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setManagementDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -395,10 +406,9 @@ const AdminDashboard = () => {
             </button>
           </div>
           
-          <div className="relative mb-0.5">
+          <div className="relative mb-0.5" ref={dropdownRef}>
             <button
               onClick={() => setManagementDropdownOpen(!managementDropdownOpen)}
-              onBlur={() => setTimeout(() => setManagementDropdownOpen(false), 200)}
               className={`px-4 py-2 text-sm font-medium transition-colors rounded-t-lg border-b-2 ${
                 ['users', 'menu-management'].includes(activeTab)
                   ? 'text-cyan-300 border-cyan-400'
