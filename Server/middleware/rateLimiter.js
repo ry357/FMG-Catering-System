@@ -12,11 +12,10 @@ export const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Auth endpoints rate limiter — high threshold so testing and admin sessions
-// are never blocked, while still guarding against brute-force floods.
+// Auth endpoints rate limiter — strict threshold to guard against brute-force floods.
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 login attempts per 15 minutes
+  max: 5, // 5 login attempts per 15 minutes
   message: {
     success: false,
     error: 'Too many login attempts, please try again later.'

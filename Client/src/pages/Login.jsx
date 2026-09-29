@@ -2,30 +2,44 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-// TEMP: OTP flow removed for testing — admin logs in directly with password.
-// Re-wire later: restore OTP state, handleSubmit requiresOtp branch, and the
-// Admin Verification Code form (see git history / previous version of this file).
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const [requiresOtp, setRequiresOtp] = useState(false);
+  const [otpId, setOtpId] = useState('');
+  const [otp, setOtp] = useState('');
+  const { login, verifyOTP, sendOTP } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleSuccessfulLogin = (user) => {
+    const roleHome = user.role === 'admin' ? '/admin/dashboard' : '/staff/dashboard';
+    const intended = location.state?.from?.pathname;
+    const isAllowed = user.role === 'admin'
+      ? intended?.startsWith('/admin')
+      : intended?.startsWith('/staff');
+    navigate(isAllowed && intended ? intended : roleHome);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      const data = await login(username, password);
-      const roleHome = data.user.role === 'admin' ? '/admin/dashboard' : '/staff/dashboard';
-      const intended = location.state?.from?.pathname;
-      const isAllowed = data.user.role === 'admin'
-        ? intended?.startsWith('/admin')
-        : intended?.startsWith('/staff');
-      navigate(isAllowed && intended ? intended : roleHome);
+      if (requiresOtp) {
+        const data = await verifyOTP(otpId, otp);
+        handleSuccessfulLogin(data.user);
+      } else {
+        const data = await login(username, password);
+        if (data.requiresOtp) {
+          setRequiresOtp(true);
+          setOtpId(data.otpId);
+        } else {
+          handleSuccessfulLogin(data.user);
+        }
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Login failed');
     }
   };
 
@@ -55,33 +69,56 @@ const Login = () => {
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-gold-600 text-white font-display text-2xl font-bold shadow-[0_0_24px_-6px_rgba(251,191,36,0.6)]">
               FMG
             </div>
-            <h2 className="mt-4 font-display text-3xl font-semibold text-white">Staff & Admin Portal</h2>
-            <p className="text-sm text-slate-400 mt-1">Sign in to manage bookings, sales, reports, and analytics</p>
+            <h2 className="mt-4 font-display text-3xl font-semibold text-white">
+              {requiresOtp ? 'Admin Verification' : 'Staff & Admin Portal'}
+            </h2>
+            <p className="text-sm text-slate-400 mt-1">
+              {requiresOtp
+                ? 'An email with a verification code has been sent to the admin address.'
+                : 'Sign in to manage bookings, sales, reports, and analytics'}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 max-w-md mx-auto">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
-                className="w-full px-4 py-3 bg-[#0B1220] border border-[#1E2A45] text-white placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full px-4 py-3 bg-[#0B1220] border border-[#1E2A45] text-white placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent transition-all"
-                required
-              />
-            </div>
+            {!requiresOtp ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Username</label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your username"
+                    className="w-full px-4 py-3 bg-[#0B1220] border border-[#1E2A45] text-white placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent transition-all"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full px-4 py-3 bg-[#0B1220] border border-[#1E2A45] text-white placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent transition-all"
+                    required
+                  />
+                </div>
+              </>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">6-Digit Code</label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter the 6-digit code"
+                  className="w-full px-4 py-3 bg-[#0B1220] border border-[#1E2A45] text-white placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent transition-all tracking-widest text-center text-lg"
+                  required
+                  maxLength={6}
+                />
+              </div>
+            )}
 
             {error && (
               <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 px-4 py-3 rounded-lg text-sm">
@@ -93,8 +130,20 @@ const Login = () => {
               type="submit"
               className="w-full bg-gradient-to-r from-amber-500 to-amber-400 text-white py-3 rounded-lg font-semibold hover:opacity-90 hover:shadow-[0_0_24px_-6px_rgba(251,191,36,0.7)] transition-all"
             >
-              Sign In
+              {requiresOtp ? 'Verify & Sign In' : 'Sign In'}
             </button>
+
+            {requiresOtp && (
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={() => setRequiresOtp(false)}
+                  className="text-sm text-cyan-400 hover:underline"
+                >
+                  ← Back to Login
+                </button>
+              </div>
+            )}
           </form>
 
           <div className="mt-8 text-center">

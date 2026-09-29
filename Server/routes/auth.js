@@ -86,8 +86,21 @@ router.post('/login', validateLogin, async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    // TEMP: OTP disabled for testing — admin logs in directly like staff.
-    // Re-wire: restore the `requiresOtp` branch below (see /otp/send & /otp/verify).
+    if (user.role === 'admin') {
+      const otp = generateOTP();
+      const otpId = crypto.randomUUID();
+      await saveOtp({ otpId, userId: user.id, otp });
+      await sendOTP(ADMIN_EMAIL, otp);
+
+      return res.json({
+        success: true,
+        requiresOtp: true,
+        otpId,
+        message: 'OTP required for admin login',
+        username: user.username,
+      });
+    }
+
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       JWT_SECRET,
@@ -97,7 +110,7 @@ router.post('/login', validateLogin, async (req, res) => {
     await logActivity({
       action: 'user_login',
       category: 'auth',
-      description: `${user.role === 'admin' ? 'Admin' : 'Staff'} "${user.username}" signed in`,
+      description: `Staff "${user.username}" signed in`,
       performed_by: user.username,
       details: { userId: user.id, role: user.role, email: user.email },
     });
@@ -196,6 +209,14 @@ router.post('/otp/verify', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '8h' }
     );
+
+    await logActivity({
+      action: 'user_login',
+      category: 'auth',
+      description: `Admin "${user.username}" signed in via OTP`,
+      performed_by: user.username,
+      details: { userId: user.id, role: user.role, email: user.email },
+    });
 
     res.json({
       success: true,

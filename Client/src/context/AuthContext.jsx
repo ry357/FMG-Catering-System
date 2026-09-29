@@ -70,6 +70,9 @@ export const AuthProvider = ({ children }) => {
 
 const login = async (username, password) => {
   const response = await axios.post('/api/auth/login', { username, password });
+  if (response.data.requiresOtp) {
+    return response.data;
+  }
   localStorage.setItem('token', response.data.token);
   setUser(response.data.user);
   return response.data;
