@@ -309,7 +309,7 @@ function DropOffChecklist({ selections, onToggle, total, itemCount }) {
   );
 }
 
-export default function BookNow({ initialMenuBooking }) {
+export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const { customer } = useAuth();
   const [searchParams] = useSearchParams();
   const urlCategory = searchParams.get('category');
@@ -814,7 +814,11 @@ export default function BookNow({ initialMenuBooking }) {
                   </FormField>
 
                   <div className="flex flex-wrap gap-3">
-                    {!packageBooking && (
+                    {onBackToPackages ? (
+                      <Button type="button" variant="secondary" onClick={onBackToPackages}>
+                        Back to Packages
+                      </Button>
+                    ) : !packageBooking && (
                       <Button type="button" variant="secondary" onClick={() => setStep('menu')}>
                         Back to Menu & Set
                       </Button>

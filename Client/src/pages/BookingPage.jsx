@@ -45,10 +45,21 @@ export default function BookingPage() {
              </div>
           </div>
         </div>
-        <MenuSection initialPackage={selectedPackage} />
-        {bookingDetails ? (
-          <BookNow initialMenuBooking={bookingDetails} />
-        ) : null}
+        {!bookingDetails ? (
+          <div className="animate-in fade-in duration-500">
+            <MenuSection initialPackage={selectedPackage} />
+          </div>
+        ) : (
+          <div className="animate-in slide-in-from-bottom-8 fade-in duration-500">
+            <BookNow 
+              initialMenuBooking={bookingDetails} 
+              onBackToPackages={() => {
+                setBookingDetails(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }} 
+            />
+          </div>
+        )}
       </main>
       <Footer />
     </>
