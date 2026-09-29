@@ -38,6 +38,7 @@ export default function MenuSection({ initialPackage = null }) {
   const [guestInput, setGuestInput] = useState('');
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [selectedMenuImage, setSelectedMenuImage] = useState(null);
+  const [isCalculating, setIsCalculating] = useState(false);
   const budget = Number(budgetInput);
   const guests = Number(guestInput);
   const packageMode = Boolean(initialPackage);
@@ -47,6 +48,14 @@ export default function MenuSection({ initialPackage = null }) {
     : category === 'drop-off'
       ? true
       : Number.isFinite(budget) && budget > 0 && Number.isInteger(guests) && guests >= MIN_GUESTS;
+
+  useEffect(() => {
+    if (hasValidInputs && !packageMode && category === 'natural') {
+      setIsCalculating(true);
+      const timer = setTimeout(() => setIsCalculating(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [budgetInput, guestInput, hasValidInputs, packageMode, category]);
 
   useEffect(() => {
     if (!selectedMenuImage) return undefined;
@@ -179,8 +188,13 @@ export default function MenuSection({ initialPackage = null }) {
         {hasValidInputs && !packageMode && category === 'natural' && (
           <div className="mt-10" aria-live="polite">
             <div className="mb-5"><p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Recommended packages based on your event details</p><h3 className="mt-1 font-display text-2xl font-semibold text-charcoal">Offers for {guests} guests within {formatCurrency(budget)}</h3></div>
-            {suggestions.length ? <div className="grid gap-6 md:grid-cols-3">
-              {suggestions.map((offer, index) => <article key={offer.id} className="flex flex-col rounded-2xl border border-gold-100 bg-white p-6 shadow-card">
+            {isCalculating ? (
+              <div className="rounded-xl border border-gold-200 bg-gold-50/50 p-10 text-center animate-pulse">
+                <div className="mx-auto h-8 w-8 rounded-full border-2 border-gold-500 border-t-transparent animate-spin mb-4"></div>
+                <p className="text-sm font-medium text-gold-700">Finding the perfect packages for your budget...</p>
+              </div>
+            ) : suggestions.length ? <div className="grid gap-6 md:grid-cols-3">
+              {suggestions.map((offer, index) => <article key={offer.id} className="flex flex-col rounded-2xl border border-gold-100 bg-white p-6 shadow-card hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
                 <div className="flex items-center gap-2">
                   <span className="w-fit rounded-full bg-gold-50 px-3 py-1 text-xs font-semibold text-gold-700">{tierLabel(offer.tier)}</span>
                   <span className="text-xs text-charcoal-muted">{index === 0 ? '· Closest budget match' : ''}</span>
@@ -202,7 +216,7 @@ export default function MenuSection({ initialPackage = null }) {
                   {offer.includes.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-600">✓</span><span>{item}</span></li>)}
                   {offer.additionalFoodAllowance > 0 && <li className="flex gap-2 font-medium text-charcoal"><span className="text-green-600">✓</span><span>Plus {formatCurrency(offer.additionalFoodAllowance)} for additional food choices</span></li>}
                 </ul>
-                <Button className="mt-6 w-full" onClick={() => chooseOffer(offer)}>Continue to Booking</Button>
+                <Button className="mt-6 w-full min-h-[44px]" onClick={() => chooseOffer(offer)}>Continue to Booking</Button>
               </article>)}
             </div> : <div className="rounded-xl border border-amber-200 bg-white p-6 text-center text-charcoal-muted">No listed offer fits both your budget and guest count. Increase the budget, reduce the guest count, or contact FMG for a custom quote.</div>}
           </div>
