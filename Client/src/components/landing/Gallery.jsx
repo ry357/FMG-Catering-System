@@ -37,9 +37,9 @@ export default function Gallery() {
           </h2>
         </div>
 
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-20 items-center">
+        <div className="grid gap-12 lg:grid-cols-5 lg:gap-16 items-center">
           {/* LEFT: Image Carousel */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-[0_20px_50px_rgba(36,27,18,0.1)]">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-[0_20px_50px_rgba(36,27,18,0.1)] lg:col-span-3">
             <div
               className="flex h-full transition-transform duration-700 ease-out"
               style={{ transform: `translateX(-${index * 100}%)` }}
@@ -70,19 +70,19 @@ export default function Gallery() {
           </div>
 
           {/* RIGHT: Service Quote */}
-          <div className="flex flex-col justify-center px-4 lg:px-0">
-            <svg className="h-12 w-12 text-gold-300 mb-8" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+          <div className="flex flex-col justify-center px-4 lg:col-span-2 lg:px-0">
+            <svg className="h-10 w-10 text-gold-300 mb-6" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
               <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
             </svg>
-            <blockquote className="font-display text-2xl leading-relaxed text-charcoal sm:text-3xl md:text-4xl">
+            <blockquote className="font-display text-xl leading-relaxed text-charcoal sm:text-2xl">
               "Great food is only half the experience. The other half is the warmth, precision, and elegance with which it is served."
             </blockquote>
-            <div className="mt-10 flex items-center gap-4">
-              <div className="h-0.5 w-12 bg-gold-500"></div>
-              <p className="font-semibold text-charcoal uppercase tracking-widest text-sm">FMG Catering Services</p>
+            <div className="mt-8 flex items-center gap-4">
+              <div className="h-0.5 w-8 bg-gold-500"></div>
+              <p className="font-semibold text-charcoal uppercase tracking-widest text-xs">FMG Catering Services</p>
             </div>
             
-            <div className="mt-12">
+            <div className="mt-10">
               <button
                 type="button"
                 onClick={() => navigate('/discover')}
