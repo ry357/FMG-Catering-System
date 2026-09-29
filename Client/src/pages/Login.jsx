@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -9,9 +11,12 @@ const Login = () => {
   const [requiresOtp, setRequiresOtp] = useState(false);
   const [otpId, setOtpId] = useState('');
   const [otp, setOtp] = useState('');
-  const { login, verifyOTP, sendOTP } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const { login, verifyOTP, sendOTP, adminGoogleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const googleButtonRef = useRef(null);
 
   const handleSuccessfulLogin = (user) => {
     const roleHome = user.role === 'admin' ? '/admin/dashboard' : '/staff/dashboard';
@@ -22,9 +27,57 @@ const Login = () => {
     navigate(isAllowed && intended ? intended : roleHome);
   };
 
+  const handleGoogleCredential = async (credential) => {
+    setBusy(true);
+    setError('');
+    try {
+      const data = await adminGoogleLogin(credential);
+      if (data.requiresOtp) {
+        setRequiresOtp(true);
+        setOtpId(data.otpId);
+        // OTP was already sent by the server via /admin-verify
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Google sign-in failed.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  useEffect(() => {
+    if (requiresOtp || !GOOGLE_CLIENT_ID) return;
+    const scriptId = 'gsi-client-script';
+    if (document.getElementById(scriptId)) {
+      renderGoogleButton();
+      return;
+    }
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = renderGoogleButton;
+    document.body.appendChild(script);
+  }, [requiresOtp, GOOGLE_CLIENT_ID]);
+
+  const renderGoogleButton = () => {
+    if (!window.google?.accounts?.id || !googleButtonRef.current) return;
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (response) => handleGoogleCredential(response.credential),
+    });
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      theme: 'outline',
+      size: 'large',
+      width: 320,
+      text: 'continue_with',
+      shape: 'rectangular',
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setBusy(true);
     try {
       if (requiresOtp) {
         const data = await verifyOTP(otpId, otp);
@@ -40,6 +93,8 @@ const Login = () => {
       }
     } catch (err) {
       setError(err.response?.data?.error || err.response?.data?.message || 'Login failed');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -128,10 +183,32 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-400 text-white py-3 rounded-lg font-semibold hover:opacity-90 hover:shadow-[0_0_24px_-6px_rgba(251,191,36,0.7)] transition-all"
+              disabled={busy}
+              className={`w-full bg-gradient-to-r from-amber-500 to-amber-400 text-white py-3 rounded-lg font-semibold transition-all ${busy ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 hover:shadow-[0_0_24px_-6px_rgba(251,191,36,0.7)]'}`}
             >
-              {requiresOtp ? 'Verify & Sign In' : 'Sign In'}
+              {busy ? 'Processing...' : requiresOtp ? 'Verify & Sign In' : 'Sign In'}
             </button>
+
+            {!requiresOtp && (
+              <>
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#1E2A45]"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-[#101A2E] text-slate-500">Or admin login with</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center">
+                  {GOOGLE_CLIENT_ID ? (
+                    <div ref={googleButtonRef}></div>
+                  ) : (
+                    <p className="text-xs text-rose-400">Google Sign-In not configured.</p>
+                  )}
+                </div>
+              </>
+            )}
 
             {requiresOtp && (
               <div className="text-center mt-4">

@@ -140,4 +140,93 @@ router.post('/verify', async (req, res) => {
   }
 });
 
+// Admin Google Auth - triggers OTP instead of direct login
+router.post('/admin-verify', async (req, res) => {
+  try {
+    if (!GOOGLE_CLIENT_ID) {
+      return res.status(500).json({ success: false, error: 'Google OAuth not configured on server' });
+    }
+
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ success: false, error: 'Google credential required' });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: GOOGLE_CLIENT_ID,
+    });
+    
+    const { email, email_verified } = ticket.getPayload();
+
+    if (!email_verified) {
+      return res.status(400).json({ success: false, error: 'Email not verified with Google' });
+    }
+
+    // Look for this user in the Users table (Admin/Staff)
+    const user = await queryOne('SELECT id, username, email, role, full_name FROM Users WHERE email = ?', [email]);
+
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access denied for this Google account.' });
+    }
+
+    // Generate and send OTP for admin
+    const crypto = await import('crypto');
+    const nodemailer = await import('nodemailer');
+    
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpId = crypto.randomUUID();
+    const otpHash = crypto.createHmac('sha256', JWT_SECRET).update(otp).digest('hex');
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+    // Remove old OTP sessions
+    await execute('DELETE FROM OtpSessions WHERE user_id = ?', [user.id]);
+    
+    // Save new OTP session
+    await executeWithId(
+      'INSERT INTO OtpSessions (id, user_id, otp_hash, expires_at) VALUES (?, ?, ?, ?)',
+      [otpId, user.id, otpHash, expiresAt]
+    );
+
+    // Send email (Using existing configuration style)
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT) || 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: { rejectUnauthorized: false },
+    });
+
+    const ADMIN_EMAIL = 'sasumanryan74@gmail.com';
+    
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || 'FMG Catering Services <fmgcateringservices@gmail.com>',
+      to: ADMIN_EMAIL,
+      subject: 'FMG Catering — Admin Login OTP (Google Auth)',
+      html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;">
+        <h2 style="color:#B8921F;">FMG Catering</h2>
+        <p>Your admin login verification code is:</p>
+        <div style="font-size:32px;font-weight:bold;color:#1C1C1C;letter-spacing:8px;margin:20px 0;">${otp}</div>
+        <p>This code expires in 5 minutes.</p>
+        <p>If you did not request this, please ignore this email.</p>
+      </div>`,
+    });
+
+    res.json({
+      success: true,
+      requiresOtp: true,
+      otpId,
+      message: 'OTP required for admin login',
+      username: user.username,
+    });
+
+  } catch (error) {
+    console.error('❌ Admin Google auth error:', error.message);
+    res.status(401).json({ success: false, error: 'Failed to authenticate with Google. Please try again.' });
+  }
+});
+
 export default router;

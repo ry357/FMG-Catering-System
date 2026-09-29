@@ -99,6 +99,12 @@ const loginWithGoogle = useCallback(async (credential) => {
   throw new Error(response.error || 'Google sign-in failed');
 }, []);
 
+const adminGoogleLogin = useCallback(async (credential) => {
+  const response = await axios.post('/api/google-auth/admin-verify', { credential });
+  // It returns requiresOtp: true and otpId
+  return response.data;
+}, []);
+
 const logoutCustomer = useCallback(() => {
   setCustomer(null);
   setCustomerToken(null);
@@ -112,7 +118,7 @@ const logout = () => {
 };
 
 return (
-  <AuthContext.Provider value={{ user, customer, customerToken, login, loginWithGoogle, logoutCustomer, verifyOTP, sendOTP, logout, loading }}>
+  <AuthContext.Provider value={{ user, customer, customerToken, login, loginWithGoogle, adminGoogleLogin, logoutCustomer, verifyOTP, sendOTP, logout, loading }}>
     {children}
   </AuthContext.Provider>
 );
