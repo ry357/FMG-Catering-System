@@ -28,9 +28,6 @@ export default function CustomerLogin() {
           <AuthCard onAuthenticated={handleAuthenticated} />
         </div>
 
-        <p className="mt-6 text-center text-xs text-charcoal-muted">
-          Staff or admin? <Link to="/login" className="text-gold-700 hover:text-gold-800 font-medium">Staff portal</Link>
-        </p>
       </div>
     </div>
   );

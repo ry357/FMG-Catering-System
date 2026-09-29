@@ -30,7 +30,7 @@ function App() {
         <Route path="/book" element={<BookingPage />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/portal-code" element={<Login />} />
         <Route path="/customer/login" element={<CustomerLogin />} />
         <Route
           path="/staff/dashboard"

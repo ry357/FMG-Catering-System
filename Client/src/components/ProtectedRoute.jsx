@@ -11,7 +11,7 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to="/portal-code" replace state={{ from: location }} />;
   }
 
   if (!allowedRoles.includes(user.role)) {
