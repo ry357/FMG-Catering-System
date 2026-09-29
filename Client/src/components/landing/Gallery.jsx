@@ -27,8 +27,8 @@ export default function Gallery() {
 
   return (
     <section id="gallery" className="section-padding bg-gold-50/40">
-      <div className="section-container">
-        <div className="mx-auto max-w-2xl text-center">
+      <div className="section-container max-w-7xl">
+        <div className="mx-auto mb-16 max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-gold-600">
             Our Work
           </p>
@@ -36,33 +36,64 @@ export default function Gallery() {
             Moments we&rsquo;ve catered
           </h2>
         </div>
-      </div>
 
-      <div className="mt-14 h-[50vh] w-screen overflow-hidden md:h-[70vh]">
-        <div
-          className="flex h-full transition-transform duration-700 ease-out"
-          style={{ transform: `translateX(-${index * 100}%)` }}
-        >
-          {GALLERY.map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt=""
-              loading="lazy"
-              className="h-full w-full shrink-0 object-cover"
-            />
-          ))}
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-20 items-center">
+          {/* LEFT: Image Carousel */}
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-[0_20px_50px_rgba(36,27,18,0.1)]">
+            <div
+              className="flex h-full transition-transform duration-700 ease-out"
+              style={{ transform: `translateX(-${index * 100}%)` }}
+            >
+              {GALLERY.map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  alt="Catered event moment"
+                  loading="lazy"
+                  className="h-full w-full shrink-0 object-cover"
+                />
+              ))}
+            </div>
+            {/* Carousel indicators */}
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-3">
+              {GALLERY.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIndex(i)}
+                  className={`h-2.5 w-2.5 rounded-full transition-all ${
+                    index === i ? 'bg-gold-500 w-8 shadow-md' : 'bg-white/70 hover:bg-white shadow-sm'
+                  }`}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT: Service Quote */}
+          <div className="flex flex-col justify-center px-4 lg:px-0">
+            <svg className="h-12 w-12 text-gold-300 mb-8" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
+            </svg>
+            <blockquote className="font-display text-2xl leading-relaxed text-charcoal sm:text-3xl md:text-4xl">
+              "Great food is only half the experience. The other half is the warmth, precision, and elegance with which it is served."
+            </blockquote>
+            <div className="mt-10 flex items-center gap-4">
+              <div className="h-0.5 w-12 bg-gold-500"></div>
+              <p className="font-semibold text-charcoal uppercase tracking-widest text-sm">FMG Catering Services</p>
+            </div>
+            
+            <div className="mt-12">
+              <button
+                type="button"
+                onClick={() => navigate('/discover')}
+                className="group inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-charcoal underline decoration-gold-500 decoration-2 underline-offset-8 transition-colors hover:text-gold-600"
+              >
+                Explore menus &amp; packages
+                <span className="transition-transform group-hover:translate-x-1">→</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="mt-12 text-center">
-        <button
-          type="button"
-          onClick={() => navigate('/discover')}
-          className="text-sm font-semibold uppercase tracking-[0.2em] text-charcoal underline decoration-gold-500 decoration-2 underline-offset-8 transition-colors hover:text-gold-600"
-        >
-          Explore menus &amp; packages
-        </button>
       </div>
     </section>
   );
