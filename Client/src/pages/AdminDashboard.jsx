@@ -141,6 +141,7 @@ const AdminDashboard = () => {
   const [logsCategory, setLogsCategory] = useState('all');
   const [logsSearch, setLogsSearch] = useState('');
   const [logsSearchInput, setLogsSearchInput] = useState('');
+  const [managementDropdownOpen, setManagementDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -347,70 +348,92 @@ const AdminDashboard = () => {
       </nav>
 
       <div className="max-w-[1600px] mx-auto px-4 py-5">
-        <div className="flex gap-1 mb-4 border-b border-[#1E2A45]">
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === 'analytics'
-                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Analytics
-          </button>
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === 'users'
-                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            User Management
-          </button>
-          <button
-            onClick={() => setActiveTab('reports')}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === 'reports'
-                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Reports
-          </button>
-          <button
-            onClick={() => setActiveTab('trendnalytics')}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === 'trendnalytics'
-                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Trendnalytics
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('activity-logs');
-              fetchActivityLogs({ page: 1, category: logsCategory, search: logsSearch });
-            }}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === 'activity-logs'
-                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Activity Logs
-          </button>
-          <button
-            onClick={() => setActiveTab('menu-management')}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === 'menu-management'
-                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Menu Management
-          </button>
+        <div className="flex justify-between items-end mb-4 border-b border-[#1E2A45]">
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                activeTab === 'analytics'
+                  ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Analytics
+            </button>
+            <button
+              onClick={() => setActiveTab('reports')}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                activeTab === 'reports'
+                  ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Reports
+            </button>
+            <button
+              onClick={() => setActiveTab('trendnalytics')}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                activeTab === 'trendnalytics'
+                  ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Trendnalytics
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('activity-logs');
+                fetchActivityLogs({ page: 1, category: logsCategory, search: logsSearch });
+              }}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                activeTab === 'activity-logs'
+                  ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Activity Logs
+            </button>
+          </div>
+          
+          <div className="relative mb-0.5">
+            <button
+              onClick={() => setManagementDropdownOpen(!managementDropdownOpen)}
+              onBlur={() => setTimeout(() => setManagementDropdownOpen(false), 200)}
+              className={`px-4 py-2 text-sm font-medium transition-colors rounded-t-lg border-b-2 ${
+                ['users', 'menu-management'].includes(activeTab)
+                  ? 'text-cyan-300 border-cyan-400'
+                  : 'text-slate-400 border-transparent hover:text-white'
+              }`}
+            >
+              Management ▾
+            </button>
+            {managementDropdownOpen && (
+              <div className="absolute right-0 mt-1 w-48 bg-[#0B1220] border border-[#1E2A45] rounded-md shadow-lg z-50 overflow-hidden">
+                <button
+                  onClick={() => {
+                    setActiveTab('menu-management');
+                    setManagementDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                    activeTab === 'menu-management' ? 'bg-cyan-500/10 text-cyan-300' : 'text-slate-300 hover:bg-[#101A2E] hover:text-white'
+                  }`}
+                >
+                  Menu Management
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('users');
+                    setManagementDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                    activeTab === 'users' ? 'bg-cyan-500/10 text-cyan-300' : 'text-slate-300 hover:bg-[#101A2E] hover:text-white'
+                  }`}
+                >
+                  User Management
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {activeTab === 'analytics' && (
