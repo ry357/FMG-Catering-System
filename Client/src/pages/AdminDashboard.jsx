@@ -4,6 +4,7 @@ import axios from 'axios';
 import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard';
 import Trendnalytics from '../components/admin/TrendAnalytics';
 import DashboardSkeleton from '../components/ui/DashboardSkeleton';
+import MenuManagement from '../components/admin/MenuManagement';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -399,6 +400,16 @@ const AdminDashboard = () => {
             }`}
           >
             Activity Logs
+          </button>
+          <button
+            onClick={() => setActiveTab('menu-management')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === 'menu-management'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Menu Management
           </button>
         </div>
 
@@ -882,6 +893,10 @@ const AdminDashboard = () => {
             </div>
           );
         })()}
+        
+        {activeTab === 'menu-management' && (
+          <MenuManagement />
+        )}
       </div>
 
     </div>

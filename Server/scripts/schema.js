@@ -151,6 +151,21 @@ export const SCHEMA_STATEMENTS = [
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `,
+
+  // Packages Table
+  `
+    CREATE TABLE IF NOT EXISTS Packages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      description TEXT,
+      price_per_guest REAL,
+      min_guests INTEGER,
+      max_guests INTEGER,
+      event_types TEXT, -- JSON string array
+      features TEXT, -- JSON string array
+      featured BOOLEAN DEFAULT 0
+    )
+  `,
 ];
 
 export const INDEX_STATEMENTS = [
