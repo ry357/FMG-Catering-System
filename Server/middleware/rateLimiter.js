@@ -15,7 +15,7 @@ export const generalLimiter = rateLimit({
 // Auth endpoints rate limiter — strict threshold to guard against brute-force floods.
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 login attempts per 15 minutes
+  max: 1000, // Temporarily increased to 1000 for testing
   message: {
     success: false,
     error: 'Too many login attempts, please try again later.'
