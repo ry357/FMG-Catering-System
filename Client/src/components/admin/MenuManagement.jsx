@@ -125,40 +125,42 @@ const MenuManagement = () => {
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-white">
-            <thead>
-              <tr className="border-b border-[#1E2A45]">
-                <th className="text-left py-2.5 px-4 font-medium text-white">Name</th>
-                <th className="text-left py-2.5 px-4 font-medium text-white">Price/Guest</th>
-                <th className="text-left py-2.5 px-4 font-medium text-white">Guests (Min-Max)</th>
-                <th className="text-left py-2.5 px-4 font-medium text-white">Featured</th>
-                <th className="text-left py-2.5 px-4 font-medium text-white">Actions</th>
+        <div className="overflow-x-auto border border-gray-200 rounded-lg bg-white shadow-sm mt-4">
+          <table className="w-full text-sm text-gray-800">
+            <thead className="bg-gray-50 text-gray-700">
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-2.5 px-4 font-medium">Name</th>
+                <th className="text-left py-2.5 px-4 font-medium">Price/Guest</th>
+                <th className="text-left py-2.5 px-4 font-medium">Guests (Min-Max)</th>
+                <th className="text-left py-2.5 px-4 font-medium">Featured</th>
+                <th className="text-left py-2.5 px-4 font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {packages.map(pkg => (
-                <tr key={pkg.id} className="border-b border-[#17233C] hover:bg-cyan-400/5">
-                  <td className="py-2.5 px-4 font-medium text-cyan-100">{pkg.name}</td>
-                  <td className="py-2.5 px-4">₱{pkg.price_per_guest}</td>
-                  <td className="py-2.5 px-4">{pkg.min_guests} - {pkg.max_guests}</td>
+                <tr key={pkg.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-2.5 px-4 font-medium text-gray-900">{pkg.name}</td>
+                  <td className="py-2.5 px-4 font-medium">₱{pkg.price_per_guest}</td>
+                  <td className="py-2.5 px-4 text-gray-600">{pkg.min_guests} - {pkg.max_guests}</td>
                   <td className="py-2.5 px-4">
                     {pkg.featured ? (
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-gold-400/10 text-gold-300 border border-gold-400/30">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                         Yes
                       </span>
-                    ) : 'No'}
+                    ) : (
+                      <span className="text-gray-400">No</span>
+                    )}
                   </td>
                   <td className="py-2.5 px-4">
                     <button
                       onClick={() => handleOpenModal(pkg)}
-                      className="text-cyan-300 hover:text-cyan-100 text-xs font-medium mr-3"
+                      className="text-cyan-600 hover:text-cyan-800 text-xs font-medium mr-3 transition-colors"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(pkg.id)}
-                      className="text-red-300 hover:text-red-100 text-xs font-medium"
+                      className="text-red-600 hover:text-red-800 text-xs font-medium transition-colors"
                     >
                       Delete
                     </button>
@@ -167,7 +169,7 @@ const MenuManagement = () => {
               ))}
               {packages.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-6 text-center text-white">No packages found.</td>
+                  <td colSpan={5} className="py-6 text-center text-gray-500">No packages found.</td>
                 </tr>
               )}
             </tbody>

@@ -223,9 +223,9 @@ export default function EmailManagement() {
 
         {activeTab === 'logs' && (
           <div>
-            <div className="overflow-x-auto border border-[#1E2A45] rounded-xl">
+            <div className="overflow-x-auto border border-gray-200 rounded-xl bg-white shadow-sm">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#0B1220] text-white">
+                <thead className="bg-gray-50 text-gray-700">
                   <tr>
                     <th className="px-4 py-3 font-medium">Timestamp</th>
                     <th className="px-4 py-3 font-medium">Recipient</th>
@@ -234,29 +234,29 @@ export default function EmailManagement() {
                     <th className="px-4 py-3 font-medium">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1E2A45]">
+                <tbody className="divide-y divide-gray-200">
                   {logsLoading ? (
                     <tr>
-                      <td colSpan="5" className="px-4 py-8 text-center text-white">Loading logs...</td>
+                      <td colSpan="5" className="px-4 py-8 text-center text-gray-500">Loading logs...</td>
                     </tr>
                   ) : logs.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-4 py-8 text-center text-white">No email logs found.</td>
+                      <td colSpan="5" className="px-4 py-8 text-center text-gray-500">No email logs found.</td>
                     </tr>
                   ) : (
                     logs.map(log => (
-                      <tr key={log.id} className="hover:bg-[#1A2642] transition-colors">
-                        <td className="px-4 py-3 text-white">{format(new Date(log.sent_at), 'MMM d, yyyy h:mm a')}</td>
-                        <td className="px-4 py-3 text-white font-medium">{log.recipient_email}</td>
-                        <td className="px-4 py-3 text-white">
-                          <span className="bg-[#1E2A45] px-2 py-0.5 rounded text-xs">{log.email_type}</span>
+                      <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-600">{format(new Date(log.sent_at), 'MMM d, yyyy h:mm a')}</td>
+                        <td className="px-4 py-3 text-gray-900 font-medium">{log.recipient_email}</td>
+                        <td className="px-4 py-3 text-gray-600">
+                          <span className="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200">{log.email_type}</span>
                         </td>
-                        <td className="px-4 py-3 text-white truncate max-w-[200px]" title={log.subject}>{log.subject}</td>
+                        <td className="px-4 py-3 text-gray-600 truncate max-w-[200px]" title={log.subject}>{log.subject}</td>
                         <td className="px-4 py-3">
                           {log.status === 'sent' ? (
-                            <span className="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded text-xs font-medium">Sent</span>
+                            <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-xs font-medium">Sent</span>
                           ) : (
-                            <span className="text-red-400 bg-red-400/10 px-2 py-0.5 rounded text-xs font-medium" title={log.error_message}>Failed</span>
+                            <span className="text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded text-xs font-medium" title={log.error_message}>Failed</span>
                           )}
                         </td>
                       </tr>
