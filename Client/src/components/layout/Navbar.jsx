@@ -14,6 +14,11 @@ export default function Navbar() {
 
   const closeMenu = () => setIsOpen(false);
 
+  // Show "Book Now" on all public pages except landing and dashboard routes
+  const isLandingPage = location.pathname === '/';
+  const isDashboard = location.pathname.startsWith('/staff/') || location.pathname.startsWith('/admin/');
+  const showBookNow = !isLandingPage && !isDashboard;
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-white/95 shadow-[0_8px_30px_rgba(36,27,18,0.08)] backdrop-blur-md">
       <nav className="section-container flex h-16 items-center justify-between md:h-20">
@@ -50,6 +55,13 @@ export default function Navbar() {
         </ul>
 
         <div className="hidden items-center gap-3 lg:flex">
+          {showBookNow && (
+            <Link to="/book" onClick={closeMenu}>
+              <Button variant="primary" size="sm">
+                Book Now
+              </Button>
+            </Link>
+          )}
           {customer ? (
             <>
               <span className="text-sm font-medium text-charcoal-muted">
@@ -99,7 +111,14 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
-            <li className="pt-2">
+            <li className="pt-2 space-y-2">
+              {showBookNow && (
+                <Link to="/book" onClick={closeMenu} className="block">
+                  <Button variant="primary" className="w-full">
+                    Book Now
+                  </Button>
+                </Link>
+              )}
               {customer ? (
                 <Button
                   variant="secondary"
