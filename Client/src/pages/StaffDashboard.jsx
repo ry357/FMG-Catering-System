@@ -4,6 +4,7 @@ import axios from 'axios';
 import { formatCurrency } from '../utils/helpers';
 import BookingDetailModal from '../components/BookingDetailModal';
 import DashboardSkeleton from '../components/ui/DashboardSkeleton';
+import DashboardCalendar from '../components/admin/DashboardCalendar';
 
 const dropOffSummary = (booking) => {
   const parse = (json) => { try { return json ? JSON.parse(json) : null; } catch { return null; } };
@@ -184,6 +185,16 @@ const StaffDashboard = () => {
             Bookings ({bookings.length})
           </button>
           <button
+            onClick={() => setActiveTab('calendar')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === 'calendar'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Calendar
+          </button>
+          <button
             onClick={() => setActiveTab('sales')}
             className={`px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === 'sales'
@@ -204,6 +215,10 @@ const StaffDashboard = () => {
             Drop-Off ({dropOffBookings.length})
           </button>
         </div>
+        
+        {activeTab === 'calendar' && (
+          <DashboardCalendar role="staff" onBack={() => setActiveTab('bookings')} />
+        )}
 
         {activeTab === 'bookings' && (
           <div className="space-y-4">
