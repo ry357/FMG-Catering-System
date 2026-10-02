@@ -93,4 +93,46 @@ router.post('/campaign', authenticateToken, requireRole(['admin']), async (req, 
   }
 });
 
+// Get email logs (admin only)
+router.get('/logs', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    const { page = 1, limit = 50, type } = req.query;
+    const offset = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
+    
+    let queryStr = 'SELECT * FROM EmailLogs';
+    const params = [];
+    
+    if (type) {
+      queryStr += ' WHERE email_type = ?';
+      params.push(type);
+    }
+    
+    queryStr += ' ORDER BY sent_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), offset);
+    
+    const logs = await query(queryStr, params);
+    
+    let countQuery = 'SELECT COUNT(*) as total FROM EmailLogs';
+    const countParams = [];
+    if (type) {
+      countQuery += ' WHERE email_type = ?';
+      countParams.push(type);
+    }
+    
+    const countResult = await query(countQuery, countParams);
+    const total = countResult[0].total;
+    
+    res.json({
+      success: true,
+      logs,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (error) {
+    console.error('Fetch email logs error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch email logs' });
+  }
+});
+
 export default router;

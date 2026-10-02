@@ -126,14 +126,14 @@ const MenuManagement = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-slate-200">
+          <table className="w-full text-sm text-white">
             <thead>
               <tr className="border-b border-[#1E2A45]">
-                <th className="text-left py-2.5 px-4 font-medium text-slate-500">Name</th>
-                <th className="text-left py-2.5 px-4 font-medium text-slate-500">Price/Guest</th>
-                <th className="text-left py-2.5 px-4 font-medium text-slate-500">Guests (Min-Max)</th>
-                <th className="text-left py-2.5 px-4 font-medium text-slate-500">Featured</th>
-                <th className="text-left py-2.5 px-4 font-medium text-slate-500">Actions</th>
+                <th className="text-left py-2.5 px-4 font-medium text-white">Name</th>
+                <th className="text-left py-2.5 px-4 font-medium text-white">Price/Guest</th>
+                <th className="text-left py-2.5 px-4 font-medium text-white">Guests (Min-Max)</th>
+                <th className="text-left py-2.5 px-4 font-medium text-white">Featured</th>
+                <th className="text-left py-2.5 px-4 font-medium text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -167,7 +167,7 @@ const MenuManagement = () => {
               ))}
               {packages.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-6 text-center text-slate-500">No packages found.</td>
+                  <td colSpan={5} className="py-6 text-center text-white">No packages found.</td>
                 </tr>
               )}
             </tbody>
