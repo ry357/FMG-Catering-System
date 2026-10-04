@@ -284,7 +284,9 @@ export default function MenuSection({ initialPackage = null }) {
           </section>
         )}
 
-        <div className="mt-14"><h3 className="font-display text-2xl font-semibold text-charcoal">Browse the full menu</h3><p className="mt-2 text-charcoal-muted">Every dish choice and set from the menu cards.</p><div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{MENU_IMAGES.map((image) => <button key={image.src} type="button" aria-label={`Open ${image.alt}`} onClick={() => setSelectedMenuImage(image)} className="group overflow-hidden rounded-2xl bg-charcoal text-left shadow-card focus:outline-none focus:ring-2 focus:ring-gold-500"><img src={image.src} alt={image.alt} className="aspect-[7/10] w-full object-cover object-top transition duration-300 group-hover:scale-105" loading="lazy" /></button>)}</div></div>
+        {(packageMode || (category === 'natural' && serviceMode === 'reco')) && (
+          <div className="mt-14"><h3 className="font-display text-2xl font-semibold text-charcoal">Browse the full menu</h3><p className="mt-2 text-charcoal-muted">Every dish choice and set from the menu cards.</p><div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{MENU_IMAGES.map((image) => <button key={image.src} type="button" aria-label={`Open ${image.alt}`} onClick={() => setSelectedMenuImage(image)} className="group overflow-hidden rounded-2xl bg-charcoal text-left shadow-card focus:outline-none focus:ring-2 focus:ring-gold-500"><img src={image.src} alt={image.alt} className="aspect-[7/10] w-full object-cover object-top transition duration-300 group-hover:scale-105" loading="lazy" /></button>)}</div></div>
+        )}
       </div>
 
       {selectedMenuImage && (
