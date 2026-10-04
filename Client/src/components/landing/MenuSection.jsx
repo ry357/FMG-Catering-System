@@ -124,7 +124,7 @@ export default function MenuSection({ initialPackage = null }) {
     const offer = packageMode ? null : selectedOffer;
     window.dispatchEvent(new CustomEvent('startMenuBooking', {
       detail: {
-        category: packageMode ? 'natural' : category,
+        category: packageMode || serviceMode ? 'natural' : category,
         budget: packageMode
           ? initialPackage.pricePerGuest * guests
           : category === 'drop-off'
@@ -171,7 +171,7 @@ export default function MenuSection({ initialPackage = null }) {
                       <ul role="menu" className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-xl border border-gold-200 bg-white shadow-card">
                         {[{ id: 'reco', label: 'Budget Recommendation', hint: 'Enter your budget and get matching packages' }, { id: 'normal', label: 'Normal Booking', hint: 'Skip the budget and choose your menu directly' }].map((opt) => (
                           <li key={opt.id} role="none">
-                            <button type="button" role="menuitem" onClick={() => { setServiceMode(opt.id); setServiceMenuOpen(false); setSelectedOffer(null); if (opt.id === 'normal') setBudgetInput(''); }} className={`block w-full px-4 py-3 text-left hover:bg-gold-50 ${serviceMode === opt.id ? 'bg-gold-50' : ''}`}>
+                            <button type="button" role="menuitem" onClick={() => { setCategory('natural'); setServiceMode(opt.id); setServiceMenuOpen(false); setSelectedOffer(null); if (opt.id === 'normal') setBudgetInput(''); }} className={`block w-full px-4 py-3 text-left hover:bg-gold-50 ${serviceMode === opt.id ? 'bg-gold-50' : ''}`}>
                               <span className="block text-sm font-semibold text-charcoal">{opt.label}</span>
                               <span className="block text-xs text-charcoal-muted">{opt.hint}</span>
                             </button>
@@ -252,7 +252,7 @@ export default function MenuSection({ initialPackage = null }) {
           </div>
         )}
 
-        {hasValidInputs && !packageMode && category === 'drop-off' && (
+        {hasValidInputs && !packageMode && !serviceMode && category === 'drop-off' && (
           <div className="mt-10 rounded-2xl border border-gold-200 bg-white p-6 shadow-card md:p-8" aria-live="polite">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Drop-off</p>
             <h3 className="mt-1 font-display text-2xl font-semibold text-charcoal">Build your own platter order</h3>
