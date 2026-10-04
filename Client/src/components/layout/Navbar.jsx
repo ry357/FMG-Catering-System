@@ -16,14 +16,14 @@ export default function Navbar() {
 
   const closeMenu = () => setIsOpen(false);
 
-  // Show "Book Now" on all public pages except landing and dashboard routes
-  const isLandingPage = location.pathname === '/';
+  // Show "Book Now" in the top-right on all public pages (Shopify-style persistent CTA)
   const isDashboard = location.pathname.startsWith('/staff/') || location.pathname.startsWith('/admin/');
-  const showBookNow = !isLandingPage && !isDashboard;
+  const showBookNow = !isDashboard;
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-white/95 shadow-[0_8px_30px_rgba(36,27,18,0.08)] backdrop-blur-md">
       <nav className="section-container flex h-16 items-center justify-between md:h-20">
+        <div className="flex items-center gap-10">
         <Link
           to="/"
           onClick={closeMenu}
@@ -35,7 +35,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <ul className="hidden items-center gap-8 lg:flex">
+        <ul className="hidden items-center gap-7 lg:flex">
           {NAV_LINKS.map((link) => {
             const isActive = location.pathname === link.to;
             return (
@@ -55,39 +55,45 @@ export default function Navbar() {
             );
           })}
         </ul>
+        </div>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-5 lg:flex">
+          {customer ? (
+            <>
+              <span className="text-sm font-medium text-charcoal-muted">
+                Hi, {customer.name.split(' ')[0]}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  closeMenu();
+                  logoutCustomer();
+                }}
+                className="text-sm font-medium text-charcoal-light transition-colors hover:text-gold-600"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={openLogin}
+              className="text-sm font-medium text-charcoal-light transition-colors hover:text-gold-600"
+            >
+              Log in
+            </button>
+          )}
           {showBookNow && (
             <Button
               variant="primary"
               size="sm"
+              className="!rounded-full px-5"
               onClick={() => {
                 closeMenu();
                 book('/book');
               }}
             >
               Book Now
-            </Button>
-          )}
-          {customer ? (
-            <>
-              <span className="text-sm font-medium text-charcoal-muted">
-                Hi, {customer.name.split(' ')[0]}
-              </span>
-              <Button
-                onClick={() => {
-                  closeMenu();
-                  logoutCustomer();
-                }}
-                variant="secondary"
-                size="sm"
-              >
-                Log out
-              </Button>
-            </>
-          ) : (
-            <Button onClick={openLogin} variant="secondary" size="sm">
-              Log in
             </Button>
           )}
         </div>
