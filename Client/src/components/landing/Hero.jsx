@@ -24,13 +24,14 @@ export default function Hero() {
         src={backgroundImage}
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover opacity-40"
+        className="absolute inset-0 h-full w-full object-cover opacity-75"
         loading="eager"
       />
-      {/* Left-side gradient keeps the left-aligned text readable */}
-      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-charcoal/70 via-charcoal/30 to-transparent" />
+      {/* Gradients keep the left-aligned text and bottom buttons readable while showing more of the photo */}
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-charcoal/80 via-charcoal/35 to-transparent" />
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-charcoal/70 to-transparent" />
 
-      <div className="section-container relative z-10 flex min-h-[calc(100svh-4rem)] flex-col justify-between pb-10 pt-24 md:min-h-[calc(100svh-5rem)] md:pb-14 md:pt-32">
+      <div className="section-container relative z-10 flex min-h-[100svh] flex-col justify-between pb-12 pt-28 md:pb-16 md:pt-36">
         {/* Headline block — vertically centred, left-aligned */}
         <div className="flex flex-1 flex-col justify-center">
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-gold-300 md:text-sm">
