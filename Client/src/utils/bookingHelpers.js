@@ -161,7 +161,7 @@ export function validateBookingForm(form, { requireBudget = true, requireGuests 
     }
   }
 
-  if (requireBudget) {
+  if (requireBudget || (form.budget !== '' && form.budget != null)) {
     const budget = Number(form.budget);
     if (!form.budget || budget <= 0) {
       errors.budget = 'Enter a valid budget amount';

@@ -64,7 +64,7 @@ router.post('/', bookingLimiter, validateBooking, async (req, res) => {
       event_type,
       event_date,
       number_of_guests,
-      budget,
+      budget: budget === undefined || budget === null || budget === '' ? null : budget,
       preferred_package,
       additional_requests,
       selected_menu_items,

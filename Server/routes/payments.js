@@ -36,7 +36,7 @@ router.post('/gcash/create-checkout', validatePayment, async (req, res, next) =>
       event_type: bookingData.eventType,
       event_date: bookingData.eventDate,
       number_of_guests: bookingData.numberOfGuests,
-      budget: bookingData.budget,
+      budget: bookingData.budget === undefined || bookingData.budget === '' ? null : bookingData.budget,
       preferred_package: bookingData.preferredPackageId || bookingData.offerId,
       additional_requests: bookingData.additionalRequests,
       selected_menu_items: bookingData.selectedMenuItems,

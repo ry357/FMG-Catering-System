@@ -494,7 +494,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const handleContinueToFood = (e) => {
     e.preventDefault();
     const validationErrors = validateBookingForm(form, {
-      requireBudget: !isDropOff,
+      requireBudget: false,
       requireGuests: !isDropOff,
       requireEventType: !isDropOff,
     });
@@ -808,7 +808,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                       </FormField>
                     )}
                     {!isDropOff && (
-                      <FormField label={packageBooking ? 'Estimated Total (PHP)' : 'Budget (PHP)'} error={errors.budget} required>
+                      <FormField label={packageBooking ? 'Estimated Total (PHP, optional)' : 'Budget (PHP, optional)'} error={errors.budget}>
                         <input type="number" name="budget" value={form.budget} onChange={handleChange} min="1" inputMode="numeric" className={inputClass} />
                       </FormField>
                     )}

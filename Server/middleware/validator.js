@@ -62,7 +62,7 @@ export const validateBooking = [
   body('budget')
     .custom((value, { req }) => {
       if (req.body.booking_category === 'drop-off') return true;
-      if (!value) throw new Error('Budget is required');
+      if (value === undefined || value === null || value === '') return true;
       const budget = Number(value);
       if (!Number.isFinite(budget) || budget < 0) {
         throw new Error('Budget must be a positive number');
