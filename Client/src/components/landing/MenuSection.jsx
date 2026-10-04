@@ -34,14 +34,14 @@ function calculateServiceVenueFee(guests) {
 
 export default function MenuSection({ initialPackage = null }) {
   const [category, setCategory] = useState('natural');
-  const [serviceMode, setServiceMode] = useState('reco');
+  const [serviceMode, setServiceMode] = useState(null);
   const [serviceMenuOpen, setServiceMenuOpen] = useState(false);
   const [budgetInput, setBudgetInput] = useState('');
   const [guestInput, setGuestInput] = useState('');
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [selectedMenuImage, setSelectedMenuImage] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
-  const budget = serviceMode === 'normal' ? 0 : Number(budgetInput);
+  const budget = serviceMode === 'reco' ? Number(budgetInput) : 0;
   const guests = Number(guestInput);
   const packageMode = Boolean(initialPackage);
   const naturalOffers = MENU_OFFERS.filter((offer) => offer.category === 'natural');
@@ -107,6 +107,7 @@ export default function MenuSection({ initialPackage = null }) {
 
   const switchCategory = (nextCategory) => {
     setCategory(nextCategory);
+    setServiceMode(null);
     setSelectedOffer(null);
     setBudgetInput('');
   };
@@ -162,7 +163,7 @@ export default function MenuSection({ initialPackage = null }) {
                   <div key={c.id} className="relative">
                     <button type="button" onClick={() => { if (category !== 'natural') switchCategory('natural'); setServiceMenuOpen((open) => !open); }} aria-pressed={active} aria-haspopup="menu" aria-expanded={serviceMenuOpen} className={btnClass}>
                       <span className={`flex items-center justify-between text-sm font-semibold ${active ? 'text-charcoal' : 'text-charcoal-light'}`}>
-                        <span>{c.shortLabel}{active && <span className="ml-2 text-xs font-normal text-gold-700">({serviceMode === 'reco' ? 'Budget Recommendation' : 'Normal Booking'})</span>}</span>
+                        <span>{c.shortLabel}{active && serviceMode && <span className="ml-2 text-xs font-normal text-gold-700">({serviceMode === 'reco' ? 'Budget Recommendation' : 'Normal Booking'})</span>}</span>
                         <span aria-hidden="true" className={`ml-2 transition-transform ${serviceMenuOpen ? 'rotate-180' : ''}`}>?</span>
                       </span>
                     </button>
@@ -185,7 +186,7 @@ export default function MenuSection({ initialPackage = null }) {
           </div>
         )}
 
-        {category !== 'drop-off' && (
+        {category !== 'drop-off' && (packageMode || serviceMode) && (
           <div className="mt-6 mx-auto max-w-3xl rounded-2xl border border-gold-100 bg-white p-4 shadow-card md:p-5">
             <div className={`grid gap-4 ${!packageMode && category === 'natural' && serviceMode === 'reco' ? 'sm:grid-cols-2' : ''}`}>
               {!packageMode && category === 'natural' && serviceMode === 'reco' && (
