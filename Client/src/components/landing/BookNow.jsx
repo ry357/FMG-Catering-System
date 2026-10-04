@@ -950,6 +950,12 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     depositAmount={depositAmount}
                     bookingRef={bookingRef}
                     packageName={packageName}
+                    paymentType={paymentType}
+                    category={category}
+                    selectedOffer={selectedOffer}
+                    selections={selections}
+                    platters={platters}
+                    includeChafer={includeChafer}
                   />
 
                   <div className="space-y-3">
@@ -1025,12 +1031,12 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
             </div>
 
             <aside className="lg:col-span-2 space-y-6">
-              {(step === 'menu' || step === 'details' || step === 'food') && (
+              {(step === 'menu' || step === 'details' || step === 'food' || step === 'payment') && (
                 <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="font-display text-xl font-semibold text-white">Your Menu Plan</h3>
                   <dl className="mt-5 space-y-3 text-sm">
                     <div className="flex justify-between gap-4"><dt className="text-white/50">Type</dt><dd className="font-medium text-white text-right">{isDropOff ? 'Drop-Off' : 'Full Service'}</dd></div>
-                    {!isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Tier</dt><dd className="font-medium text-white text-right">{selectedOffer?.tier ? MENU_TIERS.find((t) => t.id === selectedOffer.tier)?.label : '—'}</dd></div>}
+                    {!isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Tier</dt><dd className="font-medium text-white text-right">{selectedOffer?.tier ? MENU_TIERS.find((t) => t.id === selectedOffer.tier)?.label : (tier ? MENU_TIERS.find((t) => t.id === tier)?.label : '—')}</dd></div>}
                     <div className="flex justify-between gap-4"><dt className="text-white/50">Menu set</dt><dd className="font-medium text-white text-right">{isDropOff ? 'Custom platter order' : selectedOffer?.name || packageName}</dd></div>
                     {!isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Guests</dt><dd className="font-medium text-white">{form.numberOfGuests || '—'}</dd></div>}
                     {isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Items</dt><dd className="font-medium text-white">{platterItemCount} · {includeChafer ? 'with chafer' : 'no chafer'}</dd></div>}
