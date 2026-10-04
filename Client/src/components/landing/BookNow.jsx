@@ -373,6 +373,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     if (offer) setSelectedOffer(offer);
     setStep((prev) => {
       if (plCategory === 'drop-off') return 'menu';
+      if (!offer && !packageId) return prev === 'category' ? 'menu' : prev;
       return prev === 'category' || prev === 'menu' ? 'details' : prev;
     });
     setErrors((prev) => ({ ...prev, budget: undefined, numberOfGuests: undefined }));

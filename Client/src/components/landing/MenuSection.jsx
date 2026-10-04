@@ -47,15 +47,16 @@ export default function MenuSection({ initialPackage = null }) {
     ? Number.isInteger(guests) && guests >= MIN_GUESTS
     : category === 'drop-off'
       ? true
-      : Number.isFinite(budget) && budget > 0 && Number.isInteger(guests) && guests >= MIN_GUESTS;
+      : Number.isInteger(guests) && guests >= MIN_GUESTS;
+  const hasBudget = Number.isFinite(budget) && budget > 0;
 
   useEffect(() => {
-    if (hasValidInputs && !packageMode && category === 'natural') {
+    if (hasValidInputs && hasBudget && !packageMode && category === 'natural') {
       setIsCalculating(true);
       const timer = setTimeout(() => setIsCalculating(false), 800);
       return () => clearTimeout(timer);
     }
-  }, [budgetInput, guestInput, hasValidInputs, packageMode, category]);
+  }, [budgetInput, guestInput, hasValidInputs, hasBudget, packageMode, category]);
 
   useEffect(() => {
     if (!selectedMenuImage) return undefined;
@@ -71,7 +72,7 @@ export default function MenuSection({ initialPackage = null }) {
   }, [selectedMenuImage]);
 
   const suggestions = useMemo(() => {
-    if (!hasValidInputs || packageMode || category !== 'natural') return [];
+    if (!hasValidInputs || !hasBudget || packageMode || category !== 'natural') return [];
     const serviceFee = calculateServiceVenueFee(guests);
     
     // The target budget for food is what's left after the service fee.
@@ -100,7 +101,7 @@ export default function MenuSection({ initialPackage = null }) {
       .filter((offer) => offer.baseTotal <= targetFoodBudget) // they must at least afford the base package
       .sort((a, b) => b.pricePerPax - a.pricePerPax) // highest base tier first
       .slice(0, 3);
-  }, [budget, guests, hasValidInputs, packageMode, category, naturalOffers]);
+  }, [budget, guests, hasValidInputs, hasBudget, packageMode, category, naturalOffers]);
 
   const switchCategory = (nextCategory) => {
     setCategory(nextCategory);
@@ -117,7 +118,6 @@ export default function MenuSection({ initialPackage = null }) {
 
   const continueToBooking = () => {
     if (!hasValidInputs) return;
-    if (!packageMode && category === 'natural' && !selectedOffer) return;
     const offer = packageMode ? null : selectedOffer;
     window.dispatchEvent(new CustomEvent('startMenuBooking', {
       detail: {
@@ -126,7 +126,7 @@ export default function MenuSection({ initialPackage = null }) {
           ? initialPackage.pricePerGuest * guests
           : category === 'drop-off'
             ? null
-            : budget,
+              : hasBudget ? budget : null,
         guests: category === 'drop-off' ? '' : guests,
         packageId: initialPackage?.id || null,
         offer: offer || null,
@@ -168,7 +168,7 @@ export default function MenuSection({ initialPackage = null }) {
             <div className={`grid gap-4 ${!packageMode && category === 'natural' ? 'sm:grid-cols-2' : ''}`}>
               {!packageMode && category === 'natural' && (
                 <div>
-                  <label htmlFor="menu-budget" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-muted">Food budget <span className="text-gold-600">(PHP)</span></label>
+                  <label htmlFor="menu-budget" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-muted">Food budget <span className="text-gold-600">(PHP, optional)</span></label>
                   <input id="menu-budget" type="number" min="1" inputMode="numeric" value={budgetInput} onChange={(event) => setBudgetInput(event.target.value)} className="w-full rounded-lg border border-gold-200 bg-gold-50/60 px-3 py-2 text-sm text-charcoal placeholder:text-charcoal-muted/50 focus:border-gold-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
                 </div>
               )}
@@ -185,7 +185,7 @@ export default function MenuSection({ initialPackage = null }) {
           </div>
         )}
 
-        {hasValidInputs && !packageMode && category === 'natural' && (
+        {hasValidInputs && hasBudget && !packageMode && category === 'natural' && (
           <div className="mt-10" aria-live="polite">
             <div className="mb-5"><p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Recommended packages based on your event details</p><h3 className="mt-1 font-display text-2xl font-semibold text-charcoal">Offers for {guests} guests within {formatCurrency(budget)}</h3></div>
             {isCalculating ? (
@@ -219,6 +219,13 @@ export default function MenuSection({ initialPackage = null }) {
                 <Button className="mt-6 w-full min-h-[44px]" onClick={() => chooseOffer(offer)}>Continue to Booking</Button>
               </article>)}
             </div> : <div className="rounded-xl border border-amber-200 bg-white p-6 text-center text-charcoal-muted">No listed offer fits both your budget and guest count. Increase the budget, reduce the guest count, or contact FMG for a custom quote.</div>}
+          </div>
+        )}
+
+        {hasValidInputs && !hasBudget && !packageMode && category === 'natural' && (
+          <div className="mt-10 rounded-2xl border border-gold-200 bg-white p-6 text-center shadow-card" aria-live="polite">
+            <p className="text-charcoal-muted">Enter a food budget above to see recommended packages, or skip it and choose your menu yourself.</p>
+            <Button className="mt-4" onClick={continueToBooking}>Continue to Booking without Budget</Button>
           </div>
         )}
 
