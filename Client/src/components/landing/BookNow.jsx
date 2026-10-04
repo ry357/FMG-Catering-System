@@ -34,6 +34,7 @@ import AddressAutocomplete from '../ui/AddressAutocomplete';
 import PaymentSummary from '../payment/PaymentSummary';
 import PaymentMethodSelector from '../payment/PaymentMethodSelector';
 import GCashCheckout from '../payment/GCashCheckout';
+import TermsModal from '../payment/TermsModal';
 
 const INITIAL_FORM = {
   name: '',
@@ -362,6 +363,8 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const [paymentError, setPaymentError] = useState(null);
   const [paymentResult, setPaymentResult] = useState(null);
   const [paymentConfig, setPaymentConfig] = useState({ gcashEnabled: false });
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const packageBooking = Boolean(form.preferredPackageId);
   const offerId = selectedOffer?.id || null;
@@ -981,6 +984,64 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     </div>
                   </div>
 
+                  {/* Terms & Conditions Agreement */}
+                  <div className="rounded-2xl border border-gold-200/90 bg-gradient-to-br from-gold-50/50 via-white to-gold-50/30 p-5 space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-gold-200/60 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gold-500 text-white text-xs font-bold shadow-sm">
+                          §
+                        </span>
+                        <div>
+                          <h4 className="font-semibold text-charcoal text-sm">Terms &amp; Conditions Agreement</h4>
+                          <p className="text-xs text-charcoal-muted">Please review before completing payment</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowTermsModal(true)}
+                        className="text-xs font-semibold text-gold-700 hover:text-gold-900 underline decoration-gold-400 underline-offset-2 transition-colors"
+                      >
+                        Read Full Terms
+                      </button>
+                    </div>
+
+                    <div className="grid sm:grid-cols-3 gap-3 text-xs text-charcoal-muted">
+                      <div className="rounded-xl bg-white p-3 border border-gold-100 shadow-2xs">
+                        <span className="font-semibold text-charcoal block mb-0.5">🔒 Reservation Deposit</span>
+                        50% down payment (or full payment) locks in your date. Balance due on or before event day.
+                      </div>
+                      <div className="rounded-xl bg-white p-3 border border-gold-100 shadow-2xs">
+                        <span className="font-semibold text-charcoal block mb-0.5">📅 Cancellation Policy</span>
+                        70% refund if cancelled 14+ days before event. Non-refundable within 7 days.
+                      </div>
+                      <div className="rounded-xl bg-white p-3 border border-gold-100 shadow-2xs">
+                        <span className="font-semibold text-charcoal block mb-0.5">🍽️ Headcount &amp; Care</span>
+                        Headcount finalized 5 days prior. Client is liable for equipment damage or loss.
+                      </div>
+                    </div>
+
+                    <label className="flex items-start gap-3 pt-1 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={agreedToTerms}
+                        onChange={(e) => setAgreedToTerms(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gold-600 focus:ring-gold-500 accent-gold-600 cursor-pointer"
+                        id="agree-to-terms-checkbox"
+                      />
+                      <span className="text-xs sm:text-sm text-charcoal leading-snug">
+                        I confirm that I have read, understood, and agree to the{' '}
+                        <button
+                          type="button"
+                          onClick={() => setShowTermsModal(true)}
+                          className="font-semibold text-gold-700 underline decoration-gold-400 underline-offset-2 hover:text-gold-900 inline"
+                        >
+                          FMG Catering Terms &amp; Conditions
+                        </button>{' '}
+                        and Cancellation Policy.
+                      </span>
+                    </label>
+                  </div>
+
                   {noPaymentConfigured ? (
                     <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
                       <p className="font-semibold">Payment provider not configured</p>
@@ -1015,9 +1076,18 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                             customerEmail={form.email}
                             description={`FMG Catering ${paymentType === 'full' ? 'payment' : 'deposit'} — ${packageName}`}
                             onError={setPaymentError}
+                            disabled={!agreedToTerms}
                             bookingData={bookingData}
                             paymentType={paymentType}
                           />
+                          {!agreedToTerms && (
+                            <p className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-center gap-2">
+                              <svg className="h-4 w-4 flex-shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                              </svg>
+                              Please check the box above to accept the Terms &amp; Conditions to unlock payment.
+                            </p>
+                          )}
                         </div>
                       )}
                     </>
@@ -1087,20 +1157,43 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
               )}
 
               {step === 'payment' && (
-                <div className="bg-gold-400/10 rounded-2xl p-6 border border-gold-400/20">
-                  <h3 className="font-semibold text-gold-200">Payment Security</h3>
-                  <ul className="mt-4 space-y-3 text-sm text-white/70 list-disc list-inside">
-                    <li>Payments are processed through official PayMongo (GCash) gateway</li>
-                    <li>Your wallet details are never stored on our servers</li>
-                    <li>You will receive a payment receipt via email</li>
-                    <li>Remaining balance is due before your event date</li>
-                  </ul>
+                <div className="bg-gold-400/10 rounded-2xl p-6 border border-gold-400/20 space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-gold-200">Payment Security</h3>
+                    <ul className="mt-3 space-y-2.5 text-sm text-white/70 list-disc list-inside">
+                      <li>Payments are processed through official PayMongo (GCash) gateway</li>
+                      <li>Your wallet details are never stored on our servers</li>
+                      <li>You will receive a payment receipt via email</li>
+                      <li>Remaining balance is due before your event date</li>
+                    </ul>
+                  </div>
+                  <div className="border-t border-gold-400/20 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowTermsModal(true)}
+                      className="text-xs font-semibold text-gold-300 hover:text-white underline decoration-gold-400/50 underline-offset-2 flex items-center gap-1.5 transition-colors"
+                    >
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      View Terms &amp; Cancellation Policy
+                    </button>
+                  </div>
                 </div>
               )}
             </aside>
           </div>
         )}
       </div>
+
+      <TermsModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        onAccept={() => {
+          setAgreedToTerms(true);
+          setShowTermsModal(false);
+        }}
+      />
     </section>
   );
 }
