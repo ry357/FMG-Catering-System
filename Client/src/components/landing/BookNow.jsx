@@ -22,6 +22,7 @@ import {
   generateBookingRef,
   getSelectedPackageName,
   buildMenuItems,
+  getDishPrice,
 } from '../../utils/paymentHelpers';
 import { formatCurrency } from '../../utils/helpers';
 import { getPaymentConfig } from '../../services/paymentService';
@@ -188,28 +189,52 @@ function PaymentSuccessPanel({ paymentResult, onNewBooking }) {
   );
 }
 
-function ChoiceGroup({ title, choices, selected, limit, onToggle }) {
-  if (!limit) return null;
+function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle }) {
+  const hasLimit = limit != null && limit > 0;
   return (
     <fieldset>
-      <legend className="flex w-full items-center justify-between text-sm font-semibold text-charcoal">
+      <legend className="flex w-full items-center justify-between text-sm font-semibold text-charcoal mb-2">
         <span>{title}</span>
-        <span className="text-gold-600">Choose {limit} · {selected.length}/{limit}</span>
+        {hasLimit ? (
+          <span className="text-gold-600 font-medium text-xs sm:text-sm">
+            {selected.length < limit
+              ? `${selected.length}/${limit} included in set`
+              : `${limit} included in set${selected.length > limit ? ` · +${selected.length - limit} extra` : ''}`}
+          </span>
+        ) : (
+          <span className="text-gold-600 font-medium text-xs sm:text-sm">
+            {selected.length} selected
+          </span>
+        )}
       </legend>
-      <div className="mt-3 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+      <div className="mt-2 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
         {choices.map((choice) => {
           const checked = selected.includes(choice);
-          const unavailable = !checked && selected.length >= limit;
+          const price = getDishPrice(choice, categoryKey);
+          const choiceIndex = selected.indexOf(choice);
+          const isExtra = hasLimit && checked && choiceIndex >= limit;
+          const sublabel = hasLimit
+            ? checked
+              ? isExtra
+                ? `Extra · +${formatCurrency(price)}`
+                : 'Included in set'
+              : selected.length < limit
+              ? 'Included in set'
+              : `Extra · +${formatCurrency(price)}`
+            : formatCurrency(price);
+
           return (
             <FoodDishCard
               key={choice}
               dish={{ name: choice }}
               selectable={true}
               selected={checked}
-              disabled={unavailable}
+              disabled={false}
               onSelect={() => onToggle(choice)}
               compact={true}
-              showPrice={false}
+              showPrice={!hasLimit || isExtra}
+              price={price}
+              sublabel={sublabel}
             />
           );
         })}
@@ -415,9 +440,9 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     return () => window.removeEventListener('selectPackage', handleSelectPackage);
   }, []);
 
-  const bookingTotal = isDropOff ? platterTotal : calculateBookingTotal(form, selectedOffer);
+  const bookingTotal = isDropOff ? platterTotal : calculateBookingTotal(form, selectedOffer, selections);
   const depositAmount = calculateDepositAmount(bookingTotal);
-  const packageName = selectedOffer?.name || getSelectedPackageName(form);
+  const packageName = getSelectedPackageName(form, selectedOffer, tier);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -657,9 +682,23 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
                       {tier && (
                         <fieldset>
-                          <legend className="block text-sm font-semibold text-charcoal mb-3">
-                            Choose your {tier} menu set <span className="text-gold-600">*</span>
-                          </legend>
+                          <div className="flex items-center justify-between mb-3">
+                            <legend className="block text-sm font-semibold text-charcoal">
+                              Choose your {tier} menu set <span className="text-xs font-normal text-charcoal-muted">(optional)</span>
+                            </legend>
+                            {selectedOffer && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedOffer(null);
+                                  setSelections(INITIAL_SELECTIONS);
+                                }}
+                                className="text-xs font-medium text-gold-600 hover:text-gold-700 underline"
+                              >
+                                Clear set (Custom menu)
+                              </button>
+                            )}
+                          </div>
                           <div className="grid sm:grid-cols-2 gap-4">
                             {tierOffers.map((offer) => {
                               const active = selectedOffer?.id === offer.id;
@@ -668,11 +707,11 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                                   key={offer.id}
                                   type="button"
                                   onClick={() => {
-                                    setSelectedOffer(offer);
+                                    setSelectedOffer(active ? null : offer);
                                     setSelections(INITIAL_SELECTIONS);
                                     setErrors((prev) => ({ ...prev, offer: undefined }));
                                   }}
-                                  className={`rounded-xl border-2 p-4 text-left transition-all ${active ? 'border-gold-400 bg-gold-50' : 'border-gray-200 hover:border-gold-300'}`}
+                                  className={`rounded-xl border-2 p-4 text-left transition-all ${active ? 'border-gold-400 bg-gold-50 ring-2 ring-gold-400/40' : 'border-gray-200 hover:border-gold-300'}`}
                                 >
                                   <div className="flex items-center justify-between gap-2">
                                     <span className="font-semibold text-charcoal">{offer.name}</span>
@@ -689,6 +728,9 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                               );
                             })}
                           </div>
+                          <p className="mt-3 text-xs text-charcoal-muted">
+                            Choose a set for bundled per-pax pricing with included dishes, or leave unselected to customize dishes à la carte.
+                          </p>
                           {errors.offer && <p className="mt-2 text-sm text-red-600" role="alert">{errors.offer}</p>}
                         </fieldset>
                       )}
@@ -868,9 +910,10 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                         <ChoiceGroup
                           key={key}
                           title={label}
+                          categoryKey={key}
                           choices={choices}
                           selected={selections[key]}
-                          limit={foodLimits[key]}
+                          limit={foodLimits ? foodLimits[key] : null}
                           onToggle={(choice) => toggleChoice(key, choice)}
                         />
                       ))}
@@ -991,7 +1034,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     <div className="flex justify-between gap-4"><dt className="text-white/50">Menu set</dt><dd className="font-medium text-white text-right">{isDropOff ? 'Custom platter order' : selectedOffer?.name || packageName}</dd></div>
                     {!isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Guests</dt><dd className="font-medium text-white">{form.numberOfGuests || '—'}</dd></div>}
                     {isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Items</dt><dd className="font-medium text-white">{platterItemCount} · {includeChafer ? 'with chafer' : 'no chafer'}</dd></div>}
-                    {(selectedOffer || (isDropOff && platterItemCount > 0)) && <div className="flex justify-between gap-4"><dt className="text-white/50">Estimated total</dt><dd className="font-medium text-gold-300">{formatCurrency(bookingTotal)}</dd></div>}
+                    {(selectedOffer || packageBooking || (isDropOff && platterItemCount > 0) || bookingTotal > 0) && <div className="flex justify-between gap-4"><dt className="text-white/50">Estimated total</dt><dd className="font-medium text-gold-300">{formatCurrency(bookingTotal)}</dd></div>}
                     {!packageBooking && !isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Budget</dt><dd className="font-medium text-gold-300">{formatCurrency(form.budget)}</dd></div>}
                   </dl>
                 </div>

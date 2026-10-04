@@ -28,7 +28,7 @@ export function getFoodLimits({ offerId, packageId } = {}) {
   if (packageId && PACKAGE_SELECTION_LIMITS[Number(packageId)]) {
     return PACKAGE_SELECTION_LIMITS[Number(packageId)];
   }
-  return { appetizers: 1, mains: 3, addons: 2 };
+  return null;
 }
 
 export function validateCategoryStep(category) {
@@ -36,13 +36,11 @@ export function validateCategoryStep(category) {
   return {};
 }
 
-export function validateMenuStep({ category, tier, selectedOffer, packageBooking }) {
+export function validateMenuStep({ category, tier, packageBooking }) {
   const errors = {};
   if (!packageBooking) {
     if (category === 'natural' && !tier) errors.tier = 'Please choose a service tier';
-    if (category === 'natural' && !selectedOffer) {
-      errors.offer = 'Please choose a menu set for your booking';
-    }
+    // Menu set is optional
   }
   return errors;
 }
@@ -63,15 +61,26 @@ export function validateFoodStep(selections, limits) {
   const errors = {};
   const labels = { appetizers: 'Appetizers', mains: 'Main dishes', addons: 'Add-ons' };
 
-  Object.entries(labels).forEach(([category, label]) => {
-    const limit = limits?.[category] || 0;
-    const chosen = (selections?.[category] || []).length;
-    if (limit > 0 && chosen !== limit) {
-      errors[category] = `Choose exactly ${limit} ${label.toLowerCase()}`;
-    } else if (chosen > limit) {
-      errors[category] = `Too many ${label.toLowerCase()} chosen`;
+  if (limits) {
+    // When a set is chosen: must choose at least the included items in each category
+    Object.entries(labels).forEach(([category, label]) => {
+      const limit = limits[category] || 0;
+      const chosen = (selections?.[category] || []).length;
+      if (limit > 0 && chosen < limit) {
+        errors[category] = `Choose at least ${limit} ${label.toLowerCase()} (included in set)`;
+      }
+      // Selections beyond limit are allowed and priced as extra dishes
+    });
+  } else {
+    // Custom menu without a set: must choose at least one dish in total
+    const totalChosen = Object.values(selections || {}).reduce(
+      (sum, items) => sum + (Array.isArray(items) ? items.length : 0),
+      0
+    );
+    if (totalChosen < 1) {
+      errors.mains = 'Please choose at least one dish for your menu';
     }
-  });
+  }
 
   return errors;
 }
@@ -139,9 +148,9 @@ export function validateBookingForm(form, { requireBudget = true, requireGuests 
     errors.email = 'Enter a valid email address';
   }
 
-        if (requireEventType && !form.eventType) {
-          errors.eventType = 'Please select an event type';
-        }
+  if (requireEventType && !form.eventType) {
+    errors.eventType = 'Please select an event type';
+  }
 
   if (!form.eventDate) {
     errors.eventDate = 'Event date is required';
