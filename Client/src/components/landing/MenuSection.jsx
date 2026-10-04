@@ -34,12 +34,14 @@ function calculateServiceVenueFee(guests) {
 
 export default function MenuSection({ initialPackage = null }) {
   const [category, setCategory] = useState('natural');
+  const [serviceMode, setServiceMode] = useState('reco');
+  const [serviceMenuOpen, setServiceMenuOpen] = useState(false);
   const [budgetInput, setBudgetInput] = useState('');
   const [guestInput, setGuestInput] = useState('');
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [selectedMenuImage, setSelectedMenuImage] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
-  const budget = Number(budgetInput);
+  const budget = serviceMode === 'normal' ? 0 : Number(budgetInput);
   const guests = Number(guestInput);
   const packageMode = Boolean(initialPackage);
   const naturalOffers = MENU_OFFERS.filter((offer) => offer.category === 'natural');
@@ -147,16 +149,36 @@ export default function MenuSection({ initialPackage = null }) {
             <div className="grid grid-cols-2 gap-2">
               {BOOKING_CATEGORIES.map((c) => {
                 const active = category === c.id;
+                const isNatural = c.id === 'natural';
+                const btnClass = `w-full rounded-xl border-2 px-4 py-3 text-left transition-all ${active ? 'border-gold-400 bg-gold-50' : 'border-gray-200 hover:border-gold-300'}`;
+                if (!isNatural) {
+                  return (
+                    <button key={c.id} type="button" onClick={() => { setServiceMenuOpen(false); switchCategory(c.id); }} aria-pressed={active} className={btnClass}>
+                      <span className={`block text-sm font-semibold ${active ? 'text-charcoal' : 'text-charcoal-light'}`}>{c.shortLabel}</span>
+                    </button>
+                  );
+                }
                 return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => switchCategory(c.id)}
-                    aria-pressed={active}
-                    className={`rounded-xl border-2 px-4 py-3 text-left transition-all ${active ? 'border-gold-400 bg-gold-50' : 'border-gray-200 hover:border-gold-300'}`}
-                  >
-                    <span className={`block text-sm font-semibold ${active ? 'text-charcoal' : 'text-charcoal-light'}`}>{c.shortLabel}</span>
-                  </button>
+                  <div key={c.id} className="relative">
+                    <button type="button" onClick={() => { if (category !== 'natural') switchCategory('natural'); setServiceMenuOpen((open) => !open); }} aria-pressed={active} aria-haspopup="menu" aria-expanded={serviceMenuOpen} className={btnClass}>
+                      <span className={`flex items-center justify-between text-sm font-semibold ${active ? 'text-charcoal' : 'text-charcoal-light'}`}>
+                        <span>{c.shortLabel}{active && <span className="ml-2 text-xs font-normal text-gold-700">({serviceMode === 'reco' ? 'Budget Recommendation' : 'Normal Booking'})</span>}</span>
+                        <span aria-hidden="true" className={`ml-2 transition-transform ${serviceMenuOpen ? 'rotate-180' : ''}`}>?</span>
+                      </span>
+                    </button>
+                    {serviceMenuOpen && (
+                      <ul role="menu" className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-xl border border-gold-200 bg-white shadow-card">
+                        {[{ id: 'reco', label: 'Budget Recommendation', hint: 'Enter your budget and get matching packages' }, { id: 'normal', label: 'Normal Booking', hint: 'Skip the budget and choose your menu directly' }].map((opt) => (
+                          <li key={opt.id} role="none">
+                            <button type="button" role="menuitem" onClick={() => { setServiceMode(opt.id); setServiceMenuOpen(false); setSelectedOffer(null); if (opt.id === 'normal') setBudgetInput(''); }} className={`block w-full px-4 py-3 text-left hover:bg-gold-50 ${serviceMode === opt.id ? 'bg-gold-50' : ''}`}>
+                              <span className="block text-sm font-semibold text-charcoal">{opt.label}</span>
+                              <span className="block text-xs text-charcoal-muted">{opt.hint}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -165,10 +187,10 @@ export default function MenuSection({ initialPackage = null }) {
 
         {category !== 'drop-off' && (
           <div className="mt-6 mx-auto max-w-3xl rounded-2xl border border-gold-100 bg-white p-4 shadow-card md:p-5">
-            <div className={`grid gap-4 ${!packageMode && category === 'natural' ? 'sm:grid-cols-2' : ''}`}>
-              {!packageMode && category === 'natural' && (
+            <div className={`grid gap-4 ${!packageMode && category === 'natural' && serviceMode === 'reco' ? 'sm:grid-cols-2' : ''}`}>
+              {!packageMode && category === 'natural' && serviceMode === 'reco' && (
                 <div>
-                  <label htmlFor="menu-budget" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-muted">Food budget <span className="text-gold-600">(PHP, optional)</span></label>
+                  <label htmlFor="menu-budget" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-muted">Food budget <span className="text-gold-600">(PHP)</span></label>
                   <input id="menu-budget" type="number" min="1" inputMode="numeric" value={budgetInput} onChange={(event) => setBudgetInput(event.target.value)} className="w-full rounded-lg border border-gold-200 bg-gold-50/60 px-3 py-2 text-sm text-charcoal placeholder:text-charcoal-muted/50 focus:border-gold-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
                 </div>
               )}
@@ -222,10 +244,10 @@ export default function MenuSection({ initialPackage = null }) {
           </div>
         )}
 
-        {hasValidInputs && !hasBudget && !packageMode && category === 'natural' && (
+        {hasValidInputs && serviceMode === 'normal' && !packageMode && category === 'natural' && (
           <div className="mt-10 rounded-2xl border border-gold-200 bg-white p-6 text-center shadow-card" aria-live="polite">
-            <p className="text-charcoal-muted">Enter a food budget above to see recommended packages, or skip it and choose your menu yourself.</p>
-            <Button className="mt-4" onClick={continueToBooking}>Continue to Booking without Budget</Button>
+            <p className="text-charcoal-muted">Continue to pick your service tier and menu set directly.</p>
+            <Button className="mt-4" onClick={continueToBooking}>Continue to Booking</Button>
           </div>
         )}
 
