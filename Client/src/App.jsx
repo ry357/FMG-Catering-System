@@ -41,6 +41,14 @@ function App() {
           }
         />
         <Route
+          path="/booking-manager/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['staff', 'admin']}>
+              <StaffDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/dashboard"
           element={
             <ProtectedRoute allowedRoles={['admin']}>

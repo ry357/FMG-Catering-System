@@ -17,7 +17,7 @@ export default function Navbar() {
   const closeMenu = () => setIsOpen(false);
 
   // Show "Book Now" in the top-right on all public pages (Shopify-style persistent CTA)
-  const isDashboard = location.pathname.startsWith('/staff/') || location.pathname.startsWith('/admin/');
+  const isDashboard = location.pathname.startsWith('/staff/') || location.pathname.startsWith('/booking-manager/') || location.pathname.startsWith('/admin/');
   const showBookNow = !isDashboard;
 
   return (

@@ -19,11 +19,11 @@ const Login = () => {
   const googleButtonRef = useRef(null);
 
   const handleSuccessfulLogin = (user) => {
-    const roleHome = user.role === 'admin' ? '/admin/dashboard' : '/staff/dashboard';
+    const roleHome = user.role === 'admin' ? '/admin/dashboard' : '/booking-manager/dashboard';
     const intended = location.state?.from?.pathname;
     const isAllowed = user.role === 'admin'
       ? intended?.startsWith('/admin')
-      : intended?.startsWith('/staff');
+      : (intended?.startsWith('/staff') || intended?.startsWith('/booking-manager'));
     navigate(isAllowed && intended ? intended : roleHome);
   };
 
@@ -127,7 +127,7 @@ const Login = () => {
               FMG
             </div>
             <h2 className="mt-4 font-display text-3xl font-semibold text-white">
-              {requiresOtp ? 'Admin Verification' : 'Staff & Admin Portal'}
+              {requiresOtp ? 'Admin Verification' : 'Booking Manager & Admin Portal'}
             </h2>
             <p className="text-sm text-slate-400 mt-1">
               {requiresOtp

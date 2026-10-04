@@ -15,7 +15,7 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
   }
 
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/staff/dashboard'} replace />;
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/booking-manager/dashboard'} replace />;
   }
 
   return children;

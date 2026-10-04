@@ -689,7 +689,7 @@ const AdminDashboard = () => {
                     onChange={(e) => setNewUser({...newUser, role: e.target.value})}
                     className="px-3 py-2 bg-[#0B1220] border border-[#1E2A45] text-white rounded focus:outline-none focus:ring-2 focus:ring-cyan-400/50"
                   >
-                    <option value="staff">Staff</option>
+                    <option value="staff">Booking Manager</option>
                     <option value="admin">Admin</option>
                   </select>
                   <div className="flex gap-2">
@@ -733,7 +733,7 @@ const AdminDashboard = () => {
                         <span className={`px-2 py-0.5 rounded text-xs font-medium border ${
                           u.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-cyan-50 text-cyan-700 border-cyan-200'
                         }`}>
-                          {u.role}
+                          {u.role === 'staff' ? 'Booking Manager' : u.role === 'admin' ? 'Admin' : u.role}
                         </span>
                       </td>
                       <td className="py-2.5 px-4 text-gray-500">{new Date(u.created_at).toLocaleDateString()}</td>
@@ -789,7 +789,7 @@ const AdminDashboard = () => {
                   <div>
                     <h2 className="text-base font-semibold text-white">Activity Logs</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Audit trail of all admin, staff, and system actions — {logsTotal.toLocaleString()} total records
+                      Audit trail of all admin, booking manager, and system actions — {logsTotal.toLocaleString()} total records
                     </p>
                   </div>
                   <button
@@ -904,7 +904,7 @@ const AdminDashboard = () => {
                                 </span>
                               </td>
                               <td className="py-3 px-4">
-                                <span className="text-xs text-gray-500 font-mono">{log.performed_by || '�'}</span>
+                                <span className="text-xs text-gray-500 font-mono">{log.performed_by || '�'}</span>
                               </td>
                               <td className="py-3 px-4">
                                 <span className="text-xs text-gray-500 whitespace-nowrap">{fmtDate(log.created_at)}</span>

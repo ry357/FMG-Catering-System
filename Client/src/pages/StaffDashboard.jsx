@@ -158,7 +158,7 @@ const StaffDashboard = () => {
       <nav className="bg-[#0B1220]/95 backdrop-blur border-b border-[#1E2A45] sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-6 py-3.5 flex justify-between items-center">
           <h1 className="text-lg font-semibold bg-gradient-to-r from-cyan-300 via-white to-pink-400 bg-clip-text text-transparent">
-            FMG Catering · Staff
+            FMG Catering · Booking Manager
           </h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-400">Welcome, {user?.full_name}</span>
@@ -342,7 +342,7 @@ const StaffDashboard = () => {
               <div className="flex flex-wrap items-center justify-between gap-3 mb-5 border-b border-[#1E2A45] pb-3">
                 <div>
                   <h2 className="text-base font-semibold text-white">Drop-Off Order Management</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Inventory, chafer dishes, and platter drop-offs that staff prepare for delivery</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Inventory, chafer dishes, and platter drop-offs prepared for delivery</p>
                 </div>
               </div>
 
