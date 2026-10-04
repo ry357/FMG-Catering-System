@@ -113,11 +113,15 @@ const logoutCustomer = useCallback(() => {
   setCustomerToken(null);
   localStorage.removeItem('customerToken');
   localStorage.removeItem('customer');
+  sessionStorage.removeItem('fmg_pending_booking');
+  sessionStorage.removeItem('fmg_completed_booking');
+  window.location.href = '/';
 }, []);
 
 const logout = () => {
   sessionStorage.removeItem('token');
   setUser(null);
+  window.location.href = '/';
 };
 
 return (

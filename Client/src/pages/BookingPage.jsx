@@ -1,17 +1,26 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import MenuSection from '../components/landing/MenuSection';
 import BookNow from '../components/landing/BookNow';
 import { PACKAGES } from '../data/landingData';
 import { scrollToSection } from '../utils/helpers';
+import { useAuth } from '../context/AuthContext';
 
 export default function BookingPage() {
+  const { customer, loading } = useAuth();
+  const navigate = useNavigate();
   const [bookingDetails, setBookingDetails] = useState(null);
   const [searchParams] = useSearchParams();
   const packageId = searchParams.get('package');
   const selectedPackage = PACKAGES.find((pkg) => String(pkg.id) === packageId) || null;
+
+  useEffect(() => {
+    if (!loading && !customer) {
+      navigate('/', { replace: true });
+    }
+  }, [customer, loading, navigate]);
 
   useEffect(() => {
     const handleStartBooking = (event) => setBookingDetails(event.detail);
@@ -22,6 +31,10 @@ export default function BookingPage() {
   useEffect(() => {
     if (bookingDetails) requestAnimationFrame(() => scrollToSection('#book'));
   }, [bookingDetails]);
+
+  if (!loading && !customer) {
+    return null;
+  }
 
   return (
     <>

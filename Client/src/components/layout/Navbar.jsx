@@ -4,6 +4,7 @@ import logoImage from '../../assets/297896214_112620414877986_885607636052392587
 import { NAV_LINKS } from '../../data/landingData';
 import { useAuth } from '../../context/AuthContext';
 import { useLoginModal } from '../../context/LoginModalContext';
+import useBookingNav from '../../hooks/useBookingNav';
 import Button from '../ui/Button';
 
 export default function Navbar() {
@@ -11,6 +12,7 @@ export default function Navbar() {
   const location = useLocation();
   const { openLogin } = useLoginModal();
   const { customer, logoutCustomer } = useAuth();
+  const book = useBookingNav();
 
   const closeMenu = () => setIsOpen(false);
 
@@ -56,18 +58,30 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex">
           {showBookNow && (
-            <Link to="/book" onClick={closeMenu}>
-              <Button variant="primary" size="sm">
-                Book Now
-              </Button>
-            </Link>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                closeMenu();
+                book('/book');
+              }}
+            >
+              Book Now
+            </Button>
           )}
           {customer ? (
             <>
               <span className="text-sm font-medium text-charcoal-muted">
                 Hi, {customer.name.split(' ')[0]}
               </span>
-              <Button onClick={logoutCustomer} variant="secondary" size="sm">
+              <Button
+                onClick={() => {
+                  closeMenu();
+                  logoutCustomer();
+                }}
+                variant="secondary"
+                size="sm"
+              >
                 Log out
               </Button>
             </>
@@ -113,11 +127,16 @@ export default function Navbar() {
             ))}
             <li className="pt-2 space-y-2">
               {showBookNow && (
-                <Link to="/book" onClick={closeMenu} className="block">
-                  <Button variant="primary" className="w-full">
-                    Book Now
-                  </Button>
-                </Link>
+                <Button
+                  variant="primary"
+                  className="w-full"
+                  onClick={() => {
+                    closeMenu();
+                    book('/book');
+                  }}
+                >
+                  Book Now
+                </Button>
               )}
               {customer ? (
                 <Button
