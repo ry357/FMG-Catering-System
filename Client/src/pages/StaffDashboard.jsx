@@ -5,6 +5,8 @@ import { formatCurrency } from '../utils/helpers';
 import BookingDetailModal from '../components/BookingDetailModal';
 import DashboardSkeleton from '../components/ui/DashboardSkeleton';
 import DashboardCalendar from '../components/admin/DashboardCalendar';
+import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard';
+import Trendnalytics from '../components/admin/TrendAnalytics';
 
 const dropOffSummary = (booking) => {
   const parse = (json) => { try { return json ? JSON.parse(json) : null; } catch { return null; } };
@@ -213,6 +215,26 @@ const StaffDashboard = () => {
             }`}
           >
             Drop-Off ({dropOffBookings.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === 'analytics'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab('trendnalytics')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === 'trendnalytics'
+                ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Trendnalytics
           </button>
         </div>
         
@@ -488,6 +510,14 @@ const StaffDashboard = () => {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <SalesAnalyticsDashboard />
+        )}
+
+        {activeTab === 'trendnalytics' && (
+          <Trendnalytics />
         )}
       </div>
 

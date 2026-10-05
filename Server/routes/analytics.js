@@ -50,7 +50,7 @@ const extractMenuNames = (additionalRequests) => {
 };
 
 // Dashboard summary (admin only)
-router.get('/overview', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/overview', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
     const [revenueRow] = await query(
       "SELECT COALESCE(SUM(amount), 0) as total FROM Sales WHERE payment_status = 'completed'"
@@ -89,7 +89,7 @@ router.get('/overview', authenticateToken, requireRole(['admin']), async (req, r
 });
 
 // Most booked packages (admin only)
-router.get('/packages', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/packages', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
     const rows = await query(`
       SELECT preferred_package, COUNT(*) as bookings_count
@@ -116,7 +116,7 @@ router.get('/packages', authenticateToken, requireRole(['admin']), async (req, r
 });
 
 // Most popular services (by event type) (admin only)
-router.get('/services', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/services', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
     const rows = await query(`
       SELECT event_type, COUNT(*) as bookings_count
@@ -138,7 +138,7 @@ router.get('/services', authenticateToken, requireRole(['admin']), async (req, r
 });
 
 // Monthly revenue trends (admin only)
-router.get('/revenue', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/revenue', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
     const sales = await query(
       "SELECT amount, sale_date FROM Sales WHERE payment_status = 'completed'"
@@ -163,7 +163,7 @@ router.get('/revenue', authenticateToken, requireRole(['admin']), async (req, re
 });
 
 // Peak and low-demand booking periods (admin only)
-router.get('/booking-periods', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/booking-periods', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
     const rows = await query('SELECT event_date FROM Bookings WHERE event_date IS NOT NULL');
 
@@ -193,7 +193,7 @@ router.get('/booking-periods', authenticateToken, requireRole(['admin']), async 
 });
 
 // Least popular items — packages, foods, side dishes, and drinks ranked ascending
-router.get('/least-popular', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/least-popular', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
     const pkgRows = await query(`
       SELECT preferred_package, COUNT(*) as bookings_count
@@ -251,7 +251,7 @@ router.get('/least-popular', authenticateToken, requireRole(['admin']), async (r
 
 // Premium sales analytics dashboard — KPIs, monthly revenue vs costs,
 // booking pipeline, and upcoming high-value events (admin only)
-router.get('/sales-dashboard', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/sales-dashboard', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
   try {
     const data = await getSalesDashboard({ month: req.query.month });
     res.json({ success: true, data });
