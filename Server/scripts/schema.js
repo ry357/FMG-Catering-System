@@ -166,6 +166,23 @@ export const SCHEMA_STATEMENTS = [
       featured BOOLEAN DEFAULT 0
     )
   `,
+
+  // Foods Table (Dishes and menu food items with controllable prices)
+  `
+    CREATE TABLE IF NOT EXISTS Foods (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      subcategory TEXT,
+      price REAL NOT NULL,
+      chafer_price REAL,
+      description TEXT,
+      image_id TEXT,
+      is_available BOOLEAN DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `,
 ];
 
 export const INDEX_STATEMENTS = [
@@ -185,6 +202,8 @@ export const INDEX_STATEMENTS = [
   'CREATE INDEX IF NOT EXISTS idx_activitylogs_created ON ActivityLogs(created_at)',
   'CREATE INDEX IF NOT EXISTS idx_activitylogs_category ON ActivityLogs(category)',
   'CREATE INDEX IF NOT EXISTS idx_activitylogs_action ON ActivityLogs(action)',
+  'CREATE INDEX IF NOT EXISTS idx_foods_category ON Foods(category)',
+  'CREATE INDEX IF NOT EXISTS idx_foods_name ON Foods(name)',
 ];
 
 // Post-CREATE migrations for databases that already exist. Each entry is a

@@ -4,9 +4,11 @@ import FoodDishCard from '../ui/FoodDishCard';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
 import { PLATTER_MENU } from '../../data/landingData';
+import { useFoods } from '../../services/foodService';
 
 export default function FeaturedDishes() {
   const navigate = useNavigate();
+  const { getDishPrice } = useFoods();
 
   // Curated showcase of iconic Filipino catering favorites
   const featuredIds = [
@@ -44,7 +46,7 @@ export default function FeaturedDishes() {
             <FoodDishCard
               key={dish.id}
               dish={dish}
-              price={dish.price}
+              price={getDishPrice(dish.name || dish.id, dish.price)}
               selectable={false}
               compact={false}
             />

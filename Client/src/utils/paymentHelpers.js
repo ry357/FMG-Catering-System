@@ -22,7 +22,29 @@ export function calculateServiceVenueFee(guests) {
   return Math.round(SERVICE_BASE_FEE * Math.pow(1 + SERVICE_GROWTH_RATE, Math.max(0, g - SERVICE_BASE_GUESTS)));
 }
 
-export function getDishPrice(dishName, category) {
+let dynamicFoodPrices = null;
+
+export function setGlobalFoodPrices(foods) {
+  if (!Array.isArray(foods)) return;
+  const map = new Map();
+  foods.forEach((f) => {
+    const p = Number(f.price);
+    const cp = f.chafer_price != null ? Number(f.chafer_price) : null;
+    if (f.name) map.set(f.name.toLowerCase().trim(), { price: p, chafer_price: cp });
+    if (f.id) map.set(String(f.id).toLowerCase().trim(), { price: p, chafer_price: cp });
+    if (f.image_id) map.set(f.image_id.toLowerCase().trim(), { price: p, chafer_price: cp });
+  });
+  dynamicFoodPrices = map;
+}
+
+export function getDishPrice(dishName, category, customPrices = null) {
+  const query = dishName ? String(dishName).toLowerCase().trim() : '';
+  if (customPrices && customPrices.has(query)) {
+    return customPrices.get(query).price;
+  }
+  if (dynamicFoodPrices && dynamicFoodPrices.has(query)) {
+    return dynamicFoodPrices.get(query).price;
+  }
   if (category === 'mains') {
     if (dishName && dishName.toLowerCase().includes('lechon')) return 8000;
     return 1300;
@@ -33,6 +55,15 @@ export function getDishPrice(dishName, category) {
   }
   // addons / sides
   return 500;
+}
+
+export function getDishChaferPrice(dishName, defaultChafer = null) {
+  const query = dishName ? String(dishName).toLowerCase().trim() : '';
+  if (dynamicFoodPrices && dynamicFoodPrices.has(query)) {
+    const entry = dynamicFoodPrices.get(query);
+    return entry.chafer_price != null ? entry.chafer_price : defaultChafer;
+  }
+  return defaultChafer;
 }
 
 export function calculateExtraDishesCost(selections, offerId = null, packageId = null) {
@@ -145,14 +176,16 @@ export function getPriceBreakdown({
         if (count <= 0) return;
         const dish = catalog.find((item) => item.id === id);
         if (!dish) return;
-        const unitPrice = includeChafer && dish.chaferPrice ? dish.chaferPrice : dish.price;
+        const basePrice = getDishPrice(dish.name, group.id) ?? dish.price;
+        const chaferPrice = getDishChaferPrice(dish.name, dish.chaferPrice);
+        const unitPrice = includeChafer && chaferPrice ? chaferPrice : basePrice;
         const subtotal = count * unitPrice;
         items.push({
           label: `${count}× ${dish.name}`,
           category: group.label,
           unitPrice,
           count,
-          sublabel: includeChafer && dish.chaferPrice
+          sublabel: includeChafer && chaferPrice
             ? `${count} platter${count > 1 ? 's' : ''} @ ${formatCurrency(unitPrice)} (with chafer)`
             : `${count} platter${count > 1 ? 's' : ''} @ ${formatCurrency(unitPrice)}`,
           amount: subtotal,

@@ -756,6 +756,7 @@ const AdminDashboard = () => {
         {activeTab === 'activity-logs' && (() => {
           const CATEGORIES = [
             { key: 'all',      label: 'All',       color: 'text-slate-300  border-slate-500/40  bg-slate-700/30' },
+            { key: 'menu',     label: 'Menu & Food', color: 'text-amber-300 border-amber-400/40 bg-amber-400/10' },
             { key: 'bookings', label: 'Bookings',  color: 'text-cyan-300   border-cyan-400/40   bg-cyan-400/10' },
             { key: 'sales',    label: 'Sales',     color: 'text-emerald-300 border-emerald-400/40 bg-emerald-400/10' },
             { key: 'users',    label: 'Users',     color: 'text-purple-300 border-purple-400/40 bg-purple-400/10' },

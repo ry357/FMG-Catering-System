@@ -23,7 +23,9 @@ import {
   getSelectedPackageName,
   buildMenuItems,
   getDishPrice,
+  getDishChaferPrice,
 } from '../../utils/paymentHelpers';
+import { useFoods } from '../../services/foodService';
 import { formatCurrency } from '../../utils/helpers';
 import { getPaymentConfig } from '../../services/paymentService';
 import { useAuth } from '../../context/AuthContext';
@@ -245,7 +247,9 @@ function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle })
 }
 
 function platterItemPrice(item, chafer) {
-  return chafer && item.chaferPrice ? item.chaferPrice : item.price;
+  const base = getDishPrice(item.name || item.id, item.category) ?? item.price;
+  const chaferP = getDishChaferPrice(item.name || item.id, item.chaferPrice);
+  return chafer && chaferP ? chaferP : base;
 }
 
 function calculatePlatterTotal(platters, chafer) {
@@ -317,7 +321,7 @@ function DropOffChecklist({ selections, onToggle, total, itemCount }) {
                       <FoodDishCard
                         key={item.id}
                         dish={item}
-                        price={item.price}
+                        price={platterItemPrice(item, false)}
                         selectable={true}
                         selected={checked}
                         onSelect={() => onToggle(key, item.id)}
@@ -342,6 +346,7 @@ function DropOffChecklist({ selections, onToggle, total, itemCount }) {
 
 export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const { customer } = useAuth();
+  const { foods } = useFoods();
   const [searchParams] = useSearchParams();
   const urlCategory = searchParams.get('category');
   const presetCategory = initialMenuBooking?.category || urlCategory || '';
