@@ -44,7 +44,13 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(generalLimiter);
 
@@ -52,6 +58,7 @@ app.get('/api/health', (_req, res) => {
   res.json({
     success: true,
     gcash: Boolean(process.env.PAYMONGO_SECRET_KEY),
+    stripe: Boolean(process.env.STRIPE_SECRET_KEY),
   });
 });
 

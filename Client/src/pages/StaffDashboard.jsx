@@ -501,7 +501,9 @@ const StaffDashboard = () => {
                         <td className="py-2.5 px-4">{sale.customer_name}</td>
                         <td className="py-2.5 px-4">{sale.event_type}</td>
                         <td className="py-2.5 px-4 text-right font-medium text-cyan-300 tabular-nums">{formatCurrency(parseFloat(sale.amount) || 0)}</td>
-                        <td className="py-2.5 px-4">{sale.payment_method}</td>
+                        <td className="py-2.5 px-4 text-xs font-medium uppercase text-slate-300">
+                          {sale.payment_method === 'card' ? 'Card (Stripe)' : (sale.payment_method || 'N/A')}
+                        </td>
                         <td className="py-2.5 px-4">{saleStatusBadge(sale.payment_status)}</td>
                       </tr>
                     ))}

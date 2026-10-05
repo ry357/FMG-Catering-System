@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { verifyGCashPayment } from '../services/paymentService';
+import { verifyGCashPayment, verifyStripePayment } from '../services/paymentService';
 import { formatCurrency } from '../utils/helpers';
 import Button from '../components/ui/Button';
 import Skeleton from '../components/ui/Skeleton';
@@ -9,6 +9,7 @@ export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const method = searchParams.get('method');
   const ref = searchParams.get('ref');
+  const sessionIdFromUrl = searchParams.get('session_id');
   const [status, setStatus] = useState('loading');
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [error, setError] = useState(null);
@@ -16,17 +17,58 @@ export default function PaymentSuccess() {
   useEffect(() => {
     async function verifyPayment() {
       const pendingRaw = sessionStorage.getItem('fmg_pending_booking');
+      let pending = null;
+      try {
+        if (pendingRaw) pending = JSON.parse(pendingRaw);
+      } catch (e) {
+        console.error('Failed to parse pending booking info:', e);
+      }
 
+      // 1. Stripe Card Payment verification
+      if (method === 'card' || method === 'stripe' || pending?.method === 'card') {
+        const sessionId = sessionIdFromUrl || pending?.sessionId;
+        if (sessionId) {
+          try {
+            const result = await verifyStripePayment(sessionId);
+            const paymentStatus = result.data.paymentStatus || result.data.status;
+
+            if (paymentStatus === 'paid' || paymentStatus === 'complete' || paymentStatus === 'succeeded') {
+              setPaymentDetails({
+                method: 'Card (Stripe)',
+                transactionId: result.data.paymentIntentId || sessionId,
+                amount: result.data.amount || pending?.amount,
+                bookingRef: result.data.referenceNumber || pending?.bookingRef || ref,
+              });
+              setStatus('success');
+              sessionStorage.removeItem('fmg_pending_booking');
+              return;
+            }
+
+            setPaymentDetails({
+              method: 'Card (Stripe)',
+              bookingRef: result.data.referenceNumber || pending?.bookingRef || ref,
+              amount: pending?.amount,
+            });
+            setStatus('pending');
+            return;
+          } catch (err) {
+            setError(err.message);
+            setStatus('error');
+            return;
+          }
+        }
+      }
+
+      // 2. PayMongo GCash payment verification
       if (method === 'gcash' && pendingRaw) {
         try {
-          const pending = JSON.parse(pendingRaw);
-          if (pending.sessionId) {
+          if (pending?.sessionId) {
             const result = await verifyGCashPayment(pending.sessionId);
             const paymentStatus = result.data.paymentStatus || result.data.status;
 
             if (paymentStatus === 'paid' || paymentStatus === 'succeeded') {
               setPaymentDetails({
-                method: 'gcash',
+                method: 'GCash',
                 transactionId: pending.sessionId,
                 amount: pending.amount,
                 bookingRef: pending.bookingRef || ref,
@@ -38,9 +80,9 @@ export default function PaymentSuccess() {
           }
 
           setPaymentDetails({
-            method: 'gcash',
-            bookingRef: pending.bookingRef || ref,
-            amount: pending.amount,
+            method: 'GCash',
+            bookingRef: pending?.bookingRef || ref,
+            amount: pending?.amount,
           });
           setStatus('pending');
         } catch (err) {
@@ -50,8 +92,12 @@ export default function PaymentSuccess() {
         return;
       }
 
+      // 3. Fallback when redirected with ref
       if (ref) {
-        setPaymentDetails({ method: method || 'unknown', bookingRef: ref });
+        setPaymentDetails({
+          method: method === 'card' ? 'Card (Stripe)' : (method || 'Online Payment'),
+          bookingRef: ref,
+        });
         setStatus('success');
         return;
       }
@@ -60,7 +106,7 @@ export default function PaymentSuccess() {
     }
 
     verifyPayment();
-  }, [method, ref]);
+  }, [method, ref, sessionIdFromUrl]);
 
   return (
     <div className="min-h-screen bg-gold-50 flex items-center justify-center p-4">
@@ -92,7 +138,7 @@ export default function PaymentSuccess() {
             </div>
             <h1 className="mt-6 font-display text-2xl font-semibold text-charcoal">Payment Successful</h1>
             <p className="mt-2 text-charcoal-muted">
-              Your booking deposit has been received. Our team will contact you shortly to confirm details.
+              Your booking payment has been received. Our team will contact you shortly to confirm details.
             </p>
             {paymentDetails && (
               <dl className="mt-6 rounded-xl bg-gold-50 p-4 text-left text-sm space-y-2">
@@ -102,7 +148,7 @@ export default function PaymentSuccess() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-charcoal-muted">Method</dt>
-                  <dd className="font-medium uppercase">{paymentDetails.method}</dd>
+                  <dd className="font-medium">{paymentDetails.method}</dd>
                 </div>
                 {paymentDetails.amount && (
                   <div className="flex justify-between">
@@ -125,7 +171,7 @@ export default function PaymentSuccess() {
           <>
             <h1 className="font-display text-2xl font-semibold text-charcoal">Payment Processing</h1>
             <p className="mt-2 text-charcoal-muted">
-              Your GCash payment is being confirmed. We will notify you once it is complete.
+              Your payment is being confirmed. We will notify you once it is complete.
             </p>
             {paymentDetails?.bookingRef && (
               <p className="mt-4 text-sm">
