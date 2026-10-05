@@ -773,6 +773,9 @@ const AdminDashboard = () => {
             user_created:         '👤',
             user_deleted:         '🚫',
             user_login:           '🔑',
+            customer_login:       '👤',
+            customer_register:    '✨',
+            login_failed:         '⚠️',
           };
 
           const catMeta = (cat) => CATEGORIES.find((c) => c.key === cat) || CATEGORIES[0];

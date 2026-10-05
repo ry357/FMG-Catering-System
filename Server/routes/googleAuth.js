@@ -167,6 +167,13 @@ router.post('/admin-verify', async (req, res) => {
     const user = await queryOne('SELECT id, username, email, role, full_name FROM Users WHERE email = ?', [email]);
 
     if (!user) {
+      await logActivity({
+        action: 'login_failed',
+        category: 'auth',
+        description: `Google portal login denied for "${email}" (not an authorized staff/admin account)`,
+        performed_by: email,
+        details: { email, reason: 'unauthorized_google_account' },
+      });
       return res.status(403).json({ success: false, error: 'Access denied for this Google account.' });
     }
 
