@@ -36,7 +36,6 @@ import AddressAutocomplete from '../ui/AddressAutocomplete';
 import PaymentSummary from '../payment/PaymentSummary';
 import PaymentMethodSelector from '../payment/PaymentMethodSelector';
 import GCashCheckout from '../payment/GCashCheckout';
-import StripeCheckout from '../payment/StripeCheckout';
 import TermsModal from '../payment/TermsModal';
 
 const INITIAL_FORM = {
@@ -368,7 +367,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const [bookingRef, setBookingRef] = useState('');
   const [paymentError, setPaymentError] = useState(null);
   const [paymentResult, setPaymentResult] = useState(null);
-  const [paymentConfig, setPaymentConfig] = useState({ gcashEnabled: false, stripeEnabled: false });
+  const [paymentConfig, setPaymentConfig] = useState({ gcashEnabled: false });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
 
@@ -415,17 +414,10 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
   useEffect(() => {
     getPaymentConfig()
-      .then((res) => {
-        setPaymentConfig(res.data);
-        if (res.data.gcashEnabled) {
-          setPaymentMethod('gcash');
-        } else if (res.data.stripeEnabled) {
-          setPaymentMethod('card');
-        }
-      })
+      .then((res) => setPaymentConfig(res.data))
       .catch((err) => {
         console.error('Payment config error:', err);
-        setPaymentConfig({ gcashEnabled: false, stripeEnabled: false });
+        setPaymentConfig({ gcashEnabled: false });
       });
   }, []);
 
@@ -620,7 +612,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split('T')[0];
 
-  const noPaymentConfigured = !paymentConfig.gcashEnabled && !paymentConfig.stripeEnabled;
+  const noPaymentConfigured = !paymentConfig.gcashEnabled;
 
   return (
     <section id="book" className="section-padding bg-charcoal">
@@ -628,7 +620,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
         <SectionHeading
           label="Book Now"
           title="Book & Pay for Your Event"
-          description="Pick a booking type, choose your menu, and pay securely via GCash or Card."
+          description="Pick a booking type, choose your menu, and pay securely with GCash."
           light
         />
 
@@ -1059,7 +1051,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
                       <p className="font-semibold">Payment provider not configured</p>
                       <p className="mt-2">
-                        Start the payment server and add your PayMongo (GCash) or Stripe (Card) credentials.
+                        Start the payment server and add your PayMongo (GCash) credentials.
                         See <code className="font-mono bg-amber-100 px-1 rounded">server/.env.example</code>.
                       </p>
                     </div>
@@ -1069,7 +1061,6 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                         selected={paymentMethod}
                         onSelect={setPaymentMethod}
                         gcashEnabled={paymentConfig.gcashEnabled}
-                        stripeEnabled={paymentConfig.stripeEnabled}
                       />
 
                       {paymentError && (
@@ -1084,33 +1075,6 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                             Pay {formatCurrency(paymentType === 'full' ? bookingTotal : depositAmount)} {paymentType === 'full' ? 'total' : 'deposit'} with GCash
                           </p>
                           <GCashCheckout
-                            amount={paymentType === 'full' ? bookingTotal : depositAmount}
-                            bookingRef={bookingRef}
-                            customerName={form.name}
-                            customerEmail={form.email}
-                            description={`FMG Catering ${paymentType === 'full' ? 'payment' : 'deposit'} — ${packageName}`}
-                            onError={setPaymentError}
-                            disabled={!agreedToTerms}
-                            bookingData={bookingData}
-                            paymentType={paymentType}
-                          />
-                          {!agreedToTerms && (
-                            <p className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-center gap-2">
-                              <svg className="h-4 w-4 flex-shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                              </svg>
-                              Please check the box above to accept the Terms &amp; Conditions to unlock payment.
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      {paymentMethod === 'card' && paymentConfig.stripeEnabled && (
-                        <div className="rounded-xl border border-gray-200 p-5">
-                          <p className="text-sm font-medium text-charcoal mb-4">
-                            Pay {formatCurrency(paymentType === 'full' ? bookingTotal : depositAmount)} {paymentType === 'full' ? 'total' : 'deposit'} with Card (Stripe)
-                          </p>
-                          <StripeCheckout
                             amount={paymentType === 'full' ? bookingTotal : depositAmount}
                             bookingRef={bookingRef}
                             customerName={form.name}
@@ -1202,8 +1166,8 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                   <div>
                     <h3 className="font-semibold text-gold-200">Payment Security</h3>
                     <ul className="mt-3 space-y-2.5 text-sm text-white/70 list-disc list-inside">
-                      <li>Payments are processed through official PayMongo (GCash) and Stripe (Card) gateways</li>
-                      <li>Your wallet and card details are never stored on our servers</li>
+                      <li>Payments are processed through official PayMongo (GCash) gateway</li>
+                      <li>Your wallet details are never stored on our servers</li>
                       <li>You will receive a payment receipt via email</li>
                       <li>Remaining balance is due before your event date</li>
                     </ul>

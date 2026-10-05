@@ -19,7 +19,6 @@ export async function getPaymentConfig() {
   return request('/payments/config');
 }
 
-// GCash (PayMongo)
 export async function createGCashCheckout({ amount, bookingRef, customerName, customerEmail, description, bookingData, paymentType = 'full' }) {
   return request('/payments/gcash/create-checkout', {
     method: 'POST',
@@ -29,16 +28,4 @@ export async function createGCashCheckout({ amount, bookingRef, customerName, cu
 
 export async function verifyGCashPayment(sessionId) {
   return request(`/payments/gcash/verify/${sessionId}`);
-}
-
-// Card (Stripe)
-export async function createStripeCheckout({ amount, bookingRef, customerName, customerEmail, description, bookingData, paymentType = 'full' }) {
-  return request('/payments/stripe/create-checkout', {
-    method: 'POST',
-    body: JSON.stringify({ amount, bookingRef, customerName, customerEmail, description, bookingData, paymentType }),
-  });
-}
-
-export async function verifyStripePayment(sessionId) {
-  return request(`/payments/stripe/verify/${sessionId}`);
 }
