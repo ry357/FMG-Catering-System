@@ -7,6 +7,7 @@
     "api/index.js": { "maxDuration": 60 }
   },
   "crons": [
+    { "path": "/api/cron/anniversary-emails", "schedule": "0 1 * * *" },
     { "path": "/api/cron/monthly-report", "schedule": "0 0 1 * *" }
   ]
 }

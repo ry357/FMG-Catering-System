@@ -6,6 +6,10 @@ import {
   applyEmailSettings,
   sendPromotionalEmail,
 } from '../services/emailService.js';
+import {
+  getAnniversaryCandidates,
+  processAnniversaryEmails,
+} from '../services/anniversaryService.js';
 
 const router = express.Router();
 
@@ -132,6 +136,34 @@ router.get('/logs', authenticateToken, requireRole(['admin']), async (req, res) 
   } catch (error) {
     console.error('Fetch email logs error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch email logs' });
+  }
+});
+
+// Get upcoming anniversary email candidates (admin only)
+router.get('/anniversaries', authenticateToken, requireRole(['admin']), async (_req, res) => {
+  try {
+    const candidates = await getAnniversaryCandidates();
+    const summary = {
+      total: candidates.length,
+      readyToSend: candidates.filter((c) => c.status === 'ready_to_send').length,
+      alreadySent: candidates.filter((c) => c.status === 'already_sent').length,
+      upcoming: candidates.filter((c) => c.status === 'upcoming').length,
+    };
+    res.json({ success: true, candidates, summary });
+  } catch (error) {
+    console.error('Fetch anniversary candidates error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch anniversary candidates' });
+  }
+});
+
+// Manually trigger the anniversary email process (admin only)
+router.post('/anniversaries/trigger', authenticateToken, requireRole(['admin']), async (_req, res) => {
+  try {
+    const results = await processAnniversaryEmails();
+    res.json({ success: true, ...results });
+  } catch (error) {
+    console.error('Trigger anniversary emails error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to trigger anniversary emails' });
   }
 });
 

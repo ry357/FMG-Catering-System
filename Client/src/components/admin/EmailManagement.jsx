@@ -21,6 +21,13 @@ export default function EmailManagement() {
   const [logsPage, setLogsPage] = useState(1);
   const [logsTotalPages, setLogsTotalPages] = useState(1);
 
+  // Anniversary Reminders State
+  const [anniversaries, setAnniversaries] = useState([]);
+  const [anniversarySummary, setAnniversarySummary] = useState(null);
+  const [anniversaryLoading, setAnniversaryLoading] = useState(false);
+  const [anniversaryTriggering, setAnniversaryTriggering] = useState(false);
+  const [anniversaryResult, setAnniversaryResult] = useState(null);
+
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -28,12 +35,49 @@ export default function EmailManagement() {
   useEffect(() => {
     if (activeTab === 'logs') {
       fetchLogs();
+    } else if (activeTab === 'anniversaries') {
+      fetchAnniversaries();
     }
   }, [activeTab, logsPage]);
 
   const authHeader = () => ({
     headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
   });
+
+  const fetchAnniversaries = async () => {
+    setAnniversaryLoading(true);
+    try {
+      const res = await axios.get('/api/email/anniversaries', authHeader());
+      if (res.data.success) {
+        setAnniversaries(res.data.candidates || []);
+        setAnniversarySummary(res.data.summary || null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch anniversary candidates:', err);
+    } finally {
+      setAnniversaryLoading(false);
+    }
+  };
+
+  const handleTriggerAnniversaries = async () => {
+    if (!window.confirm('Check and send anniversary reminder emails to all eligible customers right now?')) {
+      return;
+    }
+    setAnniversaryTriggering(true);
+    setAnniversaryResult(null);
+    try {
+      const res = await axios.post('/api/email/anniversaries/trigger', {}, authHeader());
+      if (res.data.success) {
+        setAnniversaryResult(res.data);
+        fetchAnniversaries();
+      }
+    } catch (err) {
+      console.error('Failed to trigger anniversary process:', err);
+      alert(err.response?.data?.error || 'Failed to trigger anniversary process');
+    } finally {
+      setAnniversaryTriggering(false);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -125,6 +169,12 @@ export default function EmailManagement() {
           className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'logs' ? 'text-cyan-300 border-b-2 border-cyan-400 bg-cyan-500/5' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
         >
           Delivery Logs
+        </button>
+        <button
+          onClick={() => setActiveTab('anniversaries')}
+          className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'anniversaries' ? 'text-cyan-300 border-b-2 border-cyan-400 bg-cyan-500/5' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+        >
+          Anniversary Reminders
         </button>
       </div>
 
@@ -285,6 +335,132 @@ export default function EmailManagement() {
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'anniversaries' && (
+          <div className="space-y-6 max-w-5xl">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-[#0B1220] p-4 rounded-xl border border-[#1E2A45]">
+                <p className="text-xs uppercase tracking-wider text-slate-400 font-medium">Automated Cron Schedule</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <p className="text-base font-semibold text-white">Daily at 01:00 UTC</p>
+                </div>
+                <p className="text-xs text-slate-400 mt-1 font-mono">path: /api/cron/anniversary-emails</p>
+              </div>
+
+              <div className="bg-[#0B1220] p-4 rounded-xl border border-[#1E2A45]">
+                <p className="text-xs uppercase tracking-wider text-slate-400 font-medium">Target Policy Window</p>
+                <p className="mt-2 text-base font-semibold text-white">~30 Days Prior</p>
+                <p className="text-xs text-slate-400 mt-1">Sends 1-year event retention email with personalized greeting & promo offer</p>
+              </div>
+
+              <div className="bg-[#0B1220] p-4 rounded-xl border border-[#1E2A45] flex flex-col justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-slate-400 font-medium">Manual Trigger</p>
+                  <p className="text-xs text-slate-400 mt-1">Run immediate check & send to all eligible customers right now</p>
+                </div>
+                <button
+                  onClick={handleTriggerAnniversaries}
+                  disabled={anniversaryTriggering}
+                  className="mt-3 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {anniversaryTriggering ? 'Checking & Sending...' : '⚡ Run Check & Send Now'}
+                </button>
+              </div>
+            </div>
+
+            {anniversaryResult && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-sm">
+                <p className="font-semibold text-emerald-300">Anniversary Check Complete</p>
+                <p className="text-slate-300 mt-1">
+                  Checked: {anniversaryResult.totalChecked} · Eligible: {anniversaryResult.eligibleCount} · Sent: {anniversaryResult.sentCount} · Failed: {anniversaryResult.failedCount}
+                </p>
+              </div>
+            )}
+
+            <div className="bg-[#0B1220] rounded-xl border border-[#1E2A45] p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 className="text-base font-semibold text-white">Upcoming Anniversary Retention Queue</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Completed bookings tracked for annual retention email dispatch.
+                  </p>
+                </div>
+                {anniversarySummary && (
+                  <div className="flex gap-2 text-xs">
+                    <span className="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                      Ready to Send: {anniversarySummary.readyToSend}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                      Already Sent: {anniversarySummary.alreadySent}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-full bg-slate-700/40 text-slate-300 border border-slate-600/30">
+                      Upcoming: {anniversarySummary.upcoming}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {anniversaryLoading ? (
+                <p className="py-8 text-center text-sm text-slate-400">Loading anniversary queue...</p>
+              ) : anniversaries.length === 0 ? (
+                <p className="py-8 text-center text-sm text-slate-500">No completed bookings found for anniversary tracking.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-[#1E2A45] text-slate-400 uppercase tracking-wider text-[11px]">
+                        <th className="py-3 px-3">Customer</th>
+                        <th className="py-3 px-3">Event Type</th>
+                        <th className="py-3 px-3">Original Event</th>
+                        <th className="py-3 px-3">Next Anniversary</th>
+                        <th className="py-3 px-3">Target Send Date</th>
+                        <th className="py-3 px-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1E2A45]/50">
+                      {anniversaries.map((c) => (
+                        <tr key={c.bookingId} className="hover:bg-white/5 transition-colors">
+                          <td className="py-3 px-3">
+                            <p className="font-medium text-white">{c.customerName}</p>
+                            <p className="text-slate-400 text-[11px]">{c.customerEmail}</p>
+                          </td>
+                          <td className="py-3 px-3 text-slate-300 capitalize">{c.eventType}</td>
+                          <td className="py-3 px-3 text-slate-400">{c.originalEventDate}</td>
+                          <td className="py-3 px-3 text-slate-300">
+                            {c.nextAnniversaryDate}
+                            <span className="text-[10px] text-slate-500 ml-1">({c.daysUntilAnniversary}d)</span>
+                          </td>
+                          <td className="py-3 px-3 text-slate-300">
+                            {c.recommendedSendDate}
+                            <span className="text-[10px] text-slate-500 ml-1">({c.daysUntilSend > 0 ? `in ${c.daysUntilSend}d` : `${Math.abs(c.daysUntilSend)}d ago`})</span>
+                          </td>
+                          <td className="py-3 px-3">
+                            {c.status === 'ready_to_send' && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-400/10 text-cyan-300 border border-cyan-400/30">
+                                Ready to Send
+                              </span>
+                            )}
+                            {c.status === 'already_sent' && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-400/10 text-emerald-300 border border-emerald-400/30">
+                                Sent
+                              </span>
+                            )}
+                            {c.status === 'upcoming' && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-700/40 text-slate-300 border border-slate-600/30">
+                                Upcoming
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

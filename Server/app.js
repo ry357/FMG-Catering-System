@@ -21,6 +21,7 @@ import customerRoutes from './routes/customers.js';
 import { generalLimiter, authLimiter, paymentLimiter, bookingLimiter } from './middleware/rateLimiter.js';
 import { generateMonthlyReport } from './services/monthlyReportService.js';
 import { isGoogleDocsConfigured, autoUploadMonthlyReport } from './services/googleDocsService.js';
+import { processAnniversaryEmails } from './services/anniversaryService.js';
 
 const app = express();
 
@@ -75,11 +76,50 @@ app.use('/api/foods', foodRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api', contentRoutes);
 
-// Monthly report trigger for Vercel Cron (replaces the local setInterval job).
+// Helper to authenticate Vercel Cron requests (handles Authorization: Bearer, x-cron-secret, or query ?secret=)
+function verifyCronRequest(req) {
+  const authHeader = req.headers['authorization'];
+  const bearer = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const xSecret = req.headers['x-cron-secret'];
+  const querySecret = req.query?.secret;
+  const provided = bearer || xSecret || querySecret;
+
+  if (!process.env.CRON_SECRET) {
+    // If no secret is configured in development, allow the invocation
+    return process.env.NODE_ENV !== 'production';
+  }
+  return provided === process.env.CRON_SECRET;
+}
+
+// Daily anniversary email trigger for Vercel Cron (schedule: 0 1 * * *)
+// Checks for completed events whose annual anniversary is in ~30 days and sends reminder emails.
+app.all('/api/cron/anniversary-emails', async (req, res) => {
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return res.status(405).json({ success: false, error: 'Method Not Allowed' });
+  }
+
+  if (!verifyCronRequest(req)) {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
+
+  try {
+    const results = await processAnniversaryEmails();
+    console.log('[anniversary-cron] Completed dispatch:', results);
+    res.json({ success: true, ...results });
+  } catch (error) {
+    console.error('[anniversary-cron] Failed:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to process anniversary emails' });
+  }
+});
+
+// Monthly report trigger for Vercel Cron (schedule: 0 0 1 * *).
 // Generates the summary report for the previous, now-completed month.
-app.post('/api/cron/monthly-report', async (req, res) => {
-  const secret = req.headers['x-cron-secret'];
-  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+app.all('/api/cron/monthly-report', async (req, res) => {
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return res.status(405).json({ success: false, error: 'Method Not Allowed' });
+  }
+
+  if (!verifyCronRequest(req)) {
     return res.status(403).json({ success: false, error: 'Forbidden' });
   }
 
