@@ -17,6 +17,7 @@ import reviewRoutes from './routes/reviews.js';
 import activityLogRoutes from './routes/activityLogs.js';
 import packagesRoutes from './routes/packages.js';
 import foodRoutes from './routes/foods.js';
+import customerRoutes from './routes/customers.js';
 import { generalLimiter, authLimiter, paymentLimiter, bookingLimiter } from './middleware/rateLimiter.js';
 import { generateMonthlyReport } from './services/monthlyReportService.js';
 import { isGoogleDocsConfigured, autoUploadMonthlyReport } from './services/googleDocsService.js';
@@ -71,6 +72,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/activity-logs', activityLogRoutes);
 app.use('/api/packages', packagesRoutes);
 app.use('/api/foods', foodRoutes);
+app.use('/api/customers', customerRoutes);
 app.use('/api', contentRoutes);
 
 // Monthly report trigger for Vercel Cron (replaces the local setInterval job).

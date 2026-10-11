@@ -7,6 +7,7 @@ import DashboardSkeleton from '../components/ui/DashboardSkeleton';
 import MenuManagement from '../components/admin/MenuManagement';
 import DashboardCalendar from '../components/admin/DashboardCalendar';
 import EmailManagement from '../components/admin/EmailManagement';
+import CustomerDirectory from '../components/admin/CustomerDirectory';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -384,6 +385,16 @@ const AdminDashboard = () => {
               Calendar
             </button>
             <button
+              onClick={() => setActiveTab('customers')}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                activeTab === 'customers'
+                  ? 'text-cyan-300 border-b-2 border-cyan-400 -mb-px'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Customers
+            </button>
+            <button
               onClick={() => setActiveTab('reports')}
               className={`px-4 py-2.5 text-sm font-medium transition-colors ${
                 activeTab === 'reports'
@@ -475,6 +486,10 @@ const AdminDashboard = () => {
         
         {activeTab === 'calendar' && (
           <DashboardCalendar role="admin" onBack={() => setActiveTab('analytics')} />
+        )}
+
+        {activeTab === 'customers' && (
+          <CustomerDirectory />
         )}
 
 
