@@ -103,50 +103,72 @@ function FormField({ label, error, children, required }) {
 const inputClass =
   'w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal placeholder:text-gray-400 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20 transition-colors';
 
-function StepIndicator({ currentStep, steps = STEPS }) {
+function StepIndicator({ currentStep, steps = STEPS, onStepClick }) {
   const currentIndex = steps.findIndex((step) => step.id === currentStep);
 
   return (
-    <ol className="flex items-center justify-center gap-2 sm:gap-4 mb-10">
-      {steps.map((step, index) => {
-        const isActive = step.id === currentStep;
-        const isComplete = index < currentIndex;
+    <div className="mb-8 overflow-x-auto pb-2 scrollbar-thin">
+      <ol className="flex items-center min-w-max mx-auto justify-between max-w-4xl px-2">
+        {steps.map((step, index) => {
+          const isActive = step.id === currentStep;
+          const isComplete = index < currentIndex;
+          const canClick = isComplete && Boolean(onStepClick);
 
-        return (
-          <li key={step.id} className="flex items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-2">
-              <span
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
-                  isActive
-                    ? 'bg-gold-500 text-charcoal'
-                    : isComplete
-                      ? 'bg-green-500 text-white'
-                      : 'bg-white/10 text-white/50'
+          return (
+            <li key={step.id} className="flex items-center flex-1 last:flex-none">
+              <button
+                type="button"
+                disabled={!canClick}
+                onClick={() => canClick && onStepClick(step.id)}
+                className={`group flex items-center gap-3 transition-all text-left ${
+                  canClick ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
                 }`}
               >
-                {isComplete ? (
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  index + 1
-                )}
-              </span>
-              <span
-                className={`hidden sm:inline text-sm font-medium ${
-                  isActive ? 'text-white' : isComplete ? 'text-green-300' : 'text-white/50'
-                }`}
-              >
-                {step.label}
-              </span>
-            </div>
-            {index < steps.length - 1 && (
-              <div className={`hidden sm:block w-8 h-0.5 ${isComplete ? 'bg-green-500' : 'bg-white/20'}`} />
-            )}
-          </li>
-        );
-      })}
-    </ol>
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm ${
+                    isActive
+                      ? 'bg-gold-500 text-charcoal ring-4 ring-gold-400/25 scale-105'
+                      : isComplete
+                        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                        : 'bg-white/10 text-white/40 border border-white/10'
+                  }`}
+                >
+                  {isComplete ? (
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    index + 1
+                  )}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                    Step {index + 1}
+                  </span>
+                  <span
+                    className={`text-xs font-semibold whitespace-nowrap transition-colors ${
+                      isActive ? 'text-white' : isComplete ? 'text-emerald-300' : 'text-white/40'
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+              </button>
+
+              {index < steps.length - 1 && (
+                <div className="flex-1 mx-3 sm:mx-4 h-0.5 min-w-[28px] rounded-full overflow-hidden bg-white/10">
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      isComplete ? 'bg-emerald-500 w-full' : isActive ? 'bg-gold-500/50 w-1/2' : 'w-0'
+                    }`}
+                  />
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
 
@@ -386,6 +408,15 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [pendingPaymentAction, setPendingPaymentAction] = useState(null);
   const [customEventType, setCustomEventType] = useState('');
+  const [slideDirection, setSlideDirection] = useState('right'); // 'right' (forward) or 'left' (backward)
+
+  const goToStep = (nextStep, customDir) => {
+    const currentIdx = STEP_ORDER.indexOf(step);
+    const nextIdx = STEP_ORDER.indexOf(nextStep);
+    const dir = customDir || (nextIdx >= currentIdx ? 'right' : 'left');
+    setSlideDirection(dir);
+    setStep(nextStep);
+  };
 
   const packageBooking = Boolean(form.preferredPackageId);
   const offerId = selectedOffer?.id || null;
@@ -641,7 +672,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
       return;
     }
     setErrors({});
-    setStep('menu');
+    goToStep('menu', 'right');
   };
 
   const handleContinueFromMenu = (e) => {
@@ -652,7 +683,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
       return;
     }
     setErrors({});
-    setStep('details');
+    goToStep('details', 'right');
   };
 
   const effectiveEventType = form.eventType === 'Other' && customEventType.trim()
@@ -682,7 +713,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
       return;
     }
     setErrors({});
-    setStep('food');
+    goToStep('food', 'right');
   };
 
   const handleContinueToPayment = (e) => {
@@ -697,7 +728,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     setErrors({});
     setPaymentError(null);
     setBookingRef(generateBookingRef());
-    setStep('payment');
+    goToStep('payment', 'right');
   };
 
   const menuPreference = {
@@ -770,14 +801,18 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
           light
         />
 
-        <StepIndicator currentStep={step} steps={steps} />
+        <StepIndicator currentStep={step} steps={steps} onStepClick={(targetStep) => goToStep(targetStep)} />
 
         {step === 'confirmation' && paymentResult ? (
           <PaymentSuccessPanel paymentResult={paymentResult} onNewBooking={handleNewBooking} />
         ) : (
-          <div className="grid lg:grid-cols-5 gap-10">
-            <div className="lg:col-span-3 bg-white rounded-2xl p-6 md:p-8 shadow-elevated">
-              {step === 'category' && (
+          <div className="grid lg:grid-cols-12 gap-8 items-start">
+            <div className="lg:col-span-8 bg-white rounded-2xl p-6 md:p-8 shadow-elevated border border-gray-100/80 overflow-hidden relative">
+              <div
+                key={step}
+                className={slideDirection === 'right' ? 'slide-in-right' : 'slide-in-left'}
+              >
+                {step === 'category' && (
                 <form onSubmit={handleContinueFromCategory} className="space-y-6" noValidate>
                   <fieldset>
                     <legend className="block text-sm font-semibold text-charcoal mb-3">
@@ -934,7 +969,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
                   <div className="flex flex-wrap gap-3">
                     {!packageBooking && !presetCategory && (
-                      <Button type="button" variant="secondary" onClick={() => setStep('category')}>
+                      <Button type="button" variant="secondary" onClick={() => goToStep('category', 'left')}>
                         Back to Booking Type
                       </Button>
                     )}
@@ -1097,7 +1132,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                         Back to Packages
                       </Button>
                     ) : !packageBooking && (
-                      <Button type="button" variant="secondary" onClick={() => setStep('menu')}>
+                      <Button type="button" variant="secondary" onClick={() => goToStep('menu', 'left')}>
                         Back to Menu & Set
                       </Button>
                     )}
@@ -1167,7 +1202,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                   <textarea id="food-notes" value={menuNotes} maxLength="500" onChange={(event) => setMenuNotes(event.target.value)} rows="3" className="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20" />
 
                   <div className="flex flex-wrap gap-3">
-                    <Button type="button" variant="secondary" onClick={() => setStep('details')}>
+                    <Button type="button" variant="secondary" onClick={() => goToStep('details', 'left')}>
                       Back to Event Details
                     </Button>
                     <Button type="submit" size="lg">
@@ -1313,14 +1348,15 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     </>
                   )}
 
-                  <Button type="button" variant="secondary" onClick={() => setStep('food')}>
+                  <Button type="button" variant="secondary" onClick={() => goToStep('food', 'left')}>
                     Back to Food Selection
                   </Button>
                 </div>
               )}
+              </div>
             </div>
 
-            <aside className="lg:col-span-2 space-y-6">
+            <aside className="lg:col-span-4 space-y-6">
               {(step === 'menu' || step === 'details' || step === 'food' || step === 'payment') && (
                 <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="font-display text-xl font-semibold text-white">Your Menu Plan</h3>
