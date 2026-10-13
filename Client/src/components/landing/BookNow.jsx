@@ -238,14 +238,16 @@ function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle, o
           let sublabel;
           if (hasLimit) {
             if (!checked) {
-              sublabel = selected.length < limit ? 'Included in set' : `Quantity · +${formatCurrency(price)}`;
+              sublabel = selected.length < limit ? 'Included in set' : `+${formatCurrency(price)}`;
             } else if (quantity === 1) {
-              sublabel = isExtra ? `Quantity · +${formatCurrency(price)}` : 'Included in set';
+              sublabel = isExtra ? `+${formatCurrency(price)}` : 'Included in set';
             } else {
-              sublabel = `${quantity} selected${isExtra ? ` · +${formatCurrency(price * (quantity - Math.max(0, limit - (selected.length - quantity))))}` : ''}`;
+              sublabel = isExtra
+                ? `+${formatCurrency(price * (quantity - Math.max(0, limit - (selected.length - quantity))))}`
+                : 'Included in set';
             }
           } else {
-            sublabel = quantity > 1 ? `${quantity} selected · ${formatCurrency(price * quantity)}` : formatCurrency(price);
+            sublabel = quantity > 1 ? formatCurrency(price * quantity) : formatCurrency(price);
           }
 
           return (

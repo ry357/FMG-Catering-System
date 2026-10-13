@@ -112,9 +112,7 @@ export default function FoodDishCard({
               </span>
             </div>
           ) : (
-            <span className="text-xs sm:text-sm font-bold text-black truncate">
-              {sublabel || 'Included'}
-            </span>
+            <div className="min-w-0 flex-1" />
           )}
 
           {selectable && showQuantity && (onIncrease || onDecrease || onSelect) ? (
