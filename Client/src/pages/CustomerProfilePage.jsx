@@ -42,6 +42,18 @@ export default function CustomerProfilePage() {
   });
 
   // Invoice modal
+  const [selectedBookingForInvoice, setSelectedBookingForInvoice] = useState(null);
+
+  // Sync tab with URL search params whenever query string changes
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && ['history', 'addresses', 'phone'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    } else if (!tabFromUrl) {
+      setActiveTab('history');
+    }
+  }, [searchParams]);
+
   // Pre-seed state from current session so data is visible immediately while revalidating
   useEffect(() => {
     if (customer) {
@@ -85,8 +97,11 @@ export default function CustomerProfilePage() {
     } catch (err) {
       console.warn('Profile fetch note:', err.response?.status, err.message);
       if (err.response?.status === 401 || err.response?.status === 403) {
-        // Token expired; gently sign customer out so they can click one button to sign back in
-        logoutCustomer();
+        // Token invalid or expired; clear token so unauthenticated state cleanly renders
+        localStorage.removeItem('customerToken');
+        localStorage.removeItem('customer');
+        updateCustomerState(null);
+        setLoading(false);
         return;
       }
     }
@@ -248,6 +263,22 @@ export default function CustomerProfilePage() {
   };
 
   const token = customerToken || localStorage.getItem('customerToken');
+
+  // If auth is still verifying token from local storage, display a refined skeleton loader
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] flex flex-col font-sans text-charcoal">
+        <Navbar />
+        <main className="flex-grow pt-28 pb-16 flex items-center justify-center">
+          <div className="py-20 text-center">
+            <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-gold-500 border-t-transparent" />
+            <p className="mt-4 text-sm font-medium text-charcoal-muted">Loading your account...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   // If customer is not authenticated, show a clean luxury invitation card instead of a blank screen
   if (!token && !customer) {
