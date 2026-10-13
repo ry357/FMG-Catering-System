@@ -192,7 +192,7 @@ function PaymentSuccessPanel({ paymentResult, onNewBooking }) {
   );
 }
 
-function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle }) {
+function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle, onIncrease, onDecrease }) {
   const hasLimit = limit != null && limit > 0;
   return (
     <fieldset>
@@ -212,19 +212,24 @@ function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle })
       </legend>
       <div className="mt-2 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
         {choices.map((choice) => {
-          const checked = selected.includes(choice);
+          const quantity = selected.filter((item) => item === choice).length;
+          const checked = quantity > 0;
           const price = getDishPrice(choice, categoryKey);
           const choiceIndex = selected.indexOf(choice);
           const isExtra = hasLimit && checked && choiceIndex >= limit;
-          const sublabel = hasLimit
-            ? checked
-              ? isExtra
-                ? `Extra · +${formatCurrency(price)}`
-                : 'Included in set'
-              : selected.length < limit
-              ? 'Included in set'
-              : `Extra · +${formatCurrency(price)}`
-            : formatCurrency(price);
+
+          let sublabel;
+          if (hasLimit) {
+            if (!checked) {
+              sublabel = selected.length < limit ? 'Included in set' : `Extra · +${formatCurrency(price)}`;
+            } else if (quantity === 1) {
+              sublabel = isExtra ? `Extra · +${formatCurrency(price)}` : 'Included in set';
+            } else {
+              sublabel = `${quantity} selected${isExtra ? ` · +${formatCurrency(price * (quantity - Math.max(0, limit - (selected.length - quantity))))}` : ''}`;
+            }
+          } else {
+            sublabel = quantity > 1 ? `${quantity} selected · ${formatCurrency(price * quantity)}` : formatCurrency(price);
+          }
 
           return (
             <FoodDishCard
@@ -232,8 +237,11 @@ function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle })
               dish={{ name: choice }}
               selectable={true}
               selected={checked}
+              quantity={quantity}
               disabled={false}
               onSelect={() => onToggle(choice)}
+              onIncrease={() => onIncrease(choice)}
+              onDecrease={() => onDecrease(choice)}
               compact={true}
               showPrice={!hasLimit || isExtra}
               price={price}
@@ -284,7 +292,7 @@ function buildPlatterItems(platters, chafer) {
   return items;
 }
 
-function DropOffChecklist({ selections, onToggle, total, itemCount }) {
+function DropOffChecklist({ selections, platters, onToggle, onIncrease, onDecrease, total, itemCount }) {
   const categories = [
     { key: 'mains', label: 'Main Dishes', items: PLATTER_MENU.mains, price: '₱1,300/platter · ₱1,500 w/ chafer' },
     { key: 'specials', label: 'Whole Lechon', items: PLATTER_MENU.specials, price: '₱8,000/whole' },
@@ -316,17 +324,23 @@ function DropOffChecklist({ selections, onToggle, total, itemCount }) {
                 )}
                 <div className="mt-2.5 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                   {groupItems.map((item) => {
-                    const checked = selections[key]?.includes(item.id);
+                    const qty = Number(platters?.[key]?.[item.id]) || 0;
+                    const checked = qty > 0;
+                    const unitPrice = platterItemPrice(item, false);
                     return (
                       <FoodDishCard
                         key={item.id}
                         dish={item}
-                        price={platterItemPrice(item, false)}
+                        price={unitPrice}
                         selectable={true}
                         selected={checked}
+                        quantity={qty}
                         onSelect={() => onToggle(key, item.id)}
+                        onIncrease={() => onIncrease(key, item.id)}
+                        onDecrease={() => onDecrease(key, item.id)}
                         compact={true}
                         showPrice={true}
+                        sublabel={qty > 1 ? `${qty} platters · ${formatCurrency(unitPrice * qty)}` : null}
                       />
                     );
                   })}
@@ -478,29 +492,83 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
   const toggleChafer = () => setIncludeChafer((current) => !current);
 
-  const toggleChoice = (category, choice) => {
+  const handleChoiceIncrease = (categoryKey, choice) => {
     setSelections((current) => ({
       ...current,
-      [category]: current[category].includes(choice)
-        ? current[category].filter((item) => item !== choice)
-        : [...current[category], choice],
+      [categoryKey]: [...(current[categoryKey] || []), choice],
     }));
-    if (errors[category]) setErrors((prev) => ({ ...prev, [category]: undefined }));
+    if (errors[categoryKey]) setErrors((prev) => ({ ...prev, [categoryKey]: undefined }));
+    if (errors.mains) setErrors((prev) => ({ ...prev, mains: undefined }));
   };
 
-  const toggleDropOffChoice = (category, itemId) => {
-    const nowActive = !(dropOffSelections[category] || []).includes(itemId);
-    setDropOffSelections((current) => ({
-      ...current,
-      [category]: nowActive
-        ? [...current[category], itemId]
-        : current[category].filter((id) => id !== itemId),
-    }));
-    setPlatters((current) => ({
-      ...current,
-      [category]: { ...current[category], [itemId]: nowActive ? 1 : 0 },
-    }));
-    if (errors.dropOffSelections) setErrors((prev) => ({ ...prev, dropOffSelections: undefined }));
+  const handleChoiceDecrease = (categoryKey, choice) => {
+    setSelections((current) => {
+      const list = current[categoryKey] || [];
+      const idx = list.lastIndexOf(choice);
+      if (idx === -1) return current;
+      const nextList = [...list];
+      nextList.splice(idx, 1);
+      return {
+        ...current,
+        [categoryKey]: nextList,
+      };
+    });
+    if (errors[categoryKey]) setErrors((prev) => ({ ...prev, [categoryKey]: undefined }));
+    if (errors.mains) setErrors((prev) => ({ ...prev, mains: undefined }));
+  };
+
+  const toggleChoice = (categoryKey, choice) => {
+    const list = selections[categoryKey] || [];
+    const count = list.filter((item) => item === choice).length;
+    if (count > 0) {
+      setSelections((current) => ({
+        ...current,
+        [categoryKey]: (current[categoryKey] || []).filter((item) => item !== choice),
+      }));
+    } else {
+      handleChoiceIncrease(categoryKey, choice);
+    }
+    if (errors[categoryKey]) setErrors((prev) => ({ ...prev, [categoryKey]: undefined }));
+    if (errors.mains) setErrors((prev) => ({ ...prev, mains: undefined }));
+  };
+
+  const handleDropOffQuantityChange = (categoryKey, itemId, delta) => {
+    setPlatters((currentPlatters) => {
+      const currentQty = Number(currentPlatters?.[categoryKey]?.[itemId]) || 0;
+      const nextQty = Math.max(0, currentQty + delta);
+
+      setDropOffSelections((currentSelections) => {
+        const list = currentSelections[categoryKey] || [];
+        if (nextQty > 0 && !list.includes(itemId)) {
+          return { ...currentSelections, [categoryKey]: [...list, itemId] };
+        }
+        if (nextQty === 0 && list.includes(itemId)) {
+          return { ...currentSelections, [categoryKey]: list.filter((id) => id !== itemId) };
+        }
+        return currentSelections;
+      });
+
+      if (errors.dropOffSelections) {
+        setErrors((prev) => ({ ...prev, dropOffSelections: undefined }));
+      }
+
+      return {
+        ...currentPlatters,
+        [categoryKey]: {
+          ...(currentPlatters[categoryKey] || {}),
+          [itemId]: nextQty,
+        },
+      };
+    });
+  };
+
+  const toggleDropOffChoice = (categoryKey, itemId) => {
+    const currentQty = Number(platters?.[categoryKey]?.[itemId]) || 0;
+    if (currentQty > 0) {
+      handleDropOffQuantityChange(categoryKey, itemId, -currentQty);
+    } else {
+      handleDropOffQuantityChange(categoryKey, itemId, 1);
+    }
   };
 
   const handleContinueFromCategory = (e) => {
@@ -904,7 +972,10 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     <>
                       <DropOffChecklist
                         selections={dropOffSelections}
+                        platters={platters}
                         onToggle={toggleDropOffChoice}
+                        onIncrease={(categoryKey, itemId) => handleDropOffQuantityChange(categoryKey, itemId, 1)}
+                        onDecrease={(categoryKey, itemId) => handleDropOffQuantityChange(categoryKey, itemId, -1)}
                         total={platterTotal}
                         itemCount={platterItemCount}
                       />
@@ -923,6 +994,8 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                           selected={selections[key]}
                           limit={foodLimits ? foodLimits[key] : null}
                           onToggle={(choice) => toggleChoice(key, choice)}
+                          onIncrease={(choice) => handleChoiceIncrease(key, choice)}
+                          onDecrease={(choice) => handleChoiceDecrease(key, choice)}
                         />
                       ))}
 

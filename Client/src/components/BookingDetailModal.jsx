@@ -62,11 +62,25 @@ function extractDishes(menuItems, menuPreference) {
 
   if (menuPreference?.selections) {
     const { appetizers = [], mains = [], addons = [], sides = [], desserts = [] } = menuPreference.selections;
-    const flatten = (list) =>
-      list.map((item) =>
-        typeof item === 'string' ? { name: item, price: null } : { name: item?.name || 'Unnamed dish', price: item?.price ?? null }
-      );
-    return [...flatten(appetizers), ...flatten(mains), ...flatten(addons), ...flatten(sides), ...flatten(desserts)];
+    const countItems = (list) => {
+      const counts = {};
+      list.forEach((item) => {
+        const name = typeof item === 'string' ? item : (item?.name || 'Unnamed dish');
+        const price = typeof item === 'object' && item?.price != null ? item.price : null;
+        counts[name] = { count: (counts[name]?.count || 0) + 1, price };
+      });
+      return Object.entries(counts).map(([name, { count, price }]) => ({
+        name: count > 1 ? `${count}× ${name}` : name,
+        price,
+      }));
+    };
+    return [
+      ...countItems(appetizers),
+      ...countItems(mains),
+      ...countItems(addons),
+      ...countItems(sides),
+      ...countItems(desserts),
+    ];
   }
 
   return [];

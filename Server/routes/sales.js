@@ -37,11 +37,11 @@ router.get('/analytics', authenticateToken, requireRole(['staff', 'admin']), asy
     const params = [];
 
     if (start_date) {
-      sql += ' AND s.sale_date >= $' + (params.length + 1);
+      sql += ' AND s.sale_date >= ?';
       params.push(start_date);
     }
     if (end_date) {
-      sql += ' AND s.sale_date <= $' + (params.length + 1);
+      sql += ' AND s.sale_date <= ?';
       params.push(end_date);
     }
 

@@ -32,13 +32,17 @@ const extractMenuNames = (additionalRequests) => {
       if (Array.isArray(parsed)) {
         parsed.forEach((item) => {
           if (item && typeof item === 'object' && item.name) {
-            names.push(String(item.name));
+            const cleanName = String(item.name).replace(/^\d+\s*[×xX]\s*/, '').trim();
+            names.push(cleanName);
           }
         });
       } else if (parsed && typeof parsed === 'object' && parsed.selections) {
-        ['mains', 'sides', 'desserts'].forEach((key) => {
+        ['mains', 'sides', 'desserts', 'appetizers', 'addons'].forEach((key) => {
           (parsed.selections[key] || []).forEach((dish) => {
-            if (dish) names.push(String(dish));
+            if (dish) {
+              const cleanDish = typeof dish === 'string' ? dish.replace(/^\d+\s*[×xX]\s*/, '').trim() : (dish.name ? String(dish.name).replace(/^\d+\s*[×xX]\s*/, '').trim() : '');
+              if (cleanDish) names.push(cleanDish);
+            }
           });
         });
       }

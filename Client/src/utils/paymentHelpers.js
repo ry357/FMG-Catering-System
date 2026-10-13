@@ -143,10 +143,19 @@ export function getSelectedPackageName(form, selectedOffer = null, tier = '') {
 
 export function buildMenuItems(selections = {}) {
   const items = [];
-  const push = (category, list) =>
-    (list || []).forEach((name) =>
-      items.push({ name, category })
-    );
+  const push = (category, list) => {
+    const counts = {};
+    (list || []).forEach((name) => {
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    Object.entries(counts).forEach(([name, count]) => {
+      items.push({
+        name: count > 1 ? `${count}× ${name}` : name,
+        category,
+        quantity: count,
+      });
+    });
+  };
 
   push('appetizers', selections.appetizers);
   push('mains', selections.mains);
@@ -225,14 +234,20 @@ export function getPriceBreakdown({
         const limit = limits[cat] || 0;
         if (list.length > limit) {
           const extraItems = list.slice(limit);
+          const extraCounts = {};
           extraItems.forEach((dish) => {
+            extraCounts[dish] = (extraCounts[dish] || 0) + 1;
+          });
+          Object.entries(extraCounts).forEach(([dish, count]) => {
             const price = getDishPrice(dish, cat);
             const catLabel = cat === 'mains' ? 'Main Dish' : cat === 'appetizers' ? 'Appetizer' : 'Add-on';
             items.push({
-              label: `Extra ${catLabel}: ${dish}`,
+              label: count > 1 ? `Extra ${catLabel}: ${count}× ${dish}` : `Extra ${catLabel}: ${dish}`,
               category: `${catLabel} Add-on`,
-              sublabel: `Platter add-on (exceeds ${limit} included in set)`,
-              amount: price,
+              sublabel: count > 1
+                ? `${count} platters @ ${formatCurrency(price)} (exceeds ${limit} included in set)`
+                : `Platter add-on (exceeds ${limit} included in set)`,
+              amount: price * count,
               isExtra: true,
             });
           });
@@ -268,14 +283,20 @@ export function getPriceBreakdown({
         const limit = limits[cat] || 0;
         if (list.length > limit) {
           const extraItems = list.slice(limit);
+          const extraCounts = {};
           extraItems.forEach((dish) => {
+            extraCounts[dish] = (extraCounts[dish] || 0) + 1;
+          });
+          Object.entries(extraCounts).forEach(([dish, count]) => {
             const price = getDishPrice(dish, cat);
             const catLabel = cat === 'mains' ? 'Main Dish' : cat === 'appetizers' ? 'Appetizer' : 'Add-on';
             items.push({
-              label: `Extra ${catLabel}: ${dish}`,
+              label: count > 1 ? `Extra ${catLabel}: ${count}× ${dish}` : `Extra ${catLabel}: ${dish}`,
               category: `${catLabel} Add-on`,
-              sublabel: `Platter add-on (exceeds ${limit} included in package)`,
-              amount: price,
+              sublabel: count > 1
+                ? `${count} platters @ ${formatCurrency(price)} (exceeds ${limit} included in package)`
+                : `Platter add-on (exceeds ${limit} included in package)`,
+              amount: price * count,
               isExtra: true,
             });
           });
@@ -300,13 +321,17 @@ export function getPriceBreakdown({
     ['appetizers', 'mains', 'addons'].forEach((cat) => {
       const list = selections[cat] || [];
       const catLabel = cat === 'mains' ? 'Main Dish' : cat === 'appetizers' ? 'Appetizer' : 'Add-on';
+      const dishCounts = {};
       list.forEach((dish) => {
+        dishCounts[dish] = (dishCounts[dish] || 0) + 1;
+      });
+      Object.entries(dishCounts).forEach(([dish, count]) => {
         const price = getDishPrice(dish, cat);
         items.push({
-          label: dish,
+          label: count > 1 ? `${count}× ${dish}` : dish,
           category: catLabel,
-          sublabel: `À la carte selection`,
-          amount: price,
+          sublabel: count > 1 ? `${count} platters @ ${formatCurrency(price)}` : `À la carte selection`,
+          amount: price * count,
         });
       });
     });
