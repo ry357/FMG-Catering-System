@@ -137,25 +137,25 @@ export default function FoodDishCard({
       {/* Dish Details */}
       <div className={`flex flex-1 flex-col justify-between ${compact ? 'p-3' : 'p-3.5'}`}>
         <div>
-          <h4 className="font-display font-medium text-charcoal group-hover:text-gold-700 text-sm md:text-base leading-snug line-clamp-2">
+          <h4 className="font-display font-bold text-black group-hover:text-gold-800 text-sm md:text-base leading-snug line-clamp-2">
             {dishName}
           </h4>
           {sublabel && (
-            <p className="mt-0.5 text-xs text-charcoal-muted line-clamp-1">{sublabel}</p>
+            <p className="mt-1 text-xs md:text-sm font-semibold text-black line-clamp-1">{sublabel}</p>
           )}
         </div>
 
         {/* Price & Quantity Area */}
-        <div className="mt-2.5 flex items-center justify-between pt-1 border-t border-gold-50/80 gap-1.5">
+        <div className="mt-2.5 flex items-center justify-between pt-1 border-t border-gray-200 gap-1.5">
           {showPrice && dishPrice != null ? (
             <div className="flex flex-col min-w-0">
-              <span className="text-[10px] text-charcoal-muted font-normal leading-tight">Price</span>
-              <span className="font-display font-bold text-gold-600 text-xs sm:text-sm truncate">
+              <span className="text-[10px] text-black font-medium leading-tight">Price</span>
+              <span className="font-display font-bold text-black text-xs sm:text-sm truncate">
                 {formatCurrency(dishPrice)}
               </span>
             </div>
           ) : (
-            <span className="text-[11px] sm:text-xs font-medium text-charcoal-muted truncate">
+            <span className="text-xs sm:text-sm font-bold text-black truncate">
               {sublabel || 'Included'}
             </span>
           )}

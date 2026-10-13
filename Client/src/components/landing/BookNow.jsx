@@ -213,16 +213,16 @@ function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle, o
   const hasLimit = limit != null && limit > 0;
   return (
     <fieldset>
-      <legend className="flex w-full items-center justify-between text-sm font-semibold text-charcoal mb-2">
-        <span>{title}</span>
+      <legend className="flex w-full items-baseline justify-between text-black mb-3 pb-1 border-b border-gray-200">
+        <span className="text-base sm:text-lg font-bold text-black tracking-tight">{title}</span>
         {hasLimit ? (
-          <span className="text-gold-600 font-medium text-xs sm:text-sm">
+          <span className="text-sm sm:text-base font-bold text-black bg-gray-100 px-3 py-1 rounded-full border border-gray-300">
             {selected.length < limit
               ? `${selected.length}/${limit} included in set`
               : `${limit} included in set${selected.length > limit ? ` · +${selected.length - limit} extra` : ''}`}
           </span>
         ) : (
-          <span className="text-gold-600 font-medium text-xs sm:text-sm">
+          <span className="text-sm sm:text-base font-bold text-black bg-gray-100 px-3 py-1 rounded-full border border-gray-300">
             {selected.length} selected
           </span>
         )}
@@ -322,9 +322,9 @@ function DropOffChecklist({ selections, platters, onToggle, onIncrease, onDecrea
     <div className="space-y-6">
       {categories.map(({ key, label, items, price }) => (
         <fieldset key={key}>
-          <legend className="flex w-full items-center justify-between text-sm font-semibold text-charcoal">
-            <span>{label}</span>
-            <span className="text-xs font-normal text-charcoal-muted">{price}</span>
+          <legend className="flex w-full items-baseline justify-between text-black mb-3 pb-1 border-b border-gray-200">
+            <span className="text-base sm:text-lg font-bold text-black tracking-tight">{label}</span>
+            <span className="text-xs sm:text-sm font-semibold text-black bg-gray-100 px-3 py-1 rounded-full border border-gray-300">{price}</span>
           </legend>
           {(() => {
             const grouped = items.reduce((acc, item) => {
@@ -1136,12 +1136,12 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
               {step === 'food' && (
                 <form onSubmit={handleContinueToPayment} className="space-y-7" noValidate>
-                  <div className="rounded-xl border border-gold-200 bg-gold-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">Your menu</p>
-                    <p className="mt-1 font-display text-xl font-semibold text-charcoal">
+                  <div className="rounded-xl border border-gray-300 bg-gray-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-black">Your menu</p>
+                    <p className="mt-1 font-display text-2xl font-bold text-black">
                       {isDropOff ? 'Custom platter order' : selectedOffer?.name || packageName}
                     </p>
-                    <p className="mt-1 text-sm text-charcoal-muted">
+                    <p className="mt-1 text-sm font-semibold text-black">
                       {isDropOff
                         ? `${platterItemCount} item(s) selected · ${includeChafer ? 'with chafer' : 'no chafer'} · ${formatCurrency(bookingTotal)} total`
                         : `${form.numberOfGuests} guests · ${formatCurrency(bookingTotal)} estimated total`}
