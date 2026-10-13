@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { queryOne, execute, executeWithId } from '../config/dbHelper.js';
+import { query, queryOne, execute, executeWithId } from '../config/dbHelper.js';
 import { sendCustomerOtpEmail } from '../services/emailService.js';
 import { logActivity } from '../services/activityLogService.js';
 
