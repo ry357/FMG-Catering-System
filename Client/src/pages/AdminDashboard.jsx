@@ -37,24 +37,26 @@ const renderMarkdown = (md) => {
       const header = parseCells(rows[0]);
       const body = rows.filter((r) => !isSeparatorRow(r)).slice(1).map(parseCells);
       elements.push(
-        <table key={key} className="w-full mb-6 border-collapse font-serif" style={{ fontSize: '11pt' }}>
-          <thead>
-            <tr>
-              {header.map((cell, i) => (
-                <th key={i} className="text-left py-2 px-3 font-bold text-gray-900 border border-gray-600 bg-gray-100" style={{ fontFamily: 'Cambria, Georgia, serif' }}>{renderInline(cell)}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {body.map((cells, j) => (
-              <tr key={j}>
-                {cells.map((cell, i) => (
-                  <td key={i} className="py-2 px-3 text-gray-800 border border-gray-600">{renderInline(cell)}</td>
+        <div key={key} className="w-full overflow-x-auto my-6 border border-gray-300 rounded shadow-sm bg-white">
+          <table className="w-full border-collapse font-serif bg-white" style={{ fontSize: header.length > 5 ? '9.5pt' : '11pt', minWidth: header.length > 5 ? '650px' : '100%' }}>
+            <thead>
+              <tr className="bg-gray-100">
+                {header.map((cell, i) => (
+                  <th key={i} className="text-left py-2 px-2.5 font-bold text-gray-900 border border-gray-400 bg-gray-100 whitespace-nowrap" style={{ fontFamily: 'Cambria, Georgia, serif' }}>{renderInline(cell)}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white">
+              {body.map((cells, j) => (
+                <tr key={j} className="hover:bg-gray-50/80 bg-white">
+                  {cells.map((cell, i) => (
+                    <td key={i} className="py-2 px-2.5 text-gray-800 border border-gray-300 bg-white">{renderInline(cell)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
     } else {
       elements.push(<p key={key} className="mb-3 text-gray-800 leading-relaxed font-serif" style={{ fontSize: '11pt', textAlign: 'justify' }}>{rows.map(renderInline)}</p>);
@@ -528,8 +530,8 @@ const AdminDashboard = () => {
               </div>
 
               {monthlySummary && monthlySummary.markdown ? (
-                <div className="border border-[#2A3A5C] rounded shadow-2xl mx-auto" style={{ maxWidth: '816px', fontFamily: 'Cambria, Georgia, serif', background: '#fff' }}>
-                  <div className="px-20 py-16">
+                <div className="border border-[#2A3A5C] rounded shadow-2xl mx-auto overflow-hidden bg-white" style={{ maxWidth: '920px', fontFamily: 'Cambria, Georgia, serif', background: '#fff' }}>
+                  <div className="px-6 sm:px-12 md:px-14 py-12">
                     {renderMarkdown(monthlySummary.markdown)}
                   </div>
                   <div className="border-t border-gray-200 px-8 py-3 bg-gray-50">
