@@ -533,66 +533,18 @@ const AdminDashboard = () => {
                     {renderMarkdown(monthlySummary.markdown)}
                   </div>
                   <div className="border-t border-gray-200 px-8 py-3 bg-gray-50">
-                    <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
                       <button
                         onClick={() => downloadDocx(monthlySummary.report)}
-                        className="text-sm bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors"
+                        className="text-sm bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors font-medium shadow-sm"
                       >
                         <span>📄</span> Download Word (.docx)
                       </button>
-                      <button
-                        onClick={() => downloadReport(monthlySummary.report)}
-                        className="text-xs border border-slate-500/60 text-slate-400 px-3 py-1.5 rounded hover:bg-slate-700/40 transition-all"
-                      >
-                        Download (.md)
-                      </button>
-                      <button
-                        onClick={handleUploadToGoogleDocs}
-                        disabled={googleDocBusy}
-                        className="text-sm border border-cyan-400/60 text-cyan-300 px-4 py-2 rounded hover:bg-cyan-400/10 disabled:opacity-50 transition-all"
-                      >
-                        {googleDocBusy ? 'Uploading to Google Docs...' : 'Upload to Google Docs'}
-                      </button>
-                      {googleDoc && (
-                        <a
-                          href={googleDoc}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-cyan-300 hover:text-cyan-100 underline"
-                        >
-                          Open in Google Docs →
-                        </a>
-                      )}
                       <span className="text-xs text-gray-500">
                         Generated {new Date(monthlySummary.report.created_at).toLocaleString()} ·{' '}
                         {monthlySummary.report.generated_by_name || 'Automated'}
                       </span>
                     </div>
-                    {!googleDocsConfigured && (
-                      <div className="mt-2 flex flex-wrap items-center gap-3">
-                        <button
-                          onClick={handleConnectGoogleDocs}
-                          className="text-xs border border-red-400/60 text-red-300 px-3 py-1.5 rounded hover:bg-red-400/10 transition-all"
-                        >
-                          Connect Google Account (OAuth)
-                        </button>
-                        <span className="text-xs text-amber-300">
-                          Google Docs upload is not connected yet. Connect it to auto-upload reports as Word docs.
-                        </span>
-                      </div>
-                    )}
-                    {googleDocsConfigured && (
-                      <p className="text-xs text-emerald-300 mt-2">
-                        Connected via {googleDocsMethod === 'oauth' ? 'Google account (OAuth)' : 'service account'} —
-                        reports auto-upload to Google Docs.
-                      </p>
-                    )}
-                    {googleDocMessage && (
-                      <p className="text-xs text-cyan-300 mt-2">{googleDocMessage}</p>
-                    )}
-                    {googleDocError && (
-                      <p className="text-xs text-red-300 mt-2">{googleDocError}</p>
-                    )}
                   </div>
                 </div>
               ) : (
@@ -640,10 +592,10 @@ const AdminDashboard = () => {
                           <td className="py-2.5 px-4 text-gray-500">{new Date(r.created_at).toLocaleString()}</td>
                           <td className="py-2.5 px-4">
                             <button
-                              onClick={() => downloadReport(r)}
-                              className="text-cyan-600 hover:text-cyan-800 text-sm font-medium"
+                              onClick={() => downloadDocx(r)}
+                              className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1.5 transition-colors"
                             >
-                              Download
+                              <span>📄</span> Download Word (.docx)
                             </button>
                           </td>
                         </tr>
