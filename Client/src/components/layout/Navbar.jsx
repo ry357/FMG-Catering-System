@@ -176,6 +176,7 @@ export default function Navbar() {
 
       <LogoutConfirmModal
         open={showLogoutModal}
+        variant="client"
         onClose={() => setShowLogoutModal(false)}
         onConfirm={logoutCustomer}
       />
