@@ -204,6 +204,7 @@ const SalesAnalyticsDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [revenueView, setRevenueView] = useState('month');
 
   useEffect(() => {
     let cancelled = false;
@@ -311,12 +312,29 @@ const SalesAnalyticsDashboard = () => {
           {/* KPI cards */}
           {kpis && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              <KpiCard
-                icon={icons.revenue}
-                title="Total Catering Revenue"
-                value={PESO(kpis.totalRevenue)}
-                trend={kpis.trends.totalRevenue}
-              />
+              <div className="relative">
+                <KpiCard
+                  icon={icons.revenue}
+                  title={revenueView === 'all' ? 'All-Time Catering Revenue' : 'Monthly Catering Revenue'}
+                  value={PESO(revenueView === 'all' ? (kpis.allTimeRevenue || 0) : kpis.totalRevenue)}
+                  trend={revenueView === 'all' ? null : kpis.trends.totalRevenue}
+                  note={revenueView === 'all' ? 'All completed payments' : data.range.label}
+                />
+                <div className="absolute top-4 right-4 flex rounded-md border border-[#1E2A45] overflow-hidden text-[11px]">
+                  {[['month', 'Monthly'], ['all', 'Total']].map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setRevenueView(key)}
+                      className={`px-2 py-1 transition-colors ${
+                        revenueView === key ? 'bg-amber-400/20 text-amber-300' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <KpiCard
                 icon={icons.avg}
                 title="Average Event Value"

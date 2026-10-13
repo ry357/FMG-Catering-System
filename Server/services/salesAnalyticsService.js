@@ -172,6 +172,7 @@ export const getSalesDashboard = async ({ month } = {}) => {
 
   const kpis = {
     totalRevenue: Number(cur.totalRevenue.toFixed(2)),
+    allTimeRevenue: Number(Object.values(revenueByMonth).reduce((a, v) => a + v, 0).toFixed(2)),
     avgEventValue: cur.avgEventValue,
     cogsPercent: cur.cogsPercent,
     totalBookedEvents: cur.totalBookedEvents,
