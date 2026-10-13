@@ -384,6 +384,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const [paymentConfig, setPaymentConfig] = useState({ gcashEnabled: false });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [pendingPaymentAction, setPendingPaymentAction] = useState(null);
 
   const packageBooking = Boolean(form.preferredPackageId);
   const offerId = selectedOffer?.id || null;
@@ -1160,42 +1161,33 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                   </div>
 
                   {/* Terms & Conditions Agreement */}
-                  <div className="rounded-2xl border border-gold-200/90 bg-gradient-to-br from-gold-50/50 via-white to-gold-50/30 p-5 space-y-4 shadow-sm">
-                    <div className="flex items-center justify-between border-b border-gold-200/60 pb-3">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gold-500 text-white text-xs font-bold shadow-sm">
+                  <div className="rounded-2xl border border-gold-200/90 bg-gradient-to-br from-gold-50/50 via-white to-gold-50/30 p-4 sm:p-5 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-500 text-white text-sm font-bold shadow-sm flex-shrink-0">
                           §
                         </span>
                         <div>
                           <h4 className="font-semibold text-charcoal text-sm">Terms &amp; Conditions Agreement</h4>
-                          <p className="text-xs text-charcoal-muted">Please review before completing payment</p>
+                          <p className="text-xs text-charcoal-muted">
+                            {agreedToTerms
+                              ? '✓ You have agreed to the FMG Terms & Conditions and Cancellation Policy'
+                              : 'Review and accept our policy before completing payment'}
+                          </p>
                         </div>
                       </div>
+
                       <button
                         type="button"
                         onClick={() => setShowTermsModal(true)}
-                        className="text-xs font-semibold text-gold-700 hover:text-gold-900 underline decoration-gold-400 underline-offset-2 transition-colors"
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-gold-800 bg-gold-100/70 hover:bg-gold-200/80 border border-gold-300/80 transition-all shadow-2xs self-start sm:self-auto"
                       >
-                        Read Full Terms
+                        <span>📄</span>
+                        <span>{agreedToTerms ? 'View Accepted Terms' : 'Review Terms & Conditions'}</span>
                       </button>
                     </div>
 
-                    <div className="grid sm:grid-cols-3 gap-3 text-xs text-charcoal-muted">
-                      <div className="rounded-xl bg-white p-3 border border-gold-100 shadow-2xs">
-                        <span className="font-semibold text-charcoal block mb-0.5">🔒 Reservation Deposit</span>
-                        50% down payment (or full payment) locks in your date. Balance due on or before event day.
-                      </div>
-                      <div className="rounded-xl bg-white p-3 border border-gold-100 shadow-2xs">
-                        <span className="font-semibold text-charcoal block mb-0.5">📅 Cancellation Policy</span>
-                        70% refund if cancelled 14+ days before event. Non-refundable within 7 days.
-                      </div>
-                      <div className="rounded-xl bg-white p-3 border border-gold-100 shadow-2xs">
-                        <span className="font-semibold text-charcoal block mb-0.5">🍽️ Headcount &amp; Care</span>
-                        Headcount finalized 5 days prior. Client is liable for equipment damage or loss.
-                      </div>
-                    </div>
-
-                    <label className="flex items-start gap-3 pt-1 cursor-pointer select-none">
+                    <label className="flex items-start gap-3 pt-3 mt-3 border-t border-gold-200/60 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={agreedToTerms}
@@ -1251,18 +1243,15 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                             customerEmail={form.email}
                             description={`FMG Catering ${paymentType === 'full' ? 'payment' : 'deposit'} — ${packageName}`}
                             onError={setPaymentError}
-                            disabled={!agreedToTerms}
+                            disabled={false}
+                            agreedToTerms={agreedToTerms}
+                            onRequestTerms={(onConfirm) => {
+                              setPendingPaymentAction(() => onConfirm);
+                              setShowTermsModal(true);
+                            }}
                             bookingData={bookingData}
                             paymentType={paymentType}
                           />
-                          {!agreedToTerms && (
-                            <p className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-center gap-2">
-                              <svg className="h-4 w-4 flex-shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                              </svg>
-                              Please check the box above to accept the Terms &amp; Conditions to unlock payment.
-                            </p>
-                          )}
                         </div>
                       )}
                     </>
@@ -1363,10 +1352,18 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
       <TermsModal
         isOpen={showTermsModal}
-        onClose={() => setShowTermsModal(false)}
+        onClose={() => {
+          setShowTermsModal(false);
+          setPendingPaymentAction(null);
+        }}
         onAccept={() => {
           setAgreedToTerms(true);
           setShowTermsModal(false);
+          if (pendingPaymentAction) {
+            const action = pendingPaymentAction;
+            setPendingPaymentAction(null);
+            action();
+          }
         }}
       />
     </section>

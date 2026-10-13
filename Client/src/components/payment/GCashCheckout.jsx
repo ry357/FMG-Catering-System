@@ -12,10 +12,21 @@ export default function GCashCheckout({
   disabled,
   bookingData,
   paymentType = 'full',
+  agreedToTerms = false,
+  onRequestTerms,
 }) {
   const [loading, setLoading] = useState(false);
 
   const handlePayWithGCash = async () => {
+    // If the client has not confirmed/agreed to terms, pop up the terms modal first!
+    if (!agreedToTerms && onRequestTerms) {
+      onRequestTerms(() => executePayment());
+      return;
+    }
+    await executePayment();
+  };
+
+  const executePayment = async () => {
     setLoading(true);
     try {
       const result = await createGCashCheckout({
@@ -49,7 +60,7 @@ export default function GCashCheckout({
         <div>
           <p className="font-semibold text-charcoal">Pay with GCash</p>
           <p className="text-sm text-charcoal-muted">
-            You will be redirected to the secure GCash payment page to complete your deposit.
+            You will be redirected to the secure GCash payment page to complete your transaction.
           </p>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export default function TermsModal({ isOpen, onClose, onAccept }) {
+export default function TermsModal({ isOpen, onClose, onAccept, amount, paymentType = 'full' }) {
   useEffect(() => {
     if (!isOpen) return;
     const prevOverflow = document.body.style.overflow;
@@ -32,14 +32,14 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 bg-gradient-to-r from-gold-50 via-white to-gold-50">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-500 text-white font-bold text-sm shadow-sm">
-              FMG
-            </div>
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-500 text-white font-bold text-sm shadow-sm">
+              §
+            </span>
             <div>
               <h2 id="terms-title" className="font-display text-lg font-semibold text-charcoal">
-                Terms & Conditions
+                Terms &amp; Conditions Agreement
               </h2>
-              <p className="text-xs text-charcoal-muted">FMG Catering Services · Client Booking Agreement</p>
+              <p className="text-xs text-charcoal-muted">Please review and accept before completing payment</p>
             </div>
           </div>
           <button
@@ -56,15 +56,37 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 text-sm text-charcoal leading-relaxed">
-          <div className="rounded-xl bg-gold-50/70 border border-gold-200/60 p-4 text-xs text-charcoal-muted">
-            <p className="font-semibold text-charcoal text-sm mb-1">Welcome to FMG Catering Services</p>
-            Please carefully review our policies and booking terms below before completing your payment. By placing a booking and payment deposit, you acknowledge and agree to these terms.
+          {/* Key Summary Cards matching booking highlights */}
+          <div className="grid sm:grid-cols-3 gap-3 text-xs">
+            <div className="rounded-xl bg-gold-50/80 p-3.5 border border-gold-200/70 shadow-2xs">
+              <span className="font-semibold text-charcoal block mb-1">🔒 Reservation Deposit</span>
+              <p className="text-charcoal-muted leading-relaxed">
+                50% down payment (or full payment) locks in your date. Balance due on or before event day.
+              </p>
+            </div>
+            <div className="rounded-xl bg-gold-50/80 p-3.5 border border-gold-200/70 shadow-2xs">
+              <span className="font-semibold text-charcoal block mb-1">📅 Cancellation Policy</span>
+              <p className="text-charcoal-muted leading-relaxed">
+                70% refund if cancelled 14+ days before event. Non-refundable within 7 days.
+              </p>
+            </div>
+            <div className="rounded-xl bg-gold-50/80 p-3.5 border border-gold-200/70 shadow-2xs">
+              <span className="font-semibold text-charcoal block mb-1">🍽️ Headcount &amp; Care</span>
+              <p className="text-charcoal-muted leading-relaxed">
+                Headcount finalized 5 days prior. Client is liable for equipment damage or loss.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-cream/70 border border-gold-200/50 p-4 text-xs text-charcoal-muted">
+            <p className="font-semibold text-charcoal text-sm mb-1">FMG Catering Services Client Agreement</p>
+            By proceeding with payment, you acknowledge and agree to the contractual standards and conditions detailed below.
           </div>
 
           <section className="space-y-2">
             <h3 className="font-semibold text-charcoal text-base flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-100 text-gold-700 text-xs font-bold">1</span>
-              Reservation & Deposit Policy
+              Reservation &amp; Deposit Policy
             </h3>
             <ul className="list-disc list-inside space-y-1 text-charcoal-muted pl-1">
               <li>A <strong className="text-charcoal">50% down payment</strong> (or full payment) is required upon checkout to officially reserve and secure your event date.</li>
@@ -76,7 +98,7 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
           <section className="space-y-2">
             <h3 className="font-semibold text-charcoal text-base flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-100 text-gold-700 text-xs font-bold">2</span>
-              Cancellation & Refund Policy
+              Cancellation &amp; Refund Policy
             </h3>
             <ul className="list-disc list-inside space-y-1 text-charcoal-muted pl-1">
               <li><strong className="text-charcoal">14 days or more before the event:</strong> 70% refund of the deposit paid (30% retained as calendar reservation and administrative holding fee).</li>
@@ -89,7 +111,7 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
           <section className="space-y-2">
             <h3 className="font-semibold text-charcoal text-base flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-100 text-gold-700 text-xs font-bold">3</span>
-              Final Headcount & Menu Finalization
+              Final Headcount &amp; Menu Finalization
             </h3>
             <ul className="list-disc list-inside space-y-1 text-charcoal-muted pl-1">
               <li>Final guest count and dish selections must be confirmed at least <strong className="text-charcoal">5 business days</strong> prior to the event date.</li>
@@ -101,7 +123,7 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
           <section className="space-y-2">
             <h3 className="font-semibold text-charcoal text-base flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-100 text-gold-700 text-xs font-bold">4</span>
-              Service Duration & Drop-Off Standards
+              Service Duration &amp; Drop-Off Standards
             </h3>
             <ul className="list-disc list-inside space-y-1 text-charcoal-muted pl-1">
               <li><strong className="text-charcoal">Full-Service Catering:</strong> Buffet service is staffed for up to <strong className="text-charcoal">four (4) hours</strong> starting from the agreed serving time. Additional service time incurs an overtime fee per staff member.</li>
@@ -112,7 +134,7 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
           <section className="space-y-2">
             <h3 className="font-semibold text-charcoal text-base flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-100 text-gold-700 text-xs font-bold">5</span>
-              Equipment Care & Loss/Damage Liability
+              Equipment Care &amp; Loss/Damage Liability
             </h3>
             <ul className="list-disc list-inside space-y-1 text-charcoal-muted pl-1">
               <li>All chafing dishes, serving spoons, glassware, chinaware, tablecloths, and catering paraphernalia remain the exclusive property of FMG Catering Services.</li>
@@ -123,7 +145,7 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
           <section className="space-y-2">
             <h3 className="font-semibold text-charcoal text-base flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-100 text-gold-700 text-xs font-bold">6</span>
-              Food Safety & Leftovers
+              Food Safety &amp; Leftovers
             </h3>
             <ul className="list-disc list-inside space-y-1 text-charcoal-muted pl-1">
               <li>All leftover food is the property of the client upon the end of service. FMG staff can assist in packing leftovers into client-provided food containers.</li>
@@ -134,7 +156,7 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
           <section className="space-y-2">
             <h3 className="font-semibold text-charcoal text-base flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-100 text-gold-700 text-xs font-bold">7</span>
-              Venue Ingress & Force Majeure
+              Venue Ingress &amp; Force Majeure
             </h3>
             <ul className="list-disc list-inside space-y-1 text-charcoal-muted pl-1">
               <li>The client is responsible for securing ingress/egress permits, venue power, and water access at least 2 to 3 hours prior to the agreed dining time.</li>
@@ -146,22 +168,22 @@ export default function TermsModal({ isOpen, onClose, onAccept }) {
         {/* Footer Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100 px-6 py-4 bg-gray-50/70">
           <p className="text-xs text-charcoal-muted text-center sm:text-left">
-            By clicking &quot;I Agree &amp; Accept&quot;, you confirm you have read and agreed to these terms.
+            By clicking &quot;I Agree &amp; Proceed to Payment&quot;, you confirm you accept these terms.
           </p>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl border border-gray-300 text-charcoal text-sm font-medium hover:bg-gray-100 transition-colors"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-300 text-charcoal text-sm font-medium hover:bg-gray-100 transition-colors"
             >
-              Close
+              Cancel
             </button>
             <button
               type="button"
               onClick={onAccept}
-              className="w-full sm:w-auto px-5 py-2 rounded-xl bg-gold-500 hover:bg-gold-600 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-600 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all"
             >
-              I Agree &amp; Accept
+              I Agree &amp; Proceed to Payment
             </button>
           </div>
         </div>
