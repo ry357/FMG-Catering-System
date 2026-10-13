@@ -153,6 +153,23 @@ export const getSalesDashboard = async ({ month } = {}) => {
   const cur = summarize(current);
   const prev = summarize(previous);
 
+  // Revenue is recognized when the payment is actually received (sale_date of
+  // completed Sales), not on the event date. Otherwise a fully paid booking for
+  // a future event would not appear in the current month's revenue.
+  const completedSales = await query(
+    "SELECT amount, sale_date FROM Sales WHERE payment_status = 'completed'"
+  );
+  const revenueByMonth = {};
+  completedSales.forEach((s) => {
+    const raw = String(s.sale_date || '');
+    const key = monthKey(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(raw) ? `${raw.replace(' ', 'T')}Z` : raw);
+    if (!key) return;
+    revenueByMonth[key] = (revenueByMonth[key] || 0) + Number(s.amount || 0);
+  });
+  const prevMonthKey = `${prevStart.getFullYear()}-${String(prevStart.getMonth() + 1).padStart(2, '0')}`;
+  cur.totalRevenue = revenueByMonth[selectedMonthKey] || 0;
+  prev.totalRevenue = revenueByMonth[prevMonthKey] || 0;
+
   const kpis = {
     totalRevenue: Number(cur.totalRevenue.toFixed(2)),
     avgEventValue: cur.avgEventValue,
@@ -183,12 +200,18 @@ export const getSalesDashboard = async ({ month } = {}) => {
     }
   });
 
+  Object.keys(revenueByMonth).forEach((key) => {
+    if (!(key in monthlyMap)) {
+      monthlyMap[key] = { month: 0, revenue: 0, foodCost: 0, events: 0 };
+    }
+    monthlyMap[key].revenue += revenueByMonth[key];
+  });
+
   bookings
     .filter((b) => b.event_date)
     .forEach((b) => {
       const key = monthKey(b.event_date);
       if (!key || !monthlyMap[key]) return;
-      monthlyMap[key].revenue += b.paid;
       monthlyMap[key].foodCost += finalized(b) ? b.foodCost : 0;
       monthlyMap[key].events += 1;
     });
