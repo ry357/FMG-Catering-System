@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS Customers (
     phone VARCHAR(20),
     address VARCHAR(255),
     password_hash VARCHAR(255),        -- email + password login
+    saved_addresses TEXT,              -- JSON array of saved delivery/venue addresses
     google_id VARCHAR(255) UNIQUE,  -- Google OAuth ID token
     avatar VARCHAR(500),           -- Google profile picture
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

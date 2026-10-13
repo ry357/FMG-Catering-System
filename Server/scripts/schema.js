@@ -23,6 +23,7 @@ export const SCHEMA_STATEMENTS = [
       email TEXT NOT NULL,
       phone TEXT,
       address TEXT,
+      saved_addresses TEXT,
       password_hash TEXT,
       google_id TEXT UNIQUE,
       avatar TEXT,
@@ -217,4 +218,5 @@ export const MIGRATION_STATEMENTS = [
   // get a plain DEFAULT column; fresh DBs get the full CHECK via SCHEMA_STATEMENTS.
   "ALTER TABLE Bookings ADD COLUMN booking_category TEXT DEFAULT 'natural'",
   'ALTER TABLE Customers ADD COLUMN password_hash TEXT',
+  'ALTER TABLE Customers ADD COLUMN saved_addresses TEXT',
 ];
