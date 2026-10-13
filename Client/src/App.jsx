@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import BookingPage from './pages/BookingPage';
@@ -5,6 +6,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
 import Login from './pages/Login';
 import CustomerLogin from './pages/CustomerLogin';
+import CustomerProfilePage from './pages/CustomerProfilePage';
 import AboutPage from './pages/AboutPage';
 import ServicesPage from './pages/ServicesPage';
 import MenusPage from './pages/MenusPage';
@@ -14,12 +16,14 @@ import StaffDashboard from './pages/StaffDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
+import ClientSkeleton from './components/ui/ClientSkeleton';
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Routes>
+      <Suspense fallback={<ClientSkeleton type="page" />}>
+        <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
@@ -28,6 +32,7 @@ function App() {
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/book" element={<BookingPage />} />
+        <Route path="/profile" element={<CustomerProfilePage />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
         <Route path="/portal-code" element={<Login />} />
@@ -59,8 +64,9 @@ function App() {
         <Route path="/admin/admindashboard" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
-  );
+    </Suspense>
+  </BrowserRouter>
+);
 }
 
 export default App;

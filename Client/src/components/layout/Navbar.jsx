@@ -61,21 +61,70 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-5 lg:flex">
           {customer ? (
-            <>
-              <span className="text-sm font-medium text-charcoal-muted">
-                Hi, {customer.name.split(' ')[0]}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  closeMenu();
-                  setShowLogoutModal(true);
-                }}
-                className="text-sm font-medium text-charcoal-light transition-colors hover:text-gold-600"
+            <div className="relative group">
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 rounded-full border border-gold-200 bg-gold-50/60 py-1.5 pl-2 pr-3.5 transition-all hover:bg-gold-100/70 hover:border-gold-300"
               >
-                Log out
-              </button>
-            </>
+                {customer.avatar ? (
+                  <img
+                    src={customer.avatar}
+                    alt={customer.name}
+                    className="h-7 w-7 rounded-full object-cover border border-gold-400"
+                  />
+                ) : (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gold-600 text-xs font-bold text-white">
+                    {(customer.name || 'C').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-sm font-semibold text-charcoal">
+                  {customer.name.split(' ')[0]}
+                </span>
+                <svg className="w-3.5 h-3.5 text-charcoal-muted group-hover:text-charcoal transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </Link>
+
+              {/* Hover Dropdown */}
+              <div className="absolute right-0 top-full mt-1.5 hidden w-56 rounded-2xl bg-white p-2 shadow-xl border border-gold-100 group-hover:block transition-all z-50">
+                <div className="px-3 py-2 border-b border-gray-100">
+                  <p className="text-xs font-bold text-charcoal truncate">{customer.name}</p>
+                  <p className="text-[11px] text-charcoal-muted truncate">{customer.email}</p>
+                </div>
+                <div className="py-1">
+                  <Link
+                    to="/profile?tab=history"
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
+                  >
+                    <span>📦</span> Orders & Bookings
+                  </Link>
+                  <Link
+                    to="/profile?tab=addresses"
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
+                  >
+                    <span>📍</span> Saved Addresses
+                  </Link>
+                  <Link
+                    to="/profile?tab=phone"
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
+                  >
+                    <span>📞</span> Contact & Phone
+                  </Link>
+                </div>
+                <div className="border-t border-gray-100 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMenu();
+                      setShowLogoutModal(true);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <span>🚪</span> Log out
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <button
               type="button"
@@ -147,16 +196,40 @@ export default function Navbar() {
                 </Button>
               )}
               {customer ? (
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => {
-                    closeMenu();
-                    setShowLogoutModal(true);
-                  }}
-                >
-                  Log out ({customer.name.split(' ')[0]})
-                </Button>
+                <div className="space-y-2">
+                  <Link
+                    to="/profile"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between rounded-xl bg-gold-50/70 p-3 text-sm font-semibold text-charcoal border border-gold-200"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {customer.avatar ? (
+                        <img
+                          src={customer.avatar}
+                          alt={customer.name}
+                          className="h-7 w-7 rounded-full object-cover border border-gold-400"
+                        />
+                      ) : (
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gold-600 text-xs font-bold text-white">
+                          {(customer.name || 'C').charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span>My Profile & Orders</span>
+                    </div>
+                    <span className="text-xs text-gold-700 font-medium">View →</span>
+                  </Link>
+
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => {
+                      closeMenu();
+                      setShowLogoutModal(true);
+                    }}
+                  >
+                    Log out ({customer.name.split(' ')[0]})
+                  </Button>
+                </div>
               ) : (
                 <Button
                   variant="secondary"

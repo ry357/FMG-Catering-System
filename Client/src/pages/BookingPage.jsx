@@ -7,6 +7,7 @@ import BookNow from '../components/landing/BookNow';
 import { PACKAGES } from '../data/landingData';
 import { scrollToSection } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
+import ClientSkeleton from '../components/ui/ClientSkeleton';
 
 export default function BookingPage() {
   const { customer, loading } = useAuth();
@@ -32,7 +33,11 @@ export default function BookingPage() {
     if (bookingDetails) requestAnimationFrame(() => scrollToSection('#book'));
   }, [bookingDetails]);
 
-  if (!loading && !customer) {
+  if (loading) {
+    return <ClientSkeleton type="booking" />;
+  }
+
+  if (!customer) {
     return null;
   }
 

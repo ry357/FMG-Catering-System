@@ -396,13 +396,64 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
   useEffect(() => {
     if (customer) {
+      const defaultAddr = Array.isArray(customer.saved_addresses)
+        ? customer.saved_addresses.find((a) => a.isDefault)?.address || customer.saved_addresses[0]?.address
+        : customer.address;
+
       setForm((prev) => ({
         ...prev,
         name: prev.name || customer.name,
         email: prev.email || customer.email,
+        contactNumber: prev.contactNumber || customer.phone || '',
+        address: prev.address || defaultAddr || '',
       }));
     }
   }, [customer]);
+
+  // Handle Order Replication from Customer Profile
+  useEffect(() => {
+    const replicateRaw = sessionStorage.getItem('fmg_replicate_order');
+    if (replicateRaw) {
+      try {
+        const rep = JSON.parse(replicateRaw);
+        if (rep.replicate) {
+          if (rep.bookingCategory) setCategory(rep.bookingCategory);
+          if (rep.eventType) setForm((prev) => ({ ...prev, eventType: rep.eventType }));
+          if (rep.numberOfGuests) setForm((prev) => ({ ...prev, numberOfGuests: String(rep.numberOfGuests) }));
+          if (rep.preferredPackageId) {
+            setForm((prev) => ({
+              ...prev,
+              preferredPackageId: String(rep.preferredPackageId),
+              packageBooking: true,
+            }));
+          }
+          if (rep.additionalRequests) {
+            setForm((prev) => ({ ...prev, additionalRequests: rep.additionalRequests }));
+          }
+
+          if (rep.menuPreference) {
+            const mp = rep.menuPreference;
+            if (mp.tier) setTier(mp.tier);
+            if (mp.offerId) {
+              const matchedOffer = MENU_OFFERS.find((o) => o.id === mp.offerId);
+              if (matchedOffer) setSelectedOffer(matchedOffer);
+            }
+            if (mp.chafer !== undefined) setIncludeChafer(Boolean(mp.chafer));
+            if (mp.platters) setPlatters(mp.platters);
+            if (mp.selections) setSelections(mp.selections);
+            if (mp.notes) setMenuNotes(mp.notes);
+          }
+
+          // Jump directly to event details step to confirm event date
+          setStep('details');
+        }
+      } catch (err) {
+        console.error('Failed to parse replicate order data:', err);
+      } finally {
+        sessionStorage.removeItem('fmg_replicate_order');
+      }
+    }
+  }, []);
 
   // Pre-fill the wizard when a menu set/package is chosen in the planner above.
   useEffect(() => {
@@ -900,9 +951,52 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     <input type="email" name="email" value={form.email} onChange={handleChange} className={inputClass} />
                   </FormField>
 
-                  <FormField label="Event Venue or Establishment" error={errors.address} required>
-                    <AddressAutocomplete name="address" value={form.address} onChange={handleChange} className={inputClass} placeholder="e.g. Grand Convention Center, Cebu City" />
-                  </FormField>
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-sm font-medium text-charcoal">
+                        Event Venue or Establishment <span className="text-gold-600 ml-0.5">*</span>
+                      </label>
+                      {customer?.saved_addresses && customer.saved_addresses.length > 0 && (
+                        <select
+                          className="text-xs font-semibold text-gold-700 bg-gold-50 border border-gold-200 rounded-lg px-2 py-1 cursor-pointer hover:bg-gold-100"
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const found = customer.saved_addresses.find((a) => a.id === e.target.value);
+                              if (found) {
+                                setForm((prev) => ({
+                                  ...prev,
+                                  address: found.address,
+                                  contactNumber: found.contactPhone || prev.contactNumber,
+                                }));
+                              }
+                            }
+                          }}
+                          defaultValue=""
+                        >
+                          <option value="" disabled>
+                            📍 Pick from saved venues ({customer.saved_addresses.length})
+                          </option>
+                          {customer.saved_addresses.map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.label} — {a.address.slice(0, 35)}...
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <AddressAutocomplete
+                      name="address"
+                      value={form.address}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="e.g. Grand Convention Center, Cebu City"
+                    />
+                    {errors.address && (
+                      <p className="mt-1 text-sm text-red-600" role="alert">
+                        {errors.address}
+                      </p>
+                    )}
+                  </div>
 
                   <div className="grid sm:grid-cols-2 gap-5">
                     {!isDropOff && (

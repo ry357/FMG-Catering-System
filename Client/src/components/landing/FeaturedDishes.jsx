@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import FoodDishCard from '../ui/FoodDishCard';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
+import { DishGridSkeleton } from '../ui/ClientSkeleton';
 import { PLATTER_MENU } from '../../data/landingData';
 import { useFoods } from '../../services/foodService';
 
 export default function FeaturedDishes() {
   const navigate = useNavigate();
-  const { getDishPrice } = useFoods();
+  const { getDishPrice, loading: loadingFoods } = useFoods();
 
   // Curated showcase of iconic Filipino catering favorites
   const featuredIds = [
@@ -41,17 +42,24 @@ export default function FeaturedDishes() {
           description="Crafted with traditional recipes, premium local ingredients, and served with signature elegance."
         />
 
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
-          {dishes.map((dish) => (
-            <FoodDishCard
-              key={dish.id}
-              dish={dish}
-              price={getDishPrice(dish.name || dish.id, dish.price)}
-              selectable={false}
-              compact={false}
-            />
-          ))}
-        </div>
+        {loadingFoods && dishes.length === 0 ? (
+          <div className="mt-8">
+            <DishGridSkeleton count={8} compact={false} columns="grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4" />
+          </div>
+        ) : (
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
+            {dishes.map((dish) => (
+              <FoodDishCard
+                key={dish.id}
+                dish={dish}
+                price={getDishPrice(dish.name || dish.id, dish.price)}
+                selectable={false}
+                compact={false}
+              />
+            ))}
+          </div>
+        )}
+
 
         <div className="mt-10 text-center">
           <Button size="lg" onClick={() => navigate('/menus')}>

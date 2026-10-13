@@ -39,12 +39,25 @@ function isStrongPassword(password) {
   );
 }
 
+function parseSavedAddresses(raw) {
+  if (!raw) return [];
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function serializeCustomer(customer) {
   return {
     id: customer.id,
     name: customer.name,
     email: customer.email,
     avatar: customer.avatar || '',
+    phone: customer.phone || '',
+    address: customer.address || '',
+    saved_addresses: parseSavedAddresses(customer.saved_addresses),
   };
 }
 
@@ -247,26 +260,226 @@ router.post('/otp/verify', async (req, res) => {
   }
 });
 
-// ── Verify token ───────────────────────────────────────────────
-router.get('/verify', async (req, res) => {
+// ── Middleware: customer auth ────────────────────────────────
+export async function authenticateCustomer(req, res, next) {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ success: false, error: 'No token provided' });
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Customer token required' });
+    }
 
     const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.type !== 'customer') {
       return res.status(403).json({ success: false, error: 'Not a customer token' });
     }
 
-    const customer = await queryOne(
-      'SELECT id, name, email, avatar FROM Customers WHERE id = ?',
-      [decoded.id]
-    );
-    if (!customer) return res.status(404).json({ success: false, error: 'Account not found' });
-    res.json({ success: true, customer });
+    const customer = await queryOne('SELECT * FROM Customers WHERE id = ?', [decoded.id]);
+    if (!customer) {
+      return res.status(404).json({ success: false, error: 'Customer not found' });
+    }
+
+    req.customer = customer;
+    next();
   } catch (error) {
-    res.status(401).json({ success: false, error: 'Invalid token' });
+    return res.status(401).json({ success: false, error: 'Invalid or expired customer token' });
+  }
+}
+
+// ── Verify token ───────────────────────────────────────────────
+router.get('/verify', authenticateCustomer, async (req, res) => {
+  res.json({ success: true, customer: serializeCustomer(req.customer) });
+});
+
+// ── Get Customer Profile ──────────────────────────────────────
+router.get('/profile', authenticateCustomer, async (req, res) => {
+  res.json({ success: true, customer: serializeCustomer(req.customer) });
+});
+
+// ── Update Customer Profile (name, phone, address) ─────────────
+router.put('/profile', authenticateCustomer, async (req, res) => {
+  try {
+    const { name, phone, address } = req.body;
+    const customerId = req.customer.id;
+
+    const updatedName = (name !== undefined ? String(name).trim() : req.customer.name) || req.customer.name;
+    const updatedPhone = phone !== undefined ? String(phone).trim() : (req.customer.phone || '');
+    const updatedAddress = address !== undefined ? String(address).trim() : (req.customer.address || '');
+
+    await execute(
+      'UPDATE Customers SET name = ?, phone = ?, address = ? WHERE id = ?',
+      [updatedName, updatedPhone, updatedAddress, customerId]
+    );
+
+    const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+    res.json({ success: true, customer: serializeCustomer(updated), message: 'Profile updated successfully' });
+  } catch (error) {
+    console.error('Update customer profile error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update profile' });
+  }
+});
+
+// ── Get Customer Bookings (Order & Event History) ───────────────
+router.get('/bookings', authenticateCustomer, async (req, res) => {
+  try {
+    const customerId = req.customer.id;
+
+    // Fetch customer bookings with aggregated payments from Sales table
+    const rows = await query(
+      `SELECT
+         b.id, b.booking_ref, b.event_type, b.event_date, b.number_of_guests,
+         b.budget, b.preferred_package, b.additional_requests, b.menu_items,
+         b.menu_preference, b.booking_category, b.status, b.payment_status,
+         b.payment_type, b.down_payment_amount, b.total_amount, b.created_at,
+         c.name as customer_name, c.email as customer_email, c.phone as customer_phone,
+         c.address as customer_address,
+         (SELECT COALESCE(SUM(s.amount), 0) FROM Sales s
+           WHERE s.booking_id = b.id AND s.payment_status = 'completed') AS amount_paid
+       FROM Bookings b
+       JOIN Customers c ON b.customer_id = c.id
+       WHERE b.customer_id = ?
+       ORDER BY b.created_at DESC`,
+      [customerId]
+    );
+
+    const bookings = rows.map((b) => {
+      let menuPreference = null;
+      let menuItems = null;
+      try {
+        menuPreference = b.menu_preference ? JSON.parse(b.menu_preference) : null;
+      } catch {
+        menuPreference = b.menu_preference;
+      }
+      try {
+        menuItems = b.menu_items ? JSON.parse(b.menu_items) : null;
+      } catch {
+        menuItems = b.menu_items;
+      }
+
+      const totalAmount = Number(b.total_amount || 0);
+      const amountPaid = Number(b.amount_paid || 0);
+      const balanceDue = Math.max(0, totalAmount - amountPaid);
+
+      return {
+        ...b,
+        event_date: b.event_date ? String(b.event_date).slice(0, 10) : null,
+        total_amount: totalAmount,
+        amount_paid: amountPaid,
+        balance_due: balanceDue,
+        menu_preference: menuPreference,
+        menu_items: menuItems,
+      };
+    });
+
+    res.json({ success: true, bookings });
+  } catch (error) {
+    console.error('Fetch customer bookings error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch customer bookings' });
+  }
+});
+
+// ── Manage Saved Delivery Addresses ───────────────────────────
+// Save / Update delivery address
+router.post('/addresses', authenticateCustomer, async (req, res) => {
+  try {
+    const { label, address, contactPerson, contactPhone, isDefault } = req.body;
+    if (!address || !address.trim()) {
+      return res.status(400).json({ success: false, error: 'Address is required' });
+    }
+
+    const customerId = req.customer.id;
+    let addresses = parseSavedAddresses(req.customer.saved_addresses);
+
+    const newAddress = {
+      id: crypto.randomUUID(),
+      label: label?.trim() || 'Venue',
+      address: address.trim(),
+      contactPerson: contactPerson?.trim() || req.customer.name,
+      contactPhone: contactPhone?.trim() || req.customer.phone || '',
+      isDefault: Boolean(isDefault) || addresses.length === 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (newAddress.isDefault) {
+      addresses = addresses.map((a) => ({ ...a, isDefault: false }));
+    }
+
+    addresses.push(newAddress);
+
+    await execute('UPDATE Customers SET saved_addresses = ? WHERE id = ?', [
+      JSON.stringify(addresses),
+      customerId,
+    ]);
+
+    const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+    res.json({
+      success: true,
+      saved_addresses: parseSavedAddresses(updated.saved_addresses),
+      message: 'Address saved successfully',
+    });
+  } catch (error) {
+    console.error('Save address error:', error);
+    res.status(500).json({ success: false, error: 'Failed to save address' });
+  }
+});
+
+// Delete saved address
+router.delete('/addresses/:addressId', authenticateCustomer, async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const customerId = req.customer.id;
+    let addresses = parseSavedAddresses(req.customer.saved_addresses);
+
+    const wasDefault = addresses.find((a) => a.id === addressId)?.isDefault;
+    addresses = addresses.filter((a) => a.id !== addressId);
+
+    if (wasDefault && addresses.length > 0) {
+      addresses[0].isDefault = true;
+    }
+
+    await execute('UPDATE Customers SET saved_addresses = ? WHERE id = ?', [
+      JSON.stringify(addresses),
+      customerId,
+    ]);
+
+    const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+    res.json({
+      success: true,
+      saved_addresses: parseSavedAddresses(updated.saved_addresses),
+      message: 'Address deleted successfully',
+    });
+  } catch (error) {
+    console.error('Delete address error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete address' });
+  }
+});
+
+// Set default address
+router.patch('/addresses/:addressId/default', authenticateCustomer, async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const customerId = req.customer.id;
+    let addresses = parseSavedAddresses(req.customer.saved_addresses);
+
+    addresses = addresses.map((a) => ({
+      ...a,
+      isDefault: a.id === addressId,
+    }));
+
+    await execute('UPDATE Customers SET saved_addresses = ? WHERE id = ?', [
+      JSON.stringify(addresses),
+      customerId,
+    ]);
+
+    const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+    res.json({
+      success: true,
+      saved_addresses: parseSavedAddresses(updated.saved_addresses),
+      message: 'Default address updated',
+    });
+  } catch (error) {
+    console.error('Set default address error:', error);
+    res.status(500).json({ success: false, error: 'Failed to set default address' });
   }
 });
 

@@ -120,17 +120,51 @@ const logoutCustomer = useCallback(() => {
   window.location.href = '/';
 }, []);
 
-const logout = () => {
-  sessionStorage.removeItem('token');
-  setUser(null);
-  window.location.href = '/';
-};
+  const updateCustomerState = useCallback((newCustomerData) => {
+    setCustomer(newCustomerData);
+    if (newCustomerData) {
+      localStorage.setItem('customer', JSON.stringify(newCustomerData));
+    } else {
+      localStorage.removeItem('customer');
+    }
+  }, []);
 
-return (
-  <AuthContext.Provider value={{ user, customer, customerToken, login, loginWithGoogle, adminGoogleLogin, logoutCustomer, verifyOTP, sendOTP, logout, loading }}>
-    {children}
-  </AuthContext.Provider>
-);
+  const refreshCustomer = useCallback(async () => {
+    const currentToken = customerToken || localStorage.getItem('customerToken');
+    if (!currentToken) return null;
+    try {
+      const response = await axios.get('/api/customer/verify', {
+        headers: { Authorization: `Bearer ${currentToken}` }
+      });
+      if (response.data.customer) {
+        updateCustomerState(response.data.customer);
+        return response.data.customer;
+      }
+    } catch {
+      // Ignore refresh error
+    }
+    return null;
+  }, [customerToken, updateCustomerState]);
+
+  return (
+    <AuthContext.Provider value={{
+      user,
+      customer,
+      customerToken,
+      login,
+      loginWithGoogle,
+      adminGoogleLogin,
+      logoutCustomer,
+      verifyOTP,
+      sendOTP,
+      logout,
+      loading,
+      updateCustomerState,
+      refreshCustomer,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);

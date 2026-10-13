@@ -8,6 +8,7 @@ import FoodDishCard from '../components/ui/FoodDishCard';
 import { MENU_OFFERS, MENU_TIERS, PLATTER_MENU } from '../data/landingData';
 import { formatCurrency } from '../utils/helpers';
 import { useFoods } from '../services/foodService';
+import { DishGridSkeleton } from '../components/ui/ClientSkeleton';
 import foodPerPaxImage from '../assets/5b4b7960-0099-4363-9d98-ac7814b440f6.jpg';
 import mainDishesImage from '../assets/fa79860c-4838-4d40-90c3-6e305761dace.jpg';
 import sideDishesImage from '../assets/cbea243e-ca67-44df-b395-f2dc793a2cbd.jpg';
@@ -59,7 +60,10 @@ function SetCard({ offer, onBook }) {
   );
 }
 
-function DishGrid({ dishes, getDishPrice }) {
+function DishGrid({ dishes, getDishPrice, loading = false }) {
+  if (loading) {
+    return <DishGridSkeleton count={Math.min(dishes?.length || 5, 10)} compact={true} />;
+  }
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
       {dishes.map((dish) => (
@@ -78,7 +82,7 @@ function DishGrid({ dishes, getDishPrice }) {
 export default function MenusPage() {
   const [selectedMenuImage, setSelectedMenuImage] = useState(null);
   const book = useBookingNav();
-  const { getDishPrice } = useFoods();
+  const { getDishPrice, loading: loadingFoods } = useFoods();
 
   useEffect(() => {
     if (!selectedMenuImage) return undefined;
@@ -181,7 +185,7 @@ export default function MenusPage() {
                     <div key={sub}>
                       <h4 className="text-sm font-semibold uppercase tracking-widest text-gold-600">{sub}</h4>
                       <div className="mt-3">
-                        <DishGrid dishes={dishes} getDishPrice={getDishPrice} />
+                        <DishGrid dishes={dishes} getDishPrice={getDishPrice} loading={loadingFoods} />
                       </div>
                     </div>
                   ))}
@@ -191,7 +195,7 @@ export default function MenusPage() {
               <div>
                 <h3 className="font-display text-2xl font-semibold text-charcoal">Special</h3>
                 <div className="mt-4">
-                  <DishGrid dishes={PLATTER_MENU.specials} getDishPrice={getDishPrice} />
+                  <DishGrid dishes={PLATTER_MENU.specials} getDishPrice={getDishPrice} loading={loadingFoods} />
                 </div>
               </div>
 
@@ -202,7 +206,7 @@ export default function MenusPage() {
                     <div key={sub}>
                       <h4 className="text-sm font-semibold uppercase tracking-widest text-gold-600">{sub}</h4>
                       <div className="mt-3">
-                        <DishGrid dishes={dishes} getDishPrice={getDishPrice} />
+                        <DishGrid dishes={dishes} getDishPrice={getDishPrice} loading={loadingFoods} />
                       </div>
                     </div>
                   ))}
@@ -213,13 +217,13 @@ export default function MenusPage() {
                 <div>
                   <h3 className="font-display text-2xl font-semibold text-charcoal">Drinks</h3>
                   <div className="mt-4">
-                    <DishGrid dishes={PLATTER_MENU.drinks} getDishPrice={getDishPrice} />
+                    <DishGrid dishes={PLATTER_MENU.drinks} getDishPrice={getDishPrice} loading={loadingFoods} />
                   </div>
                 </div>
                 <div>
                   <h3 className="font-display text-2xl font-semibold text-charcoal">Fresh Fruit</h3>
                   <div className="mt-4">
-                    <DishGrid dishes={PLATTER_MENU.fruits} getDishPrice={getDishPrice} />
+                    <DishGrid dishes={PLATTER_MENU.fruits} getDishPrice={getDishPrice} loading={loadingFoods} />
                   </div>
                 </div>
               </div>

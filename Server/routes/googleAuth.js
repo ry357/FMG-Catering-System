@@ -98,6 +98,17 @@ router.post('/verify', async (req, res) => {
       details: { customerId: customer.id, method: 'google' },
     });
 
+    let savedAddresses = [];
+    try {
+      if (customer.saved_addresses) {
+        savedAddresses = typeof customer.saved_addresses === 'string'
+          ? JSON.parse(customer.saved_addresses)
+          : customer.saved_addresses;
+      }
+    } catch {
+      savedAddresses = [];
+    }
+
     res.json({
       success: true,
       token,
@@ -105,7 +116,10 @@ router.post('/verify', async (req, res) => {
         id: customer.id,
         name: customer.name,
         email: customer.email,
-        avatar: customer.avatar,
+        avatar: customer.avatar || '',
+        phone: customer.phone || '',
+        address: customer.address || '',
+        saved_addresses: Array.isArray(savedAddresses) ? savedAddresses : [],
       },
     });
   } catch (error) {
