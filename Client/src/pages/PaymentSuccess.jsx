@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { verifyGCashPayment } from '../services/paymentService';
 import { formatCurrency } from '../utils/helpers';
+import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 import Skeleton from '../components/ui/Skeleton';
 
@@ -12,6 +13,7 @@ export default function PaymentSuccess() {
   const [status, setStatus] = useState('loading');
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [error, setError] = useState(null);
+  const { refreshCustomer } = useAuth();
 
   useEffect(() => {
     async function verifyPayment() {
@@ -33,6 +35,10 @@ export default function PaymentSuccess() {
               });
               setStatus('success');
               sessionStorage.removeItem('fmg_pending_booking');
+              // Automatically refresh customer profile state to reflect newly booked details
+              if (refreshCustomer) {
+                refreshCustomer();
+              }
               return;
             }
           }
@@ -151,10 +157,15 @@ export default function PaymentSuccess() {
           </>
         )}
 
-        <Button href="/book" className="mt-8">
-          Back to Booking
-        </Button>
-        <Link to="/" className="block mt-3 text-sm text-gold-600 hover:underline">
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <Button href="/profile" className="w-full sm:w-auto">
+            View My Profile &amp; Orders
+          </Button>
+          <Button href="/book" variant="secondary" className="w-full sm:w-auto">
+            Book Another Event
+          </Button>
+        </div>
+        <Link to="/" className="block mt-4 text-sm text-gold-600 hover:underline">
           Return to homepage
         </Link>
       </div>

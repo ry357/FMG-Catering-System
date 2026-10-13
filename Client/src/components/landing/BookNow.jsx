@@ -359,7 +359,7 @@ function DropOffChecklist({ selections, platters, onToggle, onIncrease, onDecrea
 }
 
 export default function BookNow({ initialMenuBooking, onBackToPackages }) {
-  const { customer } = useAuth();
+  const { customer, refreshCustomer } = useAuth();
   const { foods } = useFoods();
   const [searchParams] = useSearchParams();
   const urlCategory = searchParams.get('category');
@@ -706,6 +706,9 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     setPaymentResult(result);
     setStep('confirmation');
     setPaymentError(null);
+    if (refreshCustomer) {
+      refreshCustomer();
+    }
   };
 
   const handleNewBooking = () => {

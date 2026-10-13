@@ -32,18 +32,88 @@ export function calculateItemsTotal(menuItems, guests) {
 }
 
 export async function findOrCreateCustomer({ name, email, phone, address }) {
-  const customer = await queryOne('SELECT id, address FROM Customers WHERE email = ?', [email]);
+  const customer = await queryOne('SELECT * FROM Customers WHERE email = ?', [email]);
 
   if (customer) {
-    if (address && !customer.address) {
-      await execute('UPDATE Customers SET address = ? WHERE id = ?', [address, customer.id]);
+    const updates = [];
+    const params = [];
+
+    // Always keep phone up-to-date if provided in the booking
+    if (phone && phone.trim()) {
+      updates.push('phone = ?');
+      params.push(phone.trim());
     }
+
+    // Always keep primary address up-to-date if provided
+    if (address && address.trim()) {
+      updates.push('address = ?');
+      params.push(address.trim());
+    }
+
+    // Update customer name if provided
+    if (name && name.trim()) {
+      updates.push('name = ?');
+      params.push(name.trim());
+    }
+
+    // Manage saved_addresses: ensure the booked venue address is also in saved_addresses
+    let addresses = [];
+    try {
+      if (customer.saved_addresses) {
+        addresses = typeof customer.saved_addresses === 'string'
+          ? JSON.parse(customer.saved_addresses)
+          : customer.saved_addresses;
+      }
+    } catch {
+      addresses = [];
+    }
+    if (!Array.isArray(addresses)) addresses = [];
+
+    if (address && address.trim()) {
+      const cleanAddr = address.trim();
+      const existingVenue = addresses.find(
+        (a) => a.address && a.address.trim().toLowerCase() === cleanAddr.toLowerCase()
+      );
+
+      if (!existingVenue) {
+        addresses.push({
+          id: `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          label: cleanAddr.split(',')[0].trim() || 'Booked Venue',
+          address: cleanAddr,
+          contactPerson: name ? name.trim() : (customer.name || ''),
+          contactPhone: phone ? phone.trim() : (customer.phone || ''),
+          isDefault: addresses.length === 0,
+          createdAt: new Date().toISOString(),
+        });
+        updates.push('saved_addresses = ?');
+        params.push(JSON.stringify(addresses));
+      }
+    }
+
+    if (updates.length > 0) {
+      params.push(customer.id);
+      await execute(`UPDATE Customers SET ${updates.join(', ')} WHERE id = ?`, params);
+    }
+
     return customer.id;
   }
 
+  // Create new customer with the booked address in saved_addresses as default
+  const initialAddresses = address && address.trim() ? [
+    {
+      id: `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      label: address.split(',')[0].trim() || 'Primary Venue',
+      address: address.trim(),
+      contactPerson: name ? name.trim() : '',
+      contactPhone: phone ? phone.trim() : '',
+      isDefault: true,
+      createdAt: new Date().toISOString(),
+    }
+  ] : [];
+
   return executeWithId(
-    'INSERT INTO Customers (name, email, phone, address) VALUES (?, ?, ?, ?)',
-    [name, email, phone, address || null]
+    'INSERT INTO Customers (name, email, phone, address, saved_addresses) VALUES (?, ?, ?, ?, ?)',
+    [name, email, phone || null, address || null, initialAddresses.length > 0 ? JSON.stringify(initialAddresses) : null]
   );
 }
 
