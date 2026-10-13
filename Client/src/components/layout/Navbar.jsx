@@ -133,27 +133,16 @@ export default function Navbar() {
                       >
                         <span>👤</span> Profile Overview
                       </Link>
-                      <Link
-                        to="/profile?tab=history"
-                        onClick={() => setIsProfileOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          openLogin();
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors text-left"
                       >
-                        <span>📦</span> Orders & Bookings
-                      </Link>
-                      <Link
-                        to="/profile?tab=addresses"
-                        onClick={() => setIsProfileOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
-                      >
-                        <span>📍</span> Saved Addresses
-                      </Link>
-                      <Link
-                        to="/profile?tab=phone"
-                        onClick={() => setIsProfileOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
-                      >
-                        <span>📞</span> Contact & Phone
-                      </Link>
+                        <span>🔄</span> Switch Account
+                      </button>
                     </div>
                     <div className="border-t border-gray-100 pt-1">
                       <button
