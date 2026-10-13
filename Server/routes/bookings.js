@@ -73,12 +73,21 @@ router.post('/', bookingLimiter, validateBooking, async (req, res) => {
       total_amount,
     });
 
+    const finalAmount = Number(total_amount) || Number(budget) || 0;
+    if (finalAmount > 0) {
+      await execute(
+        `INSERT INTO Sales (booking_id, amount, payment_method, payment_status, payment_type)
+         VALUES (?, ?, 'direct', 'pending', 'full')`,
+        [bookingId, finalAmount]
+      );
+    }
+
     await logActivity({
       action: 'booking_created',
       category: 'bookings',
       description: `New booking submitted by ${name} (${email}) for ${event_type} on ${event_date} — Ref: ${bookingRef}`,
       performed_by: email,
-      details: { bookingId, bookingRef, event_type, event_date, number_of_guests },
+      details: { bookingId, bookingRef, event_type, event_date, number_of_guests, amount: finalAmount },
     });
 
     res.json({ success: true, bookingId, bookingRef });

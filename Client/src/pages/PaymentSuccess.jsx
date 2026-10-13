@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { verifyGCashPayment } from '../services/paymentService';
 import { formatCurrency } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
+import { notifyLiveUpdate } from '../hooks/useLiveRefresh';
 import Button from '../components/ui/Button';
 import Skeleton from '../components/ui/Skeleton';
 
@@ -39,6 +40,7 @@ export default function PaymentSuccess() {
               if (refreshCustomer) {
                 refreshCustomer();
               }
+              notifyLiveUpdate();
               return;
             }
           }

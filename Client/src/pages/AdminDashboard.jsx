@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard';
@@ -368,6 +369,12 @@ const AdminDashboard = () => {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-400">Welcome, {user?.full_name}</span>
+            <Link
+              to="/booking-manager/dashboard"
+              className="text-xs text-cyan-300 border border-cyan-400/40 px-2.5 py-1.5 rounded hover:bg-cyan-400/10 transition-all flex items-center gap-1"
+            >
+              <span>Booking Manager</span> ↗
+            </Link>
             <button
               onClick={() => setShowLogoutModal(true)}
               className="text-sm text-cyan-300 border border-cyan-400/40 px-3 py-1.5 rounded hover:bg-cyan-400/10 hover:shadow-[0_0_14px_-4px_rgba(34,211,238,0.7)] transition-all"

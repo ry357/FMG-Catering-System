@@ -187,8 +187,18 @@ export default function DashboardCalendar({ role, onBack }) {
                   <span className="text-slate-200">{selectedEvent.resource.number_of_guests || 'N/A'}</span>
                 </div>
                 <div>
-                  <span className="block text-slate-500 text-xs uppercase tracking-wider mb-1">Budget</span>
-                  <span className="text-slate-200 text-gold-400 font-medium">₱{Number(selectedEvent.resource.budget || 0).toLocaleString()}</span>
+                  <span className="block text-slate-500 text-xs uppercase tracking-wider mb-1">Amount / Budget</span>
+                  <span className="text-slate-200 text-gold-400 font-medium">
+                    ₱{Number(selectedEvent.resource.total_amount || selectedEvent.resource.budget || 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="block text-slate-500 text-xs uppercase tracking-wider mb-1">Customer Contact</span>
+                  <p className="text-slate-200 text-xs">
+                    {selectedEvent.resource.customer_name}
+                    {selectedEvent.resource.customer_phone ? ` · ${selectedEvent.resource.customer_phone}` : ''}
+                    {selectedEvent.resource.customer_email ? ` · ${selectedEvent.resource.customer_email}` : ''}
+                  </p>
                 </div>
                 <div className="col-span-2">
                   <span className="block text-slate-500 text-xs uppercase tracking-wider mb-1">Address</span>

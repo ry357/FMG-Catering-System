@@ -312,6 +312,15 @@ router.put('/profile', authenticateCustomer, async (req, res) => {
     );
 
     const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+
+    await logActivity({
+      action: 'customer_profile_updated',
+      category: 'customers',
+      description: `Customer "${updatedName}" (${req.customer.email}) updated profile details`,
+      performed_by: req.customer.email,
+      details: { customerId, name: updatedName, phone: updatedPhone, address: updatedAddress },
+    });
+
     res.json({ success: true, customer: serializeCustomer(updated), message: 'Profile updated successfully' });
   } catch (error) {
     console.error('Update customer profile error:', error);
@@ -412,6 +421,15 @@ router.post('/addresses', authenticateCustomer, async (req, res) => {
     ]);
 
     const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+
+    await logActivity({
+      action: 'customer_address_added',
+      category: 'customers',
+      description: `Customer "${req.customer.name}" (${req.customer.email}) added delivery address "${newAddress.label}"`,
+      performed_by: req.customer.email,
+      details: { customerId, addressId: newAddress.id, label: newAddress.label, address: newAddress.address },
+    });
+
     res.json({
       success: true,
       saved_addresses: parseSavedAddresses(updated.saved_addresses),
@@ -460,6 +478,15 @@ router.put('/addresses/:addressId', authenticateCustomer, async (req, res) => {
     ]);
 
     const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+
+    await logActivity({
+      action: 'customer_address_updated',
+      category: 'customers',
+      description: `Customer "${req.customer.name}" (${req.customer.email}) updated delivery address "${addresses[index].label}"`,
+      performed_by: req.customer.email,
+      details: { customerId, addressId, label: addresses[index].label },
+    });
+
     res.json({
       success: true,
       saved_addresses: parseSavedAddresses(updated.saved_addresses),
@@ -491,6 +518,15 @@ router.delete('/addresses/:addressId', authenticateCustomer, async (req, res) =>
     ]);
 
     const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+
+    await logActivity({
+      action: 'customer_address_deleted',
+      category: 'customers',
+      description: `Customer "${req.customer.name}" (${req.customer.email}) removed a delivery address`,
+      performed_by: req.customer.email,
+      details: { customerId, addressId },
+    });
+
     res.json({
       success: true,
       saved_addresses: parseSavedAddresses(updated.saved_addresses),

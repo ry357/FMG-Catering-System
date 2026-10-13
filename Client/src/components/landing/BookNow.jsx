@@ -28,6 +28,8 @@ import {
 import { useFoods } from '../../services/foodService';
 import { formatCurrency } from '../../utils/helpers';
 import { getPaymentConfig } from '../../services/paymentService';
+import { notifyLiveUpdate } from '../../hooks/useLiveRefresh';
+import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import SectionHeading from '../ui/SectionHeading';
 import Button from '../ui/Button';
@@ -406,6 +408,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const [pendingPaymentAction, setPendingPaymentAction] = useState(null);
   const [customEventType, setCustomEventType] = useState('');
   const [slideDirection, setSlideDirection] = useState('right'); // 'right' (forward) or 'left' (backward)
+  const [submitting, setSubmitting] = useState(false);
 
   const goToStep = (nextStep, customDir) => {
     const currentIdx = STEP_ORDER.indexOf(step);
@@ -759,6 +762,41 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     setPaymentError(null);
     if (refreshCustomer) {
       refreshCustomer();
+    }
+    notifyLiveUpdate();
+  };
+
+  const handleDirectBooking = async () => {
+    setSubmitting(true);
+    setPaymentError(null);
+    try {
+      const res = await axios.post('/api/bookings', {
+        name: form.name,
+        email: form.email,
+        phone: form.contactNumber,
+        address: form.address,
+        event_type: effectiveEventType,
+        event_date: form.eventDate,
+        number_of_guests: isDropOff ? 0 : form.numberOfGuests,
+        budget: form.budget || bookingTotal,
+        preferred_package: form.preferredPackageId || offerId || null,
+        additional_requests: form.additionalRequests,
+        selected_menu_items: isDropOff ? buildPlatterItems(platters, includeChafer) : buildMenuItems(selections),
+        menu_preference: menuPreference,
+        booking_category: category,
+        total_amount: bookingTotal,
+      });
+
+      notifyLiveUpdate();
+      handlePaymentSuccess({
+        method: 'direct',
+        bookingRef: res.data.bookingRef,
+        amount: bookingTotal,
+      });
+    } catch (err) {
+      setPaymentError(err.response?.data?.error || 'Failed to submit booking reservation. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -1245,12 +1283,27 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                   </div>
 
                   {noPaymentConfigured ? (
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-                      <p className="font-semibold">Payment provider not configured</p>
-                      <p className="mt-2">
-                        Start the payment server and add your PayMongo (GCash) credentials.
-                        See <code className="font-mono bg-amber-100 px-1 rounded">server/.env.example</code>.
-                      </p>
+                    <div className="space-y-4">
+                      <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+                        <p className="font-semibold">Direct Booking Reservation</p>
+                        <p className="mt-2">
+                          Submit your reservation now to lock in your catering date. Payment can be settled directly with our booking manager or on event day.
+                        </p>
+                      </div>
+                      {paymentError && (
+                        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+                          {paymentError}
+                        </div>
+                      )}
+                      <Button
+                        type="button"
+                        size="lg"
+                        className="w-full"
+                        onClick={handleDirectBooking}
+                        disabled={submitting}
+                      >
+                        {submitting ? 'Submitting Reservation...' : `Confirm & Submit Reservation (${formatCurrency(bookingTotal)})`}
+                      </Button>
                     </div>
                   ) : (
                     <>

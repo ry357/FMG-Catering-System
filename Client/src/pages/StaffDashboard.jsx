@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import useLiveRefresh from '../hooks/useLiveRefresh';
+import { Link } from 'react-router-dom';
+import useLiveRefresh, { notifyLiveUpdate } from '../hooks/useLiveRefresh';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { formatCurrency } from '../utils/helpers';
@@ -122,6 +123,7 @@ const StaffDashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();
+      notifyLiveUpdate();
     } catch (error) {
       console.error('Error updating booking:', error);
       alert('Failed to update booking status');
@@ -173,6 +175,14 @@ const StaffDashboard = () => {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-400">Welcome, {user?.full_name}</span>
+            {user?.role === 'admin' && (
+              <Link
+                to="/admin/dashboard"
+                className="text-xs text-cyan-300 border border-cyan-400/40 px-2.5 py-1.5 rounded hover:bg-cyan-400/10 transition-all flex items-center gap-1"
+              >
+                <span>Admin Dashboard</span> ↗
+              </Link>
+            )}
             <button
               onClick={() => setShowLogoutModal(true)}
               className="text-sm text-cyan-300 border border-cyan-400/40 px-3 py-1.5 rounded hover:bg-cyan-400/10 hover:shadow-[0_0_14px_-4px_rgba(34,211,238,0.7)] transition-all"
@@ -272,7 +282,7 @@ const StaffDashboard = () => {
                         <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Client</th>
                         <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Event Type</th>
                         <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Guests</th>
-                        <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Budget</th>
+                        <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Amount / Budget</th>
                         <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Payment</th>
                         <th className="text-left py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Booking Status</th>
                         <th className="text-right py-2.5 px-4 font-medium text-slate-500 whitespace-nowrap">Actions</th>
@@ -298,7 +308,7 @@ const StaffDashboard = () => {
                             {booking.number_of_guests?.toLocaleString()}
                           </td>
                           <td className="py-3 px-4 text-right font-medium text-cyan-300 tabular-nums">
-                            {booking.budget ? formatCurrency(booking.budget) : 'N/A'}
+                            {booking.total_amount ? formatCurrency(booking.total_amount) : (booking.budget ? formatCurrency(booking.budget) : 'N/A')}
                           </td>
                           <td className="py-3 px-4">
                             <div className="space-y-1.5">
@@ -425,7 +435,7 @@ const StaffDashboard = () => {
                               )}
                             </td>
                             <td className="py-3 px-4 text-right font-medium text-cyan-300 tabular-nums">
-                              {booking.total_amount ? `${formatCurrency(booking.total_amount)}` : '—'}
+                              {booking.total_amount ? formatCurrency(booking.total_amount) : (booking.budget ? formatCurrency(booking.budget) : '—')}
                             </td>
                             <td className="py-3 px-4">
                               <div className="space-y-1.5">
@@ -508,7 +518,12 @@ const StaffDashboard = () => {
                       >
                         <td className="py-2.5 px-4 whitespace-nowrap">{new Date(sale.sale_date).toLocaleDateString()}</td>
                         <td className="py-2.5 px-4">{sale.customer_name}</td>
-                        <td className="py-2.5 px-4">{sale.event_type}</td>
+                        <td className="py-2.5 px-4">
+                          <p className="text-white font-medium">{sale.event_type}</p>
+                          {sale.booking_ref && (
+                            <p className="text-[11px] text-slate-500 font-mono">{sale.booking_ref}</p>
+                          )}
+                        </td>
                         <td className="py-2.5 px-4 text-right font-medium text-cyan-300 tabular-nums">{formatCurrency(parseFloat(sale.amount) || 0)}</td>
                         <td className="py-2.5 px-4">{sale.payment_method}</td>
                         <td className="py-2.5 px-4">{saleStatusBadge(sale.payment_status)}</td>

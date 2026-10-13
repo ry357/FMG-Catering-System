@@ -83,6 +83,23 @@ function extractDishes(menuItems, menuPreference) {
     ];
   }
 
+  if (menuPreference?.platters && typeof menuPreference.platters === 'object') {
+    const platterDishes = [];
+    Object.values(menuPreference.platters).forEach((cat) => {
+      if (cat?.items) {
+        Object.values(cat.items).forEach((item) => {
+          if (item?.quantity > 0) {
+            platterDishes.push({
+              name: `${item.quantity}× ${item.name || 'Platter'}`,
+              price: item.price != null ? item.price * item.quantity : null,
+            });
+          }
+        });
+      }
+    });
+    if (platterDishes.length > 0) return platterDishes;
+  }
+
   return [];
 }
 
@@ -188,6 +205,9 @@ export default function BookingDetailModal({ booking, sale, onClose }) {
             <DetailRow label="Booked / Transaction Date">
               {new Date(booking.created_at).toLocaleString()}
             </DetailRow>
+            <DetailRow label="Service Type">
+              {booking.booking_category === 'drop-off' ? 'Drop-Off Catering' : 'Full Service Catering'}
+            </DetailRow>
             <DetailRow label="Event Date"> {new Date(booking.event_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</DetailRow>
             <DetailRow label="Event Type">{booking.event_type}</DetailRow>
             <DetailRow label="Number of Guests">{booking.number_of_guests?.toLocaleString()}</DetailRow>
@@ -206,6 +226,13 @@ export default function BookingDetailModal({ booking, sale, onClose }) {
                 ? `Down Payment${booking.down_payment_amount ? ` · ${formatCurrency(booking.down_payment_amount)}` : ''}`
                 : 'Full Payment'}
             </DetailRow>
+            {booking.payment_type === 'down_payment' && booking.down_payment_amount > 0 && (
+              <DetailRow label="Balance Due">
+                <span className="text-amber-300 font-semibold">
+                  {formatCurrency(Math.max(0, (booking.total_amount || booking.budget || 0) - booking.down_payment_amount))}
+                </span>
+              </DetailRow>
+            )}
             <DetailRow label="Payment Status">
               {booking.payment_status === 'full'
                 ? 'Fully Paid'

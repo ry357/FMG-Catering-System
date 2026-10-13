@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLoginModal } from '../context/LoginModalContext';
 import { customerService } from '../services/customerService';
+import { notifyLiveUpdate } from '../hooks/useLiveRefresh';
 import { formatCurrency, formatDate } from '../utils/helpers';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -147,6 +148,7 @@ export default function CustomerProfilePage() {
           type: 'success',
           message: 'Contact details saved! This phone number will be used for delivery coordination.',
         });
+        notifyLiveUpdate();
       }
     } catch (err) {
       setFeedback({
@@ -197,6 +199,7 @@ export default function CustomerProfilePage() {
           type: 'success',
           message: editingAddressId ? 'Delivery address updated successfully!' : 'New delivery address added successfully!',
         });
+        notifyLiveUpdate();
       }
     } catch (err) {
       setFeedback({ type: 'error', message: err.response?.data?.error || 'Failed to save address.' });
@@ -225,6 +228,7 @@ export default function CustomerProfilePage() {
       if (res.success) {
         setSavedAddresses(res.saved_addresses);
         setFeedback({ type: 'success', message: 'Delivery address removed.' });
+        notifyLiveUpdate();
       }
     } catch (err) {
       setFeedback({ type: 'error', message: 'Failed to delete address.' });
@@ -238,6 +242,7 @@ export default function CustomerProfilePage() {
       if (res.success) {
         setSavedAddresses(res.saved_addresses);
         setFeedback({ type: 'success', message: 'Default delivery address updated.' });
+        notifyLiveUpdate();
       }
     } catch (err) {
       setFeedback({ type: 'error', message: 'Failed to set default address.' });

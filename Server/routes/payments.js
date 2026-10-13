@@ -6,6 +6,7 @@ import {
 import { query, queryOne, execute } from '../config/dbHelper.js';
 import { validatePayment } from '../middleware/validator.js';
 import { createBooking } from '../services/bookingService.js';
+import { logActivity } from '../services/activityLogService.js';
 
 const router = Router();
 
@@ -66,6 +67,14 @@ router.post('/gcash/create-checkout', validatePayment, async (req, res, next) =>
       [bookingId, Number(amount), 'gcash', 'pending', checkout.sessionId, paymentType]
     );
 
+    await logActivity({
+      action: 'booking_created',
+      category: 'bookings',
+      description: `New booking submitted by ${customerName} (${customerEmail}) for ${bookingData.eventType || 'Event'} on ${bookingData.eventDate || 'N/A'} — Ref: ${ref}`,
+      performed_by: customerEmail,
+      details: { bookingId, bookingRef: ref, event_type: bookingData.eventType, event_date: bookingData.eventDate, amount: Number(amount) },
+    });
+
     res.json({
       success: true,
       data: {
@@ -83,35 +92,51 @@ router.get('/gcash/verify/:sessionId', async (req, res, next) => {
   try {
     const result = await verifyGCashPayment(req.params.sessionId);
 
-    // Update sale record if payment is successful
-    if (result.paymentStatus === 'paid') {
-      // Get booking details before updating
-      const booking = await queryOne(`
-        SELECT b.*, c.name as customer_name, c.email as customer_email, c.address as customer_address
-        FROM Bookings b
-        JOIN Customers c ON b.customer_id = c.id
-        WHERE b.booking_ref = ?
-      `, [result.referenceNumber]);
-
-      // Update sale record
-      await execute(
-        `UPDATE Sales
-         SET payment_status = 'completed', transaction_id = ?
-         WHERE transaction_id = ?`,
-        [result.sessionId, req.params.sessionId]
+    // Update sale and booking records if payment is successful
+    if (result.paymentStatus === 'paid' || result.status === 'paid' || result.status === 'succeeded') {
+      let sale = await queryOne(
+        `SELECT s.*, b.id as booking_id, b.booking_ref, b.payment_type, b.total_amount, c.name as customer_name, c.email as customer_email
+         FROM Sales s
+         JOIN Bookings b ON s.booking_id = b.id
+         JOIN Customers c ON b.customer_id = c.id
+         WHERE s.transaction_id = ?`,
+        [req.params.sessionId]
       );
 
-      // Update booking payment status based on payment type.
-      // Status stays 'pending' for staff review in the dashboard.
-      if (booking) {
-        const paymentStatus = booking.payment_type === 'down_payment' ? 'partial' : 'full';
+      if (!sale && result.referenceNumber) {
+        sale = await queryOne(
+          `SELECT s.*, b.id as booking_id, b.booking_ref, b.payment_type, b.total_amount, c.name as customer_name, c.email as customer_email
+           FROM Sales s
+           JOIN Bookings b ON s.booking_id = b.id
+           JOIN Customers c ON b.customer_id = c.id
+           WHERE b.booking_ref = ?`,
+          [result.referenceNumber]
+        );
+      }
 
+      if (sale) {
+        await execute(
+          `UPDATE Sales
+           SET payment_status = 'completed', transaction_id = ?
+           WHERE id = ?`,
+          [result.sessionId || req.params.sessionId, sale.id]
+        );
+
+        const paymentStatus = sale.payment_type === 'down_payment' ? 'partial' : 'full';
         await execute(
           `UPDATE Bookings
            SET payment_status = ?
-           WHERE booking_ref = ?`,
-          [paymentStatus, result.referenceNumber]
+           WHERE id = ?`,
+          [paymentStatus, sale.booking_id]
         );
+
+        await logActivity({
+          action: 'payment_completed',
+          category: 'sales',
+          description: `Payment of ₱${Number(sale.amount).toLocaleString()} completed via GCash for Booking #${sale.booking_ref || sale.booking_id}`,
+          performed_by: sale.customer_email || 'customer',
+          details: { bookingId: sale.booking_id, bookingRef: sale.booking_ref, amount: sale.amount, sessionId: req.params.sessionId },
+        });
       }
     }
 

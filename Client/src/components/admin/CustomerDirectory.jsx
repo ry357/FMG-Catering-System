@@ -319,7 +319,7 @@ export default function CustomerDirectory() {
                           <Badge cls={BOOKING_STATUS[b.status] || BOOKING_STATUS.pending}>{b.status}</Badge>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-300">
-                          <span>Package: <span className="text-slate-200">{b.preferred_package || 'Custom'}</span></span>
+                          <span>Type/Package: <span className="text-slate-200">{b.booking_category === 'drop-off' ? 'Drop-Off Platter' : (b.preferred_package || 'Custom Catering')}</span></span>
                           <span>Total: <span className="text-slate-200">{PESO(b.total_amount)}</span></span>
                           <span>Paid: <span className="text-gold-300">{PESO(b.amount_paid)}</span></span>
                           {b.total_amount > b.amount_paid && b.status !== 'rejected' && (

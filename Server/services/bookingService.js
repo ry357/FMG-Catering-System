@@ -145,6 +145,7 @@ export async function createBooking(data = {}) {
   const guests = booking_category === 'drop-off' ? 0 : Number(number_of_guests) || 1;
   const itemsTotal = calculateItemsTotal(selected_menu_items, guests);
   const finalTotal = Number(total_amount) || itemsTotal || Number(budget) || 0;
+  const finalBudget = budget !== undefined && budget !== null && budget !== '' ? Number(budget) : (finalTotal || null);
 
   const menuItemsJson =
     Array.isArray(selected_menu_items) && selected_menu_items.length
@@ -163,7 +164,7 @@ export async function createBooking(data = {}) {
       normalizeEventType(event_type),
       event_date,
       guests,
-      budget ?? null,
+      finalBudget,
       preferred_package || null,
       additional_requests || null,
       menuItemsJson,
@@ -219,6 +220,26 @@ export async function transitionStatus(bookingId, nextStatus) {
     'UPDATE Bookings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
     [nextStatus, bookingId]
   );
+
+  if (nextStatus === 'completed') {
+    const finalAmount = Number(booking.total_amount) || Number(booking.budget) || 0;
+    const existingSale = await queryOne('SELECT * FROM Sales WHERE booking_id = ?', [bookingId]);
+    if (existingSale) {
+      if (existingSale.payment_status !== 'completed') {
+        await execute("UPDATE Sales SET payment_status = 'completed' WHERE id = ?", [existingSale.id]);
+      }
+    } else if (finalAmount > 0) {
+      await execute(
+        `INSERT INTO Sales (booking_id, amount, payment_method, payment_status, payment_type)
+         VALUES (?, ?, 'direct', 'completed', 'full')`,
+        [bookingId, finalAmount]
+      );
+    }
+
+    if (booking.payment_status !== 'full') {
+      await execute("UPDATE Bookings SET payment_status = 'full' WHERE id = ?", [bookingId]);
+    }
+  }
 
   if (nextStatus === 'approved' && booking.customer_email && booking.customer_name) {
     sendBookingApprovalEmail(
