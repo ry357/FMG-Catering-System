@@ -78,7 +78,7 @@ export default function Navbar() {
                   </div>
                 )}
                 <span className="text-sm font-semibold text-charcoal">
-                  {customer.name.split(' ')[0]}
+                  {(customer?.name || 'Customer').split(' ')[0]}
                 </span>
                 <svg className="w-3.5 h-3.5 text-charcoal-muted group-hover:text-charcoal transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -88,8 +88,8 @@ export default function Navbar() {
               {/* Hover Dropdown */}
               <div className="absolute right-0 top-full mt-1.5 hidden w-56 rounded-2xl bg-white p-2 shadow-xl border border-gold-100 group-hover:block transition-all z-50">
                 <div className="px-3 py-2 border-b border-gray-100">
-                  <p className="text-xs font-bold text-charcoal truncate">{customer.name}</p>
-                  <p className="text-[11px] text-charcoal-muted truncate">{customer.email}</p>
+                  <p className="text-xs font-bold text-charcoal truncate">{customer?.name || 'Customer'}</p>
+                  <p className="text-[11px] text-charcoal-muted truncate">{customer?.email || ''}</p>
                 </div>
                 <div className="py-1">
                   <Link
@@ -227,7 +227,7 @@ export default function Navbar() {
                       setShowLogoutModal(true);
                     }}
                   >
-                    Log out ({customer.name.split(' ')[0]})
+                    Log out ({(customer?.name || 'Customer').split(' ')[0]})
                   </Button>
                 </div>
               ) : (

@@ -120,6 +120,12 @@ const logoutCustomer = useCallback(() => {
   window.location.href = '/';
 }, []);
 
+const logout = () => {
+  sessionStorage.removeItem('token');
+  setUser(null);
+  window.location.href = '/';
+};
+
   const updateCustomerState = useCallback((newCustomerData) => {
     setCustomer(newCustomerData);
     if (newCustomerData) {

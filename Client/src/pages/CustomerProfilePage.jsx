@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLoginModal } from '../context/LoginModalContext';
 import { customerService } from '../services/customerService';
 import { formatCurrency, formatDate } from '../utils/helpers';
 import Navbar from '../components/layout/Navbar';
@@ -14,7 +15,8 @@ export default function CustomerProfilePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'history';
 
-  const { customer, customerToken, updateCustomerState, logoutCustomer } = useAuth();
+  const { openLogin } = useLoginModal();
+  const { customer, customerToken, updateCustomerState, logoutCustomer, loading: authLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState(initialTab); // 'history', 'addresses', 'phone'
   const [loading, setLoading] = useState(true);
@@ -42,13 +44,16 @@ export default function CustomerProfilePage() {
   const [selectedBookingForInvoice, setSelectedBookingForInvoice] = useState(null);
 
   useEffect(() => {
-    if (!customerToken && !localStorage.getItem('customerToken')) {
-      navigate('/?login=true');
+    if (authLoading) return;
+
+    const token = customerToken || localStorage.getItem('customerToken');
+    if (!token) {
+      setLoading(false);
       return;
     }
 
     loadProfileAndData();
-  }, [customerToken]);
+  }, [customerToken, authLoading]);
 
   const loadProfileAndData = async () => {
     setLoading(true);
@@ -193,6 +198,48 @@ export default function CustomerProfilePage() {
     sessionStorage.setItem('fmg_replicate_order', JSON.stringify(replicateData));
     navigate('/book?replicate=true');
   };
+
+  const token = customerToken || localStorage.getItem('customerToken');
+
+  // If customer is not authenticated, show a clean luxury invitation card instead of a blank screen
+  if (!token && !customer) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] flex flex-col font-sans text-charcoal">
+        <Navbar />
+        <main className="flex-grow pt-28 pb-16 flex items-center justify-center">
+          <div className="section-container max-w-lg text-center">
+            <div className="rounded-3xl bg-white p-8 sm:p-10 shadow-sm border border-gold-200">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-50 text-gold-600 text-3xl mb-4">
+                👤
+              </div>
+              <h2 className="font-display text-2xl font-bold text-charcoal">
+                Customer Account & Orders
+              </h2>
+              <p className="mt-2 text-sm text-charcoal-muted leading-relaxed">
+                Sign in with your Google or customer account to view your past and upcoming catering bookings, manage saved venue addresses, and download official invoices.
+              </p>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  onClick={openLogin}
+                  className="w-full sm:w-auto"
+                >
+                  Sign In to View Profile
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate('/')}
+                  className="w-full sm:w-auto"
+                >
+                  Return to Home
+                </Button>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col font-sans text-charcoal">
@@ -341,9 +388,17 @@ export default function CustomerProfilePage() {
                     ) : (
                       <div className="grid gap-5">
                         {bookings.map((booking) => {
-                          const isUpcoming =
-                            new Date(booking.event_date).setHours(0, 0, 0, 0) >=
-                            new Date().setHours(0, 0, 0, 0);
+                          let isUpcoming = false;
+                          if (booking.event_date) {
+                            try {
+                              const d = new Date(booking.event_date);
+                              if (!isNaN(d.getTime())) {
+                                isUpcoming = d.setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0);
+                              }
+                            } catch {
+                              isUpcoming = false;
+                            }
+                          }
 
                           return (
                             <div

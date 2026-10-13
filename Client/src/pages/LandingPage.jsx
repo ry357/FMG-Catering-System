@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useLoginModal } from '../context/LoginModalContext';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import Hero from '../components/landing/Hero';
@@ -9,6 +12,16 @@ import FeaturedDishes from '../components/landing/FeaturedDishes';
 import Testimonials from '../components/landing/Testimonials';
 
 export default function LandingPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { openLogin } = useLoginModal();
+
+  useEffect(() => {
+    if (searchParams.get('login') === 'true') {
+      openLogin();
+      searchParams.delete('login');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, openLogin, setSearchParams]);
   return (
     <>
       <Navbar />
