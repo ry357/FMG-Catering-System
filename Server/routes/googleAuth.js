@@ -71,14 +71,12 @@ router.post('/verify', async (req, res) => {
       customer = { id: customerId, name, email, google_id: googleId, avatar: picture };
     } else {
       console.log(`✅ Customer found: ID ${customer.id}`);
-      if (!customer.google_id) {
-        console.log(`📝 Updating customer with google_id`);
-        await execute(
-          'UPDATE Customers SET google_id = ?, avatar = ? WHERE id = ?',
-          [googleId, picture, customer.id]
-        );
-        customer = { ...customer, google_id: googleId, avatar: picture };
-      }
+      await execute(
+        'UPDATE Customers SET google_id = COALESCE(google_id, ?), avatar = COALESCE(?, avatar) WHERE id = ?',
+        [googleId, picture || null, customer.id]
+      );
+      // Re-fetch customer to ensure phone, address, and saved_addresses are fresh
+      customer = await queryOne('SELECT * FROM Customers WHERE id = ?', [customer.id]);
     }
 
     console.log('🔑 Generating JWT token...');
