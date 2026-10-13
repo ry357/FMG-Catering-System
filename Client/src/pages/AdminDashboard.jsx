@@ -10,6 +10,7 @@ import EmailManagement from '../components/admin/EmailManagement';
 import CustomerDirectory from '../components/admin/CustomerDirectory';
 import useLiveRefresh from '../hooks/useLiveRefresh';
 import LogoutConfirmModal from '../components/ui/LogoutConfirmModal';
+import logoImage from '../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -359,9 +360,12 @@ const AdminDashboard = () => {
     >
       <nav className="bg-[#0B1220]/95 backdrop-blur border-b border-[#1E2A45] sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-4 py-3.5 flex justify-between items-center">
-          <h1 className="text-lg font-semibold bg-gradient-to-r from-cyan-300 via-white to-pink-400 bg-clip-text text-transparent">
-            FMG Catering · Admin
-          </h1>
+          <div className="flex items-center gap-3">
+            <img src={logoImage} alt="FMG Catering Services Logo" className="h-8 w-8 rounded-lg object-cover shadow-sm border border-cyan-400/30" />
+            <h1 className="text-lg font-semibold bg-gradient-to-r from-cyan-300 via-white to-pink-400 bg-clip-text text-transparent">
+              FMG Catering · Admin
+            </h1>
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-400">Welcome, {user?.full_name}</span>
             <button

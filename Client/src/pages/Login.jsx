@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logoImage from '../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -133,28 +134,18 @@ const Login = () => {
           'radial-gradient(1200px 560px at 85% -12%, rgba(34,211,238,0.12), transparent 60%), radial-gradient(1000px 520px at -5% 110%, rgba(255,45,120,0.09), transparent 55%), #0B1220',
       }}
     >
-      <div className="w-full max-w-5xl">
-        <nav className="mb-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold bg-gradient-to-r from-cyan-300 via-white to-pink-400 bg-clip-text text-transparent">
-            FMG Catering · Portal
-          </h1>
-          <Link
-            to="/"
-            className="text-sm text-cyan-300 border border-cyan-400/40 px-3 py-1.5 rounded hover:bg-cyan-400/10 hover:shadow-[0_0_14px_-4px_rgba(34,211,238,0.7)] transition-all"
-          >
-            ← Back to site
-          </Link>
-        </nav>
-
-        <div className="bg-[#101A2E] border border-[#1E2A45] rounded-xl p-8 shadow-[0_0_30px_-14px_rgba(34,211,238,0.25)]">
+      <div className="w-full max-w-md">
+        <div className="bg-[#101A2E] border border-[#1E2A45] rounded-2xl p-8 shadow-[0_0_35px_-10px_rgba(251,191,36,0.2)]">
           <div className="text-center mb-8">
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-gold-600 text-white font-display text-2xl font-bold shadow-[0_0_24px_-6px_rgba(251,191,36,0.6)]">
-              FMG
-            </div>
-            <h2 className="mt-4 font-display text-3xl font-semibold text-white">
+            <img
+              src={logoImage}
+              alt="FMG Catering Services Logo"
+              className="mx-auto h-20 w-20 rounded-2xl object-cover shadow-[0_0_24px_-4px_rgba(251,191,36,0.6)] border border-amber-400/40 transition-transform hover:scale-105"
+            />
+            <h2 className="mt-5 font-display text-2xl sm:text-3xl font-semibold text-white">
               {requiresOtp ? 'Security Verification' : 'Booking Manager & Admin Portal'}
             </h2>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">
               {requiresOtp
                 ? 'A 6-digit verification code has been sent to your registered email address.'
                 : 'Sign in to manage bookings, sales, reports, and analytics'}
