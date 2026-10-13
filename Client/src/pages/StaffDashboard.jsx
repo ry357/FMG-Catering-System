@@ -8,6 +8,7 @@ import DashboardSkeleton from '../components/ui/DashboardSkeleton';
 import DashboardCalendar from '../components/admin/DashboardCalendar';
 import SalesAnalyticsDashboard from '../components/admin/SalesAnalyticsDashboard';
 import Trendnalytics from '../components/admin/TrendAnalytics';
+import LogoutConfirmModal from '../components/ui/LogoutConfirmModal';
 
 const dropOffSummary = (booking) => {
   const parse = (json) => { try { return json ? JSON.parse(json) : null; } catch { return null; } };
@@ -83,6 +84,7 @@ const StaffDashboard = () => {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('bookings');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedSale, setSelectedSale] = useState(null);
 
@@ -168,7 +170,7 @@ const StaffDashboard = () => {
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-400">Welcome, {user?.full_name}</span>
             <button
-              onClick={logout}
+              onClick={() => setShowLogoutModal(true)}
               className="text-sm text-cyan-300 border border-cyan-400/40 px-3 py-1.5 rounded hover:bg-cyan-400/10 hover:shadow-[0_0_14px_-4px_rgba(34,211,238,0.7)] transition-all"
             >
               Logout
@@ -531,6 +533,12 @@ const StaffDashboard = () => {
           onClose={() => { setSelectedBooking(null); setSelectedSale(null); }}
         />
       )}
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={logout}
+      />
     </div>
   );
 };

@@ -9,6 +9,7 @@ import DashboardCalendar from '../components/admin/DashboardCalendar';
 import EmailManagement from '../components/admin/EmailManagement';
 import CustomerDirectory from '../components/admin/CustomerDirectory';
 import useLiveRefresh from '../hooks/useLiveRefresh';
+import LogoutConfirmModal from '../components/ui/LogoutConfirmModal';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -129,6 +130,7 @@ const AdminDashboard = () => {
   const [googleDocMessage, setGoogleDocMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('analytics');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState({
     username: '',
@@ -363,7 +365,7 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-400">Welcome, {user?.full_name}</span>
             <button
-              onClick={logout}
+              onClick={() => setShowLogoutModal(true)}
               className="text-sm text-cyan-300 border border-cyan-400/40 px-3 py-1.5 rounded hover:bg-cyan-400/10 hover:shadow-[0_0_14px_-4px_rgba(34,211,238,0.7)] transition-all"
             >
               Logout
@@ -945,6 +947,11 @@ const AdminDashboard = () => {
         )}
       </div>
 
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={logout}
+      />
     </div>
   );
 };

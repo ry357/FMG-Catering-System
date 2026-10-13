@@ -6,9 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 import { useLoginModal } from '../../context/LoginModalContext';
 import useBookingNav from '../../hooks/useBookingNav';
 import Button from '../ui/Button';
+import LogoutConfirmModal from '../ui/LogoutConfirmModal';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
   const { openLogin } = useLoginModal();
   const { customer, logoutCustomer } = useAuth();
@@ -67,7 +69,7 @@ export default function Navbar() {
                 type="button"
                 onClick={() => {
                   closeMenu();
-                  logoutCustomer();
+                  setShowLogoutModal(true);
                 }}
                 className="text-sm font-medium text-charcoal-light transition-colors hover:text-gold-600"
               >
@@ -150,7 +152,7 @@ export default function Navbar() {
                   className="w-full"
                   onClick={() => {
                     closeMenu();
-                    logoutCustomer();
+                    setShowLogoutModal(true);
                   }}
                 >
                   Log out ({customer.name.split(' ')[0]})
@@ -171,6 +173,12 @@ export default function Navbar() {
           </ul>
         </div>
       )}
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={logoutCustomer}
+      />
     </header>
   );
 }
