@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logoImage from '../../assets/297896214_112620414877986_8856076360523925875_n.jpg';
 import { NAV_LINKS } from '../../data/landingData';
@@ -10,13 +10,35 @@ import LogoutConfirmModal from '../ui/LogoutConfirmModal';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const profileDropdownRef = useRef(null);
   const location = useLocation();
   const { openLogin } = useLoginModal();
   const { customer, logoutCustomer } = useAuth();
   const book = useBookingNav();
 
-  const closeMenu = () => setIsOpen(false);
+  const closeMenu = () => {
+    setIsOpen(false);
+    setIsProfileOpen(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close dropdown on route changes
+  useEffect(() => {
+    setIsProfileOpen(false);
+    setIsOpen(false);
+  }, [location.pathname]);
 
   // Show "Book Now" in the top-right on all public pages (Shopify-style persistent CTA)
   const isDashboard = location.pathname.startsWith('/staff/') || location.pathname.startsWith('/booking-manager/') || location.pathname.startsWith('/admin/');
@@ -61,10 +83,13 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-5 lg:flex">
           {customer ? (
-            <div className="relative group">
-              <Link
-                to="/profile"
-                className="flex items-center gap-2 rounded-full border border-gold-200 bg-gold-50/60 py-1.5 pl-2 pr-3.5 transition-all hover:bg-gold-100/70 hover:border-gold-300"
+            <div ref={profileDropdownRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                className="flex items-center gap-2 rounded-full border border-gold-200 bg-gold-50/60 py-1.5 pl-2 pr-3.5 transition-all hover:bg-gold-100/70 hover:border-gold-300 focus:outline-none"
+                aria-expanded={isProfileOpen}
+                aria-haspopup="true"
               >
                 {customer.avatar ? (
                   <img
@@ -80,50 +105,72 @@ export default function Navbar() {
                 <span className="text-sm font-semibold text-charcoal">
                   {(customer?.name || 'Customer').split(' ')[0]}
                 </span>
-                <svg className="w-3.5 h-3.5 text-charcoal-muted group-hover:text-charcoal transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className={`w-3.5 h-3.5 text-charcoal-muted transition-transform duration-200 ${
+                    isProfileOpen ? 'rotate-180 text-charcoal' : ''
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </Link>
+              </button>
 
-              {/* Hover Dropdown */}
-              <div className="absolute right-0 top-full mt-1.5 hidden w-56 rounded-2xl bg-white p-2 shadow-xl border border-gold-100 group-hover:block transition-all z-50">
-                <div className="px-3 py-2 border-b border-gray-100">
-                  <p className="text-xs font-bold text-charcoal truncate">{customer?.name || 'Customer'}</p>
-                  <p className="text-[11px] text-charcoal-muted truncate">{customer?.email || ''}</p>
+              {/* Dropdown Menu */}
+              {isProfileOpen && (
+                <div className="absolute right-0 top-full pt-2 w-56 z-50">
+                  <div className="rounded-2xl bg-white p-2 shadow-2xl border border-gold-100 ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3 py-2 border-b border-gray-100">
+                      <p className="text-xs font-bold text-charcoal truncate">{customer?.name || 'Customer'}</p>
+                      <p className="text-[11px] text-charcoal-muted truncate">{customer?.email || ''}</p>
+                    </div>
+                    <div className="py-1">
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
+                      >
+                        <span>👤</span> Profile Overview
+                      </Link>
+                      <Link
+                        to="/profile?tab=history"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
+                      >
+                        <span>📦</span> Orders & Bookings
+                      </Link>
+                      <Link
+                        to="/profile?tab=addresses"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
+                      >
+                        <span>📍</span> Saved Addresses
+                      </Link>
+                      <Link
+                        to="/profile?tab=phone"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
+                      >
+                        <span>📞</span> Contact & Phone
+                      </Link>
+                    </div>
+                    <div className="border-t border-gray-100 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          closeMenu();
+                          setShowLogoutModal(true);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <span>🚪</span> Log out
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="py-1">
-                  <Link
-                    to="/profile?tab=history"
-                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
-                  >
-                    <span>📦</span> Orders & Bookings
-                  </Link>
-                  <Link
-                    to="/profile?tab=addresses"
-                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
-                  >
-                    <span>📍</span> Saved Addresses
-                  </Link>
-                  <Link
-                    to="/profile?tab=phone"
-                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-charcoal hover:bg-gold-50 hover:text-gold-700 transition-colors"
-                  >
-                    <span>📞</span> Contact & Phone
-                  </Link>
-                </div>
-                <div className="border-t border-gray-100 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      closeMenu();
-                      setShowLogoutModal(true);
-                    }}
-                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <span>🚪</span> Log out
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           ) : (
             <button
