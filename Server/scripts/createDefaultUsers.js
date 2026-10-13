@@ -35,7 +35,7 @@ async function createDefaultUsers() {
       await db.query(
         `INSERT INTO Users (username, email, password_hash, role, full_name)
          VALUES ($1, $2, $3, $4, $5)`,
-        ['staff', 'staff@fmgcatering.com', staffPassword, 'staff', 'Staff Member']
+        ['staff', 'genayascristina2@gmail.com', staffPassword, 'staff', 'Cristina Genayas']
       );
 
       const users = await db.query('SELECT username, email, role, full_name FROM Users');
@@ -71,7 +71,7 @@ async function createDefaultUsers() {
       await db.run(
         `INSERT INTO Users (username, email, password_hash, role, full_name)
          VALUES (?, ?, ?, ?, ?)`,
-        ['staff', 'staff@fmgcatering.com', staffPassword, 'staff', 'Staff Member']
+        ['staff', 'genayascristina2@gmail.com', staffPassword, 'staff', 'Cristina Genayas']
       );
 
       const users = await db.all('SELECT username, email, role, full_name FROM Users');
