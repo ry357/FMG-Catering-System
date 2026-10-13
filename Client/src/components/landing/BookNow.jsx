@@ -108,55 +108,50 @@ function StepIndicator({ currentStep, steps = STEPS, onStepClick }) {
 
   return (
     <div className="mb-8 overflow-x-auto pb-2 scrollbar-thin">
-      <ol className="flex items-center min-w-max mx-auto justify-between max-w-4xl px-2">
+      <nav aria-label="Booking Progress" className="flex items-center min-w-max mx-auto justify-between max-w-4xl px-2 gap-2">
         {steps.map((step, index) => {
           const isActive = step.id === currentStep;
           const isComplete = index < currentIndex;
           const canClick = isComplete && Boolean(onStepClick);
 
           return (
-            <li key={step.id} className="flex items-center flex-1 last:flex-none">
+            <div key={step.id} className="flex items-center flex-1 last:flex-none">
               <button
                 type="button"
                 disabled={!canClick}
                 onClick={() => canClick && onStepClick(step.id)}
-                className={`group flex items-center gap-3 transition-all text-left ${
-                  canClick ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
-                }`}
+                className={`group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-left ${
+                  isActive
+                    ? 'bg-gold-500/15 border border-gold-400/40'
+                    : isComplete
+                      ? 'bg-white/5 border border-white/10 hover:bg-white/10'
+                      : 'bg-transparent border border-transparent'
+                } ${canClick ? 'cursor-pointer' : 'cursor-default'}`}
               >
-                <span
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm ${
-                    isActive
-                      ? 'bg-gold-500 text-charcoal ring-4 ring-gold-400/25 scale-105'
-                      : isComplete
-                        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                        : 'bg-white/10 text-white/40 border border-white/10'
-                  }`}
-                >
-                  {isComplete ? (
-                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                {isComplete ? (
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                  ) : (
-                    index + 1
-                  )}
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
-                    Step {index + 1}
                   </span>
+                ) : (
                   <span
-                    className={`text-xs font-semibold whitespace-nowrap transition-colors ${
-                      isActive ? 'text-white' : isComplete ? 'text-emerald-300' : 'text-white/40'
+                    className={`h-2 w-2 rounded-full transition-all shrink-0 ${
+                      isActive ? 'bg-gold-400 ring-4 ring-gold-400/30' : 'bg-white/20'
                     }`}
-                  >
-                    {step.label}
-                  </span>
-                </div>
+                  />
+                )}
+                <span
+                  className={`text-xs font-semibold whitespace-nowrap tracking-wide transition-colors ${
+                    isActive ? 'text-gold-300' : isComplete ? 'text-emerald-300' : 'text-white/40'
+                  }`}
+                >
+                  {step.label}
+                </span>
               </button>
 
               {index < steps.length - 1 && (
-                <div className="flex-1 mx-3 sm:mx-4 h-0.5 min-w-[28px] rounded-full overflow-hidden bg-white/10">
+                <div className="flex-1 mx-2 sm:mx-3 h-0.5 min-w-[20px] rounded-full overflow-hidden bg-white/10">
                   <div
                     className={`h-full transition-all duration-300 ${
                       isComplete ? 'bg-emerald-500 w-full' : isActive ? 'bg-gold-500/50 w-1/2' : 'w-0'
@@ -164,10 +159,10 @@ function StepIndicator({ currentStep, steps = STEPS, onStepClick }) {
                   />
                 </div>
               )}
-            </li>
+            </div>
           );
         })}
-      </ol>
+      </nav>
     </div>
   );
 }
@@ -806,8 +801,8 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
         {step === 'confirmation' && paymentResult ? (
           <PaymentSuccessPanel paymentResult={paymentResult} onNewBooking={handleNewBooking} />
         ) : (
-          <div className="grid lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-8 bg-white rounded-2xl p-6 md:p-8 shadow-elevated border border-gray-100/80 overflow-hidden relative">
+          <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
+            <div className="w-full flex-1 bg-white rounded-2xl p-6 sm:p-8 lg:p-10 shadow-elevated border border-gray-100/80 overflow-hidden relative min-w-0">
               <div
                 key={step}
                 className={slideDirection === 'right' ? 'slide-in-right' : 'slide-in-left'}
@@ -1000,68 +995,74 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     </div>
                   )}
 
-                  <div className="grid sm:grid-cols-2 gap-5">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     <FormField label="Full Name" error={errors.name} required>
                       <input type="text" name="name" value={form.name} onChange={handleChange} className={inputClass} />
                     </FormField>
                     <FormField label="Contact Number" error={errors.contactNumber} required>
                       <input type="tel" name="contactNumber" value={form.contactNumber} onChange={handleChange} className={inputClass} />
                     </FormField>
+                    <FormField label="Email Address" error={errors.email} required>
+                      <input type="email" name="email" value={form.email} onChange={handleChange} className={inputClass} />
+                    </FormField>
                   </div>
 
-                  <FormField label="Email Address" error={errors.email} required>
-                    <input type="email" name="email" value={form.email} onChange={handleChange} className={inputClass} />
-                  </FormField>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-sm font-medium text-charcoal">
-                        Event Venue or Establishment <span className="text-gold-600 ml-0.5">*</span>
-                      </label>
-                      {customer?.saved_addresses && customer.saved_addresses.length > 0 && (
-                        <select
-                          className="text-xs font-semibold text-gold-700 bg-gold-50 border border-gold-200 rounded-lg px-2 py-1 cursor-pointer hover:bg-gold-100"
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              const found = customer.saved_addresses.find((a) => a.id === e.target.value);
-                              if (found) {
-                                setForm((prev) => ({
-                                  ...prev,
-                                  address: found.address,
-                                  contactNumber: found.contactPhone || prev.contactNumber,
-                                }));
+                  <div className="grid lg:grid-cols-12 gap-5 items-start">
+                    <div className="lg:col-span-8">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-sm font-medium text-charcoal">
+                          Event Venue or Establishment <span className="text-gold-600 ml-0.5">*</span>
+                        </label>
+                        {customer?.saved_addresses && customer.saved_addresses.length > 0 && (
+                          <select
+                            className="text-xs font-semibold text-gold-700 bg-gold-50 border border-gold-200 rounded-lg px-2 py-1 cursor-pointer hover:bg-gold-100"
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                const found = customer.saved_addresses.find((a) => a.id === e.target.value);
+                                if (found) {
+                                  setForm((prev) => ({
+                                    ...prev,
+                                    address: found.address,
+                                    contactNumber: found.contactPhone || prev.contactNumber,
+                                  }));
+                                }
                               }
-                            }
-                          }}
-                          defaultValue=""
-                        >
-                          <option value="" disabled>
-                            📍 Pick from saved venues ({customer.saved_addresses.length})
-                          </option>
-                          {customer.saved_addresses.map((a) => (
-                            <option key={a.id} value={a.id}>
-                              {a.label} — {a.address.slice(0, 35)}...
+                            }}
+                            defaultValue=""
+                          >
+                            <option value="" disabled>
+                              📍 Pick saved venue ({customer.saved_addresses.length})
                             </option>
-                          ))}
-                        </select>
+                            {customer.saved_addresses.map((a) => (
+                              <option key={a.id} value={a.id}>
+                                {a.label} — {a.address.slice(0, 30)}...
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                      <AddressAutocomplete
+                        name="address"
+                        value={form.address}
+                        onChange={handleChange}
+                        className={inputClass}
+                        placeholder="e.g. Grand Convention Center, Cebu City"
+                      />
+                      {errors.address && (
+                        <p className="mt-1 text-sm text-red-600" role="alert">
+                          {errors.address}
+                        </p>
                       )}
                     </div>
-                    <AddressAutocomplete
-                      name="address"
-                      value={form.address}
-                      onChange={handleChange}
-                      className={inputClass}
-                      placeholder="e.g. Grand Convention Center, Cebu City"
-                    />
-                    {errors.address && (
-                      <p className="mt-1 text-sm text-red-600" role="alert">
-                        {errors.address}
-                      </p>
-                    )}
+                    <div className="lg:col-span-4">
+                      <FormField label="Event Date" error={errors.eventDate} required>
+                        <input type="date" name="eventDate" value={form.eventDate} onChange={handleChange} min={minDate} className={inputClass} />
+                      </FormField>
+                    </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-5">
-                    {!isDropOff && (
+                  {!isDropOff && (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                       <FormField label="Event Type" error={errors.eventType} required>
                         <select
                           name="eventType"
@@ -1083,11 +1084,14 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                           ))}
                         </select>
                       </FormField>
-                    )}
-                    <FormField label="Event Date" error={errors.eventDate} required>
-                      <input type="date" name="eventDate" value={form.eventDate} onChange={handleChange} min={minDate} className={inputClass} />
-                    </FormField>
-                  </div>
+                      <FormField label="Number of Guests" error={errors.numberOfGuests} required>
+                        <input type="number" name="numberOfGuests" value={form.numberOfGuests} onChange={handleChange} min="70" step="1" className={inputClass} />
+                      </FormField>
+                      <FormField label={packageBooking ? 'Estimated Total (PHP, optional)' : 'Budget (PHP, optional)'} error={errors.budget}>
+                        <input type="number" name="budget" value={form.budget} onChange={handleChange} min="1" inputMode="numeric" className={inputClass} />
+                      </FormField>
+                    </div>
+                  )}
 
                   {!isDropOff && form.eventType === 'Other' && (
                     <FormField label="Please specify your event" error={errors.customEventType} required>
@@ -1108,19 +1112,6 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                       />
                     </FormField>
                   )}
-
-                  <div className="grid sm:grid-cols-2 gap-5">
-                    {!isDropOff && (
-                      <FormField label="Number of Guests" error={errors.numberOfGuests} required>
-                        <input type="number" name="numberOfGuests" value={form.numberOfGuests} onChange={handleChange} min="70" step="1" className={inputClass} />
-                      </FormField>
-                    )}
-                    {!isDropOff && (
-                      <FormField label={packageBooking ? 'Estimated Total (PHP, optional)' : 'Budget (PHP, optional)'} error={errors.budget}>
-                        <input type="number" name="budget" value={form.budget} onChange={handleChange} min="1" inputMode="numeric" className={inputClass} />
-                      </FormField>
-                    )}
-                  </div>
 
                   <FormField label="Additional Requests" error={errors.additionalRequests} required={false}>
                     <textarea name="additionalRequests" value={form.additionalRequests} onChange={handleChange} rows="3" maxLength="1000" className={inputClass} />
@@ -1356,7 +1347,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
               </div>
             </div>
 
-            <aside className="lg:col-span-4 space-y-6">
+            <aside className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-6">
               {(step === 'menu' || step === 'details' || step === 'food' || step === 'payment') && (
                 <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="font-display text-xl font-semibold text-white">Your Menu Plan</h3>
