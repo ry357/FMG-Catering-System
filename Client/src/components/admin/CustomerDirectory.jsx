@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import useLiveRefresh from '../../hooks/useLiveRefresh';
 import axios from 'axios';
 
 const authHeader = () => ({
@@ -61,6 +62,8 @@ export default function CustomerDirectory() {
   const [detail, setDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  const liveTick = useLiveRefresh();
+
   useEffect(() => {
     (async () => {
       try {
@@ -73,7 +76,7 @@ export default function CustomerDirectory() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [liveTick]);
 
   useEffect(() => {
     if (!selectedId) {

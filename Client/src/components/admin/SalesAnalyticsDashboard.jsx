@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import useLiveRefresh from '../../hooks/useLiveRefresh';
 import axios from 'axios';
 import {
   ResponsiveContainer,
@@ -206,9 +207,14 @@ const SalesAnalyticsDashboard = () => {
   const [error, setError] = useState('');
   const [revenueView, setRevenueView] = useState('month');
 
+  const liveTick = useLiveRefresh();
+  const lastMonthRef = useRef(null);
+
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    const silent = lastMonthRef.current === selectedMonth;
+    lastMonthRef.current = selectedMonth;
+    if (!silent) setLoading(true);
     setError('');
 
     axios
@@ -228,7 +234,7 @@ const SalesAnalyticsDashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedMonth]);
+  }, [selectedMonth, liveTick]);
 
   const kpis = data?.kpis;
 

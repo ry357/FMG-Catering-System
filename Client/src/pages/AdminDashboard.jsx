@@ -8,6 +8,7 @@ import MenuManagement from '../components/admin/MenuManagement';
 import DashboardCalendar from '../components/admin/DashboardCalendar';
 import EmailManagement from '../components/admin/EmailManagement';
 import CustomerDirectory from '../components/admin/CustomerDirectory';
+import useLiveRefresh from '../hooks/useLiveRefresh';
 
 const renderInline = (text) => {
   const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
@@ -157,9 +158,17 @@ const AdminDashboard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const liveTick = useLiveRefresh(10000);
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [liveTick]);
+
+  useEffect(() => {
+    if (activeTab === 'activity-logs') {
+      fetchActivityLogs({ page: logsPage, category: logsCategory, search: logsSearch }, true);
+    }
+  }, [liveTick, activeTab]);
 
   const authHeader = () => ({
     headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
@@ -190,8 +199,8 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchActivityLogs = async ({ page = 1, category = 'all', search = '' } = {}) => {
-    setLogsLoading(true);
+  const fetchActivityLogs = async ({ page = 1, category = 'all', search = '' } = {}, silent = false) => {
+    if (!silent) setLogsLoading(true);
     try {
       const params = new URLSearchParams({ page, limit: 50, category, search });
       const res = await axios.get(`/api/activity-logs?${params}`, authHeader());
@@ -202,7 +211,7 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error('Failed to fetch activity logs:', err);
     } finally {
-      setLogsLoading(false);
+      if (!silent) setLogsLoading(false);
     }
   };
 

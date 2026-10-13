@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useLiveRefresh from '../../hooks/useLiveRefresh';
 import axios from 'axios';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
@@ -22,13 +23,15 @@ export default function DashboardCalendar({ role, onBack }) {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  const liveTick = useLiveRefresh();
 
-  const fetchBookings = async () => {
+  useEffect(() => {
+    fetchBookings(liveTick > 0);
+  }, [liveTick]);
+
+  const fetchBookings = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const token = sessionStorage.getItem('token');
       const res = await axios.get('/api/bookings', {
         headers: { Authorization: `Bearer ${token}` }

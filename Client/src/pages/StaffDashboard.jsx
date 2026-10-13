@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useLiveRefresh from '../hooks/useLiveRefresh';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { formatCurrency } from '../utils/helpers';
@@ -85,9 +86,11 @@ const StaffDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedSale, setSelectedSale] = useState(null);
 
+  const liveTick = useLiveRefresh();
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [liveTick]);
 
   const fetchData = async () => {
     try {

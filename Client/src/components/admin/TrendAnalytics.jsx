@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useLiveRefresh from '../../hooks/useLiveRefresh';
 import axios from 'axios';
 import Skeleton from '../ui/Skeleton';
 
@@ -51,6 +52,8 @@ const Trendnalytics = () => {
   const [bookingPeriods, setBookingPeriods] = useState({ peakPeriods: [], lowDemandPeriods: [] });
   const [leastPopular, setLeastPopular] = useState({ packages: [], foods: [], sides: [], drinks: [] });
 
+  const liveTick = useLiveRefresh(30000);
+
   useEffect(() => {
     let cancelled = false;
     const headers = { Authorization: `Bearer ${sessionStorage.getItem('token')}` };
@@ -78,7 +81,7 @@ const Trendnalytics = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [liveTick]);
 
   const topPackages = [...packages]
     .sort((a, b) => b.bookingsCount - a.bookingsCount)
