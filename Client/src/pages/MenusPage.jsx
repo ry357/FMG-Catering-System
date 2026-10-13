@@ -40,15 +40,15 @@ function SetCard({ offer, onBook }) {
       <span className="w-fit rounded-full bg-gold-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gold-700">
         {tierLabel(offer.tier)}
       </span>
-      <h3 className="mt-4 font-display text-xl font-semibold text-charcoal">{offer.name}</h3>
-      <p className="mt-2 font-display text-2xl font-bold text-gold-600">
+      <h3 className="mt-4 text-xl font-bold text-charcoal">{offer.name}</h3>
+      <p className="mt-2 text-2xl font-bold text-gold-600">
         {formatCurrency(offer.pricePerPax)}
-        <span className="ml-1 font-sans text-sm font-normal text-charcoal-muted">/ pax</span>
+        <span className="ml-1 text-sm font-normal text-charcoal-muted">/ pax</span>
       </p>
-      <ul className="mt-5 flex-grow space-y-2 text-sm text-charcoal-light">
+      <ul className="mt-5 flex-grow space-y-2 text-sm font-normal text-charcoal-light">
         {offer.includes.map((item) => (
           <li key={item} className="flex gap-2">
-            <span className="text-gold-600">✓</span>
+            <span className="text-gold-600 font-semibold">✓</span>
             <span>{item}</span>
           </li>
         ))}
@@ -146,21 +146,21 @@ export default function MenusPage() {
               description="Fixed per-pax pricing with everything included."
             />
 
-            <h3 className="font-display text-2xl font-semibold text-charcoal">Buffet Sets</h3>
+            <h3 className="text-2xl font-bold text-charcoal">Buffet Sets</h3>
             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {buffetSets.map((offer) => (
                 <SetCard key={offer.id} offer={offer} onBook={onBook} />
               ))}
             </div>
 
-            <h3 className="mt-14 font-display text-2xl font-semibold text-charcoal">Plated Sets</h3>
+            <h3 className="mt-14 text-2xl font-bold text-charcoal">Plated Sets</h3>
             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {platedSets.map((offer) => (
                 <SetCard key={offer.id} offer={offer} onBook={onBook} />
               ))}
             </div>
 
-            <h3 className="mt-14 font-display text-2xl font-semibold text-charcoal">Drop-Off Packed Meals</h3>
+            <h3 className="mt-14 text-2xl font-bold text-charcoal">Drop-Off Packed Meals</h3>
             <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {packedSets.map((offer) => (
                 <SetCard key={offer.id} offer={offer} onBook={onBook} />
@@ -179,7 +179,7 @@ export default function MenusPage() {
 
             <div className="space-y-10">
               <div>
-                <h3 className="font-display text-2xl font-semibold text-charcoal">Main Dishes</h3>
+                <h3 className="text-2xl font-bold text-charcoal">Main Dishes</h3>
                 <div className="mt-5 space-y-6">
                   {Object.entries(mainsBySub).map(([sub, dishes]) => (
                     <div key={sub}>
@@ -193,14 +193,14 @@ export default function MenusPage() {
               </div>
 
               <div>
-                <h3 className="font-display text-2xl font-semibold text-charcoal">Special</h3>
+                <h3 className="text-2xl font-bold text-charcoal">Special</h3>
                 <div className="mt-4">
                   <DishGrid dishes={PLATTER_MENU.specials} getDishPrice={getDishPrice} loading={loadingFoods} />
                 </div>
               </div>
 
               <div>
-                <h3 className="font-display text-2xl font-semibold text-charcoal">Sides & Desserts</h3>
+                <h3 className="text-2xl font-bold text-charcoal">Sides & Desserts</h3>
                 <div className="mt-5 space-y-6">
                   {Object.entries(sidesBySub).map(([sub, dishes]) => (
                     <div key={sub}>
@@ -215,13 +215,13 @@ export default function MenusPage() {
 
               <div className="grid gap-8 sm:grid-cols-2">
                 <div>
-                  <h3 className="font-display text-2xl font-semibold text-charcoal">Drinks</h3>
+                  <h3 className="text-2xl font-bold text-charcoal">Drinks</h3>
                   <div className="mt-4">
                     <DishGrid dishes={PLATTER_MENU.drinks} getDishPrice={getDishPrice} loading={loadingFoods} />
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-display text-2xl font-semibold text-charcoal">Fresh Fruit</h3>
+                  <h3 className="text-2xl font-bold text-charcoal">Fresh Fruit</h3>
                   <div className="mt-4">
                     <DishGrid dishes={PLATTER_MENU.fruits} getDishPrice={getDishPrice} loading={loadingFoods} />
                   </div>

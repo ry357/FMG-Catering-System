@@ -254,9 +254,9 @@ export default function MenuSection({ initialPackage = null }) {
 
         {hasValidInputs && !packageMode && !serviceMode && category === 'drop-off' && (
           <div className="mt-10 rounded-2xl border border-gold-200 bg-white p-6 shadow-card md:p-8" aria-live="polite">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Drop-off</p>
-            <h3 className="mt-1 font-display text-2xl font-semibold text-charcoal">Build your own platter order</h3>
-            <p className="mt-2 text-charcoal-muted">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-gold-600">Drop-off</p>
+            <h3 className="mt-1 text-2xl font-bold text-charcoal">Build your own platter order</h3>
+            <p className="mt-2 text-sm font-normal text-charcoal-muted">
               Tick off the dishes you want — mains from ₱1,300 per platter, sides from
               ₱500, drinks at ₱200/jar, fresh fruit at ₱300. With chafer: mains ₱1,500, sides ₱600.
             </p>
@@ -266,21 +266,21 @@ export default function MenuSection({ initialPackage = null }) {
 
         {packageMode && (
           <section id="menu-customize" className="mt-12 rounded-2xl border border-gold-200 bg-white p-6 shadow-card md:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">Ready to book</p>
-            <h3 className="mt-2 font-display text-2xl font-semibold text-charcoal">{initialPackage.name}</h3>
-            <p className="mt-2 text-charcoal-muted">For {guests || '—'} guests · {formatCurrency(packageTotal)} estimated total</p>
-            <ul className="mt-5 space-y-2 text-sm text-charcoal-light">{initialPackage.features.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-600">✓</span><span>{item}</span></li>)}</ul>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-gold-600">Ready to book</p>
+            <h3 className="mt-2 text-2xl font-bold text-charcoal">{initialPackage.name}</h3>
+            <p className="mt-2 text-sm font-normal text-charcoal-muted">For {guests || '—'} guests · {formatCurrency(packageTotal)} estimated total</p>
+            <ul className="mt-5 space-y-2 text-sm font-normal text-charcoal-light">{initialPackage.features.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-600 font-semibold">✓</span><span>{item}</span></li>)}</ul>
             <Button className="mt-6" disabled={!hasValidInputs} onClick={continueToBooking}>Continue to Booking</Button>
           </section>
         )}
 
         {!packageMode && selectedOffer && (
           <section id="menu-customize" className="mt-12 rounded-2xl border border-gold-200 bg-white p-6 shadow-card md:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-600">{activeCategory?.label || tierLabel(selectedOffer.tier)} · selected menu set</p>
-            <h3 className="mt-2 font-display text-2xl font-semibold text-charcoal">{selectedOffer.name}</h3>
-            <p className="mt-2 text-charcoal-muted">{formatCurrency(selectedOffer.pricePerPax)} per pax · {formatCurrency(selectedOffer.pricePerPax * guests)} for {guests} guests</p>
-            <ul className="mt-5 space-y-2 text-sm text-charcoal-light">{selectedOffer.includes.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-600">✓</span><span>{item}</span></li>)}</ul>
-            <p className="mt-5 text-sm text-charcoal-muted">You pick appetizers, mains, and add-ons next.</p>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-gold-600">{activeCategory?.label || tierLabel(selectedOffer.tier)} · selected menu set</p>
+            <h3 className="mt-2 text-2xl font-bold text-charcoal">{selectedOffer.name}</h3>
+            <p className="mt-2 text-sm font-normal text-charcoal-muted">{formatCurrency(selectedOffer.pricePerPax)} per pax · {formatCurrency(selectedOffer.pricePerPax * guests)} for {guests} guests</p>
+            <ul className="mt-5 space-y-2 text-sm font-normal text-charcoal-light">{selectedOffer.includes.map((item) => <li key={item} className="flex gap-2"><span className="text-gold-600 font-semibold">✓</span><span>{item}</span></li>)}</ul>
+            <p className="mt-5 text-sm font-normal text-charcoal-muted">You pick appetizers, mains, and add-ons next.</p>
             <Button className="mt-6" onClick={continueToBooking}>Continue to Booking</Button>
           </section>
         )}

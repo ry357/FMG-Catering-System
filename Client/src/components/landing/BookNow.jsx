@@ -825,7 +825,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                             onClick={() => chooseCategory(c.id)}
                             className={`rounded-xl border-2 p-5 text-left transition-all ${active ? 'border-gold-400 bg-gold-50' : 'border-gray-200 hover:border-gold-300'}`}
                           >
-                            <div className="font-display text-lg font-semibold text-charcoal">{c.shortLabel}</div>
+                            <div className="text-lg font-bold text-charcoal">{c.shortLabel}</div>
                           </button>
                         );
                       })}
@@ -844,7 +844,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                   {category === 'natural' && !packageBooking && (
                     <>
                       <fieldset>
-                        <legend className="block text-sm font-semibold text-charcoal mb-3">
+                        <legend className="block text-sm font-bold text-charcoal mb-3">
                           Choose your service tier <span className="text-gold-600">*</span>
                         </legend>
                         <div className="grid sm:grid-cols-2 gap-4">
@@ -857,8 +857,8 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                                 onClick={() => chooseTier(t.id)}
                                 className={`rounded-xl border-2 p-4 text-left transition-all ${active ? 'border-gold-400 bg-gold-50' : 'border-gray-200 hover:border-gold-300'}`}
                               >
-                                <div className="font-semibold text-charcoal">{t.label}</div>
-                                <p className="mt-1 text-xs leading-5 text-charcoal-muted">{t.description}</p>
+                                <div className="font-bold text-charcoal">{t.label}</div>
+                                <p className="mt-1 text-xs font-normal leading-5 text-charcoal-muted">{t.description}</p>
                               </button>
                             );
                           })}
@@ -869,7 +869,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                       {tier && (
                         <fieldset>
                           <div className="flex items-center justify-between mb-3">
-                            <legend className="block text-sm font-semibold text-charcoal">
+                            <legend className="block text-sm font-bold text-charcoal">
                               Choose your {tier} menu set <span className="text-xs font-normal text-charcoal-muted">(optional)</span>
                             </legend>
                             {selectedOffer && (
@@ -900,10 +900,10 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                                   className={`rounded-xl border-2 p-4 text-left transition-all ${active ? 'border-gold-400 bg-gold-50 ring-2 ring-gold-400/40' : 'border-gray-200 hover:border-gold-300'}`}
                                 >
                                   <div className="flex items-center justify-between gap-2">
-                                    <span className="font-semibold text-charcoal">{offer.name}</span>
-                                    <span className="font-display text-gold-600 font-bold">{formatCurrency(offer.pricePerPax)}/pax</span>
+                                    <span className="font-bold text-charcoal">{offer.name}</span>
+                                    <span className="text-gold-600 font-bold text-sm sm:text-base">{formatCurrency(offer.pricePerPax)}/pax</span>
                                   </div>
-                                  <ul className="mt-2 space-y-1 text-xs text-charcoal-muted">
+                                  <ul className="mt-2 space-y-1 text-xs font-normal text-charcoal-muted">
                                     {offer.includes.map((item) => (
                                       <li key={item} className="flex gap-1.5">
                                         <span className="text-gold-600">✓</span>{item}
@@ -914,7 +914,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                               );
                             })}
                           </div>
-                          <p className="mt-3 text-xs text-charcoal-muted">
+                          <p className="mt-3 text-xs font-normal text-charcoal-muted">
                             Choose a set for bundled per-pax pricing with included dishes, or leave unselected to customize dishes à la carte.
                           </p>
                           {errors.offer && <p className="mt-2 text-sm text-red-600" role="alert">{errors.offer}</p>}
@@ -952,16 +952,16 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
                   {packageBooking && (
                     <div className="rounded-xl border border-gold-200 bg-gold-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">Selected package</p>
-                      <p className="mt-1 font-display text-xl font-semibold text-charcoal">{packageName}</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold-700">Selected package</p>
+                      <p className="mt-1 text-xl font-bold text-charcoal">{packageName}</p>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-semibold text-charcoal mb-3">
+                    <label className="block text-sm font-bold text-charcoal mb-3">
                       Food requests or dietary notes <span className="font-normal text-charcoal-muted">(optional)</span>
                     </label>
-                    <textarea id="food-notes" value={menuNotes} onChange={(event) => setMenuNotes(event.target.value)} rows="3" maxLength="500" className="mt-1 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20" />
+                    <textarea id="food-notes" value={menuNotes} onChange={(event) => setMenuNotes(event.target.value)} rows="3" maxLength="500" className="mt-1 w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-charcoal focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20 font-normal" />
                   </div>
 
                   <div className="flex flex-wrap gap-3">
@@ -981,16 +981,16 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                 <form onSubmit={handleContinueToFood} className="space-y-5" noValidate>
                   {!packageBooking && (
                     <div className="rounded-xl border border-gold-200 bg-gold-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-700">{isDropOff ? 'Your drop-off order' : 'Your tier & menu set'}</p>
-                      <p className="mt-1 font-display text-xl font-semibold text-charcoal">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold-700">{isDropOff ? 'Your drop-off order' : 'Your tier & menu set'}</p>
+                      <p className="mt-1 text-xl font-bold text-charcoal">
                         {isDropOff ? 'Custom platter order' : selectedOffer?.name || 'FMG custom menu'}
                       </p>
                       {isDropOff ? (
-                        <p className="mt-1 text-sm text-charcoal-muted">
+                        <p className="mt-1 text-sm font-normal text-charcoal-muted">
                           {includeChafer ? 'Chafer dish included' : 'No chafer'} · you will pick your dishes in the next step.
                         </p>
                       ) : selectedOffer && (
-                        <p className="mt-1 text-sm text-charcoal-muted">
+                        <p className="mt-1 text-sm font-normal text-charcoal-muted">
                           {formatCurrency(selectedOffer.pricePerPax)} per pax · {formatCurrency(selectedOffer.pricePerPax * (Number(form.numberOfGuests) || 0))} for {form.numberOfGuests || '—'} guests
                         </p>
                       )}
@@ -1140,10 +1140,10 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                 <form onSubmit={handleContinueToPayment} className="space-y-7" noValidate>
                   <div className="rounded-xl border border-gray-300 bg-gray-50 p-4">
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-black">Your menu</p>
-                    <p className="mt-1 font-display text-2xl font-bold text-black">
+                    <p className="mt-1 text-2xl font-bold text-black">
                       {isDropOff ? 'Custom platter order' : selectedOffer?.name || packageName}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-black">
+                    <p className="mt-1 text-sm font-normal text-charcoal-muted">
                       {isDropOff
                         ? `${platterItemCount} item(s) selected · ${includeChafer ? 'with chafer' : 'no chafer'} · ${formatCurrency(bookingTotal)} total`
                         : `${form.numberOfGuests} guests · ${formatCurrency(bookingTotal)} estimated total`}
@@ -1314,7 +1314,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
             <aside className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-6 lg:sticky lg:top-24 self-start">
               {(step === 'menu' || step === 'details' || step === 'food' || step === 'payment') && (
                 <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                  <h3 className="font-display text-xl font-semibold text-white">Your Menu Plan</h3>
+                  <h3 className="text-xl font-bold text-white">Your Menu Plan</h3>
                   <dl className="mt-5 space-y-3 text-sm">
                     <div className="flex justify-between gap-4"><dt className="text-white/50">Type</dt><dd className="font-medium text-white text-right">{isDropOff ? 'Drop-Off' : 'Full Service'}</dd></div>
                     {!isDropOff && <div className="flex justify-between gap-4"><dt className="text-white/50">Tier</dt><dd className="font-medium text-white text-right">{selectedOffer?.tier ? MENU_TIERS.find((t) => t.id === selectedOffer.tier)?.label : (tier ? MENU_TIERS.find((t) => t.id === tier)?.label : '—')}</dd></div>}
