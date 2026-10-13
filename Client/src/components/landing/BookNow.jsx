@@ -1244,55 +1244,6 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     </div>
                   </div>
 
-                  {/* Terms & Conditions Agreement */}
-                  <div className="rounded-2xl border border-gold-200/90 bg-gradient-to-br from-gold-50/50 via-white to-gold-50/30 p-4 sm:p-5 shadow-sm">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gold-500 text-white text-sm font-bold shadow-sm flex-shrink-0">
-                          §
-                        </span>
-                        <div>
-                          <h4 className="font-semibold text-charcoal text-sm">Terms &amp; Conditions Agreement</h4>
-                          <p className="text-xs text-charcoal-muted">
-                            {agreedToTerms
-                              ? '✓ You have agreed to the FMG Terms & Conditions and Cancellation Policy'
-                              : 'Review and accept our policy before completing payment'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowTermsModal(true)}
-                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-gold-800 bg-gold-100/70 hover:bg-gold-200/80 border border-gold-300/80 transition-all shadow-2xs self-start sm:self-auto"
-                      >
-                        <span>📄</span>
-                        <span>{agreedToTerms ? 'View Accepted Terms' : 'Review Terms & Conditions'}</span>
-                      </button>
-                    </div>
-
-                    <label className="flex items-start gap-3 pt-3 mt-3 border-t border-gold-200/60 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={agreedToTerms}
-                        onChange={(e) => setAgreedToTerms(e.target.checked)}
-                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gold-600 focus:ring-gold-500 accent-gold-600 cursor-pointer"
-                        id="agree-to-terms-checkbox"
-                      />
-                      <span className="text-xs sm:text-sm text-charcoal leading-snug">
-                        I confirm that I have read, understood, and agree to the{' '}
-                        <button
-                          type="button"
-                          onClick={() => setShowTermsModal(true)}
-                          className="font-semibold text-gold-700 underline decoration-gold-400 underline-offset-2 hover:text-gold-900 inline"
-                        >
-                          FMG Catering Terms &amp; Conditions
-                        </button>{' '}
-                        and Cancellation Policy.
-                      </span>
-                    </label>
-                  </div>
-
                   {noPaymentConfigured ? (
                     <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
                       <p className="font-semibold">Payment provider not configured</p>
@@ -1305,7 +1256,18 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                     <>
                       <PaymentMethodSelector
                         selected={paymentMethod}
-                        onSelect={setPaymentMethod}
+                        onSelect={(methodId) => {
+                          if (methodId === 'gcash') {
+                            if (!agreedToTerms) {
+                              setShowTermsModal(true);
+                              setPendingPaymentAction(() => () => setPaymentMethod('gcash'));
+                            } else {
+                              setPaymentMethod('gcash');
+                            }
+                          } else {
+                            setPaymentMethod(methodId);
+                          }
+                        }}
                         gcashEnabled={paymentConfig.gcashEnabled}
                       />
 
