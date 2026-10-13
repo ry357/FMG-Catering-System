@@ -45,7 +45,7 @@ export const validateBooking = [
   body('event_type')
     .trim()
     .notEmpty().withMessage('Event type is required')
-    .isIn(['Wedding', 'Birthday', 'Corporate', 'Anniversary', 'Gala', 'Other', 'wedding', 'birthday', 'corporate', 'anniversary', 'gala', 'other']).withMessage('Invalid event type'),
+    .isLength({ min: 2, max: 100 }).withMessage('Event type must be between 2 and 100 characters'),
   body('event_date')
     .notEmpty().withMessage('Event date is required')
     .isISO8601().withMessage('Invalid date format'),

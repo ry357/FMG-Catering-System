@@ -385,6 +385,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [pendingPaymentAction, setPendingPaymentAction] = useState(null);
+  const [customEventType, setCustomEventType] = useState('');
 
   const packageBooking = Boolean(form.preferredPackageId);
   const offerId = selectedOffer?.id || null;
@@ -419,7 +420,16 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
         const rep = JSON.parse(replicateRaw);
         if (rep.replicate) {
           if (rep.bookingCategory) setCategory(rep.bookingCategory);
-          if (rep.eventType) setForm((prev) => ({ ...prev, eventType: rep.eventType }));
+          if (rep.eventType) {
+            const isPredefined = EVENT_TYPES.includes(rep.eventType);
+            if (isPredefined) {
+              setForm((prev) => ({ ...prev, eventType: rep.eventType }));
+              setCustomEventType('');
+            } else {
+              setForm((prev) => ({ ...prev, eventType: 'Other' }));
+              setCustomEventType(rep.eventType);
+            }
+          }
           if (rep.numberOfGuests) setForm((prev) => ({ ...prev, numberOfGuests: String(rep.numberOfGuests) }));
           if (rep.preferredPackageId) {
             setForm((prev) => ({
@@ -645,13 +655,24 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     setStep('details');
   };
 
+  const effectiveEventType = form.eventType === 'Other' && customEventType.trim()
+    ? customEventType.trim()
+    : form.eventType;
+
   const handleContinueToFood = (e) => {
     e.preventDefault();
-    const validationErrors = validateBookingForm(form, {
+    const validationForm = {
+      ...form,
+      eventType: effectiveEventType,
+    };
+    const validationErrors = validateBookingForm(validationForm, {
       requireBudget: false,
       requireGuests: !isDropOff,
       requireEventType: !isDropOff,
     });
+    if (!isDropOff && form.eventType === 'Other' && !customEventType.trim()) {
+      validationErrors.customEventType = 'Please specify your event type';
+    }
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -693,6 +714,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
 
   const bookingData = {
     ...form,
+    eventType: effectiveEventType,
     contactNumber: form.contactNumber,
     bookingCategory: category,
     offerId,
@@ -702,7 +724,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   };
 
   const handlePaymentSuccess = (result) => {
-    sessionStorage.setItem('fmg_completed_booking', JSON.stringify({ form, ...result, customer }));
+    sessionStorage.setItem('fmg_completed_booking', JSON.stringify({ form: { ...form, eventType: effectiveEventType }, ...result, customer }));
 
     setPaymentResult(result);
     setStep('confirmation');
@@ -722,6 +744,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     setPlatters(INITIAL_PLATTERS);
     setIncludeChafer(false);
     setMenuNotes('');
+    setCustomEventType('');
     setStep('category');
     setPaymentMethod(null);
     setPaymentType('full');
@@ -1005,7 +1028,20 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                   <div className="grid sm:grid-cols-2 gap-5">
                     {!isDropOff && (
                       <FormField label="Event Type" error={errors.eventType} required>
-                        <select name="eventType" value={form.eventType} onChange={handleChange} className={inputClass}>
+                        <select
+                          name="eventType"
+                          value={form.eventType}
+                          onChange={(e) => {
+                            handleChange(e);
+                            if (e.target.value !== 'Other') {
+                              setCustomEventType('');
+                              if (errors.customEventType) {
+                                setErrors((prev) => ({ ...prev, customEventType: undefined }));
+                              }
+                            }
+                          }}
+                          className={inputClass}
+                        >
                           <option value="">Select event type</option>
                           {EVENT_TYPES.map((type) => (
                             <option key={type} value={type}>{type}</option>
@@ -1017,6 +1053,26 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
                       <input type="date" name="eventDate" value={form.eventDate} onChange={handleChange} min={minDate} className={inputClass} />
                     </FormField>
                   </div>
+
+                  {!isDropOff && form.eventType === 'Other' && (
+                    <FormField label="Please specify your event" error={errors.customEventType} required>
+                      <input
+                        type="text"
+                        name="customEventType"
+                        value={customEventType}
+                        onChange={(e) => {
+                          setCustomEventType(e.target.value);
+                          if (errors.customEventType) {
+                            setErrors((prev) => ({ ...prev, customEventType: undefined }));
+                          }
+                        }}
+                        placeholder="e.g. Christening, Graduation, Reunion, Product Launch"
+                        className={inputClass}
+                        maxLength={100}
+                        autoFocus
+                      />
+                    </FormField>
+                  )}
 
                   <div className="grid sm:grid-cols-2 gap-5">
                     {!isDropOff && (
@@ -1124,7 +1180,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
               {step === 'payment' && (
                 <div className="space-y-6">
                   <PaymentSummary
-                    form={form}
+                    form={{ ...form, eventType: effectiveEventType }}
                     bookingTotal={bookingTotal}
                     depositAmount={depositAmount}
                     bookingRef={bookingRef}
