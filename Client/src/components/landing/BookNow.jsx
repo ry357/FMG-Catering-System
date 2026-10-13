@@ -1347,7 +1347,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
               </div>
             </div>
 
-            <aside className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-6">
+            <aside className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-6 lg:sticky lg:top-24 self-start">
               {(step === 'menu' || step === 'details' || step === 'food' || step === 'payment') && (
                 <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   <h3 className="font-display text-xl font-semibold text-white">Your Menu Plan</h3>
