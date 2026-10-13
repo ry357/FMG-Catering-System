@@ -32,6 +32,7 @@ export default function CustomerProfilePage() {
 
   // Address modal/form state
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
   const [newAddress, setNewAddress] = useState({
     label: '',
     address: '',
@@ -122,8 +123,8 @@ export default function CustomerProfilePage() {
     }
   };
 
-  // ── Add Delivery Address ─────────────────────────────────────
-  const handleAddAddress = async (e) => {
+  // ── Add or Update Delivery Address ──────────────────────────
+  const handleSaveAddress = async (e) => {
     e.preventDefault();
     if (!newAddress.address.trim()) {
       setFeedback({ type: 'error', message: 'Address location is required.' });
@@ -133,25 +134,52 @@ export default function CustomerProfilePage() {
     setSaving(true);
     setFeedback(null);
     try {
-      const res = await customerService.addAddress({
-        label: newAddress.label.trim() || 'Venue',
-        address: newAddress.address.trim(),
-        contactPerson: newAddress.contactPerson.trim() || fullName,
-        contactPhone: newAddress.contactPhone.trim() || phone,
-        isDefault: newAddress.isDefault,
-      });
+      let res;
+      if (editingAddressId) {
+        res = await customerService.updateAddress(editingAddressId, {
+          label: newAddress.label.trim() || 'Venue',
+          address: newAddress.address.trim(),
+          contactPerson: newAddress.contactPerson.trim() || fullName,
+          contactPhone: newAddress.contactPhone.trim() || phone,
+          isDefault: newAddress.isDefault,
+        });
+      } else {
+        res = await customerService.addAddress({
+          label: newAddress.label.trim() || 'Venue',
+          address: newAddress.address.trim(),
+          contactPerson: newAddress.contactPerson.trim() || fullName,
+          contactPhone: newAddress.contactPhone.trim() || phone,
+          isDefault: newAddress.isDefault,
+        });
+      }
 
       if (res.success) {
         setSavedAddresses(res.saved_addresses);
         setShowAddressForm(false);
+        setEditingAddressId(null);
         setNewAddress({ label: '', address: '', contactPerson: '', contactPhone: '', isDefault: false });
-        setFeedback({ type: 'success', message: 'New delivery address added successfully!' });
+        setFeedback({
+          type: 'success',
+          message: editingAddressId ? 'Delivery address updated successfully!' : 'New delivery address added successfully!',
+        });
       }
     } catch (err) {
       setFeedback({ type: 'error', message: err.response?.data?.error || 'Failed to save address.' });
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleStartEditAddress = (addr) => {
+    setEditingAddressId(addr.id);
+    setNewAddress({
+      label: addr.label || '',
+      address: addr.address || '',
+      contactPerson: addr.contactPerson || '',
+      contactPhone: addr.contactPhone || '',
+      isDefault: Boolean(addr.isDefault),
+    });
+    setShowAddressForm(true);
   };
 
   // ── Delete Address ───────────────────────────────────────────
@@ -530,22 +558,36 @@ export default function CustomerProfilePage() {
 
                       <Button
                         size="sm"
-                        onClick={() => setShowAddressForm(!showAddressForm)}
+                        onClick={() => {
+                          if (showAddressForm) {
+                            setShowAddressForm(false);
+                            setEditingAddressId(null);
+                          } else {
+                            setEditingAddressId(null);
+                            setNewAddress({ label: '', address: '', contactPerson: '', contactPhone: '', isDefault: false });
+                            setShowAddressForm(true);
+                          }
+                        }}
                         className="!rounded-xl shrink-0"
                       >
                         {showAddressForm ? 'Cancel' : '+ Add Address'}
                       </Button>
                     </div>
 
-                    {/* New Address Form Modal/Panel */}
+                    {/* New/Edit Address Form Modal/Panel */}
                     {showAddressForm && (
                       <form
-                        onSubmit={handleAddAddress}
+                        onSubmit={handleSaveAddress}
                         className="rounded-3xl bg-white p-6 shadow-sm border border-gold-200 space-y-4"
                       >
-                        <h4 className="font-display text-base font-bold text-charcoal">
-                          Add New Delivery Address
-                        </h4>
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                          <h4 className="font-display text-base font-bold text-charcoal">
+                            {editingAddressId ? 'Edit Delivery Address' : 'Add New Delivery Address'}
+                          </h4>
+                          <span className="text-xs text-charcoal-muted">
+                            {editingAddressId ? 'Update details below' : 'Save for fast booking autofill'}
+                          </span>
+                        </div>
 
                         <div className="grid sm:grid-cols-2 gap-4">
                           <div>
@@ -688,8 +730,16 @@ export default function CustomerProfilePage() {
                               </div>
                             )}
 
-                            {!addr.isDefault && (
-                              <div className="mt-4 pt-2 border-t border-gray-100 flex justify-end">
+                            <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
+                              <button
+                                type="button"
+                                onClick={() => handleStartEditAddress(addr)}
+                                className="inline-flex items-center gap-1 text-xs font-semibold text-charcoal hover:text-gold-600 transition-colors"
+                              >
+                                ✏️ Edit Details
+                              </button>
+
+                              {!addr.isDefault && (
                                 <button
                                   type="button"
                                   onClick={() => handleSetDefaultAddress(addr.id)}
@@ -697,8 +747,8 @@ export default function CustomerProfilePage() {
                                 >
                                   Make Default
                                 </button>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>

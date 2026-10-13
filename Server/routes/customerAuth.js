@@ -423,6 +423,54 @@ router.post('/addresses', authenticateCustomer, async (req, res) => {
   }
 });
 
+// Update existing saved address
+router.put('/addresses/:addressId', authenticateCustomer, async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const { label, address, contactPerson, contactPhone, isDefault } = req.body;
+    if (!address || !address.trim()) {
+      return res.status(400).json({ success: false, error: 'Address is required' });
+    }
+
+    const customerId = req.customer.id;
+    let addresses = parseSavedAddresses(req.customer.saved_addresses);
+
+    const index = addresses.findIndex((a) => a.id === addressId);
+    if (index === -1) {
+      return res.status(404).json({ success: false, error: 'Address not found' });
+    }
+
+    if (isDefault) {
+      addresses = addresses.map((a) => ({ ...a, isDefault: false }));
+    }
+
+    addresses[index] = {
+      ...addresses[index],
+      label: label?.trim() || addresses[index].label,
+      address: address.trim(),
+      contactPerson: contactPerson !== undefined ? contactPerson.trim() : addresses[index].contactPerson,
+      contactPhone: contactPhone !== undefined ? contactPhone.trim() : addresses[index].contactPhone,
+      isDefault: isDefault !== undefined ? Boolean(isDefault) : addresses[index].isDefault,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await execute('UPDATE Customers SET saved_addresses = ? WHERE id = ?', [
+      JSON.stringify(addresses),
+      customerId,
+    ]);
+
+    const updated = await queryOne('SELECT * FROM Customers WHERE id = ?', [customerId]);
+    res.json({
+      success: true,
+      saved_addresses: parseSavedAddresses(updated.saved_addresses),
+      message: 'Address updated successfully',
+    });
+  } catch (error) {
+    console.error('Update address error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update address' });
+  }
+});
+
 // Delete saved address
 router.delete('/addresses/:addressId', authenticateCustomer, async (req, res) => {
   try {

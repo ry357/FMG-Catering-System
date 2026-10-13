@@ -38,6 +38,14 @@ export const customerService = {
     return res.data;
   },
 
+  // Update existing saved address
+  async updateAddress(addressId, addressData) {
+    const res = await axios.put(`/api/customer/addresses/${addressId}`, addressData, {
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  },
+
   // Delete saved address
   async deleteAddress(addressId) {
     const res = await axios.delete(`/api/customer/addresses/${addressId}`, {
