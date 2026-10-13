@@ -42,7 +42,17 @@ export default function CustomerProfilePage() {
   });
 
   // Invoice modal
-  const [selectedBookingForInvoice, setSelectedBookingForInvoice] = useState(null);
+  // Pre-seed state from current session so data is visible immediately while revalidating
+  useEffect(() => {
+    if (customer) {
+      if (!fullName) setFullName(customer.name || '');
+      if (!phone) setPhone(customer.phone || '');
+      if (!address) setAddress(customer.address || '');
+      if (Array.isArray(customer.saved_addresses) && customer.saved_addresses.length > 0 && savedAddresses.length === 0) {
+        setSavedAddresses(customer.saved_addresses);
+      }
+    }
+  }, [customer]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -58,12 +68,11 @@ export default function CustomerProfilePage() {
 
   const loadProfileAndData = async () => {
     setLoading(true);
-    try {
-      const [profileRes, bookingsRes] = await Promise.all([
-        customerService.getProfile(),
-        customerService.getBookings(),
-      ]);
+    let profileFetched = false;
 
+    // 1. Fetch Profile
+    try {
+      const profileRes = await customerService.getProfile();
       if (profileRes.success && profileRes.customer) {
         const c = profileRes.customer;
         setFullName(c.name || '');
@@ -71,14 +80,25 @@ export default function CustomerProfilePage() {
         setAddress(c.address || '');
         setSavedAddresses(c.saved_addresses || []);
         updateCustomerState(c);
+        profileFetched = true;
       }
+    } catch (err) {
+      console.warn('Profile fetch note:', err.response?.status, err.message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        // Token expired; gently sign customer out so they can click one button to sign back in
+        logoutCustomer();
+        return;
+      }
+    }
 
+    // 2. Fetch Bookings independently so a bookings issue never blocks profile details
+    try {
+      const bookingsRes = await customerService.getBookings();
       if (bookingsRes.success) {
         setBookings(bookingsRes.bookings || []);
       }
     } catch (err) {
-      console.error('Failed to load profile data:', err);
-      setFeedback({ type: 'error', message: 'Failed to load profile. Please refresh.' });
+      console.warn('Bookings fetch note:', err.message);
     } finally {
       setLoading(false);
     }
