@@ -177,35 +177,7 @@ router.post('/admin-verify', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Access denied for this Google account.' });
     }
 
-    if (user.role === 'staff') {
-      const token = jwt.sign(
-        { id: user.id, username: user.username, role: user.role },
-        JWT_SECRET,
-        { expiresIn: '8h' }
-      );
-
-      await logActivity({
-        action: 'user_login',
-        category: 'auth',
-        description: `Staff "${user.username}" signed in via Google`,
-        performed_by: user.username,
-        details: { userId: user.id, role: user.role, email: user.email },
-      });
-
-      return res.json({
-        success: true,
-        token,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          full_name: user.full_name,
-        },
-      });
-    }
-
-    // Generate and send OTP for admin
+    // Generate and send OTP for authorized staff (Booking Manager) or admin
     const crypto = await import('crypto');
     const nodemailer = await import('nodemailer');
     
@@ -223,7 +195,7 @@ router.post('/admin-verify', async (req, res) => {
       [otpId, user.id, otpHash, expiresAt]
     );
 
-    // Send email (Using existing configuration style)
+    // Send email
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT) || 587,
@@ -235,15 +207,19 @@ router.post('/admin-verify', async (req, res) => {
       tls: { rejectUnauthorized: false },
     });
 
-    const ADMIN_EMAIL = 'sasumanryan74@gmail.com';
+    const targetEmail = user.role === 'admin'
+      ? (process.env.ADMIN_EMAIL || user.email || 'sasumanryan74@gmail.com')
+      : user.email;
+    const title = user.role === 'admin' ? 'Admin' : 'Booking Manager';
     
     await transporter.sendMail({
       from: process.env.EMAIL_FROM || 'FMG Catering Services <fmgcateringservices@gmail.com>',
-      to: ADMIN_EMAIL,
-      subject: 'FMG Catering — Admin Login OTP (Google Auth)',
+      to: targetEmail,
+      subject: `FMG Catering — ${title} Login OTP`,
+      text: `Your FMG Catering ${title.toLowerCase()} login OTP is: ${otp}\n\nThis code expires in 5 minutes.\nIf you did not request this, please ignore this email.`,
       html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;">
         <h2 style="color:#B8921F;">FMG Catering</h2>
-        <p>Your admin login verification code is:</p>
+        <p>Your ${title.toLowerCase()} login verification code is:</p>
         <div style="font-size:32px;font-weight:bold;color:#1C1C1C;letter-spacing:8px;margin:20px 0;">${otp}</div>
         <p>This code expires in 5 minutes.</p>
         <p>If you did not request this, please ignore this email.</p>
@@ -254,7 +230,7 @@ router.post('/admin-verify', async (req, res) => {
       success: true,
       requiresOtp: true,
       otpId,
-      message: 'OTP required for admin login',
+      message: `OTP required for ${title.toLowerCase()} login`,
       username: user.username,
     });
 

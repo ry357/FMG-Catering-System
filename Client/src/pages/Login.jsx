@@ -11,6 +11,9 @@ const Login = () => {
   const [requiresOtp, setRequiresOtp] = useState(false);
   const [otpId, setOtpId] = useState('');
   const [otp, setOtp] = useState('');
+  const [otpUsername, setOtpUsername] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const { login, verifyOTP, sendOTP, adminGoogleLogin } = useAuth();
   const navigate = useNavigate();
@@ -30,11 +33,13 @@ const Login = () => {
   const handleGoogleCredential = async (credential) => {
     setBusy(true);
     setError('');
+    setResendMessage('');
     try {
       const data = await adminGoogleLogin(credential);
       if (data.requiresOtp) {
         setRequiresOtp(true);
         setOtpId(data.otpId);
+        setOtpUsername(data.username || '');
         // OTP was already sent by the server via /admin-verify
       } else if (data.user) {
         handleSuccessfulLogin(data.user);
@@ -79,17 +84,21 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setResendMessage('');
     setBusy(true);
     try {
       if (requiresOtp) {
         const data = await verifyOTP(otpId, otp);
-        handleSuccessfulLogin(data.user);
+        if (data.user) {
+          handleSuccessfulLogin(data.user);
+        }
       } else {
         const data = await login(username, password);
         if (data.requiresOtp) {
           setRequiresOtp(true);
           setOtpId(data.otpId);
-        } else {
+          setOtpUsername(data.username || username);
+        } else if (data.user) {
           handleSuccessfulLogin(data.user);
         }
       }
@@ -97,6 +106,22 @@ const Login = () => {
       setError(err.response?.data?.error || err.response?.data?.message || 'Login failed');
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!otpUsername || resending) return;
+    setResending(true);
+    setResendMessage('');
+    setError('');
+    try {
+      const res = await sendOTP(otpUsername);
+      if (res?.otpId) setOtpId(res.otpId);
+      setResendMessage('A new 6-digit verification code has been sent to your email.');
+    } catch (err) {
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to resend code');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -127,11 +152,11 @@ const Login = () => {
               FMG
             </div>
             <h2 className="mt-4 font-display text-3xl font-semibold text-white">
-              {requiresOtp ? 'Admin Verification' : 'Booking Manager & Admin Portal'}
+              {requiresOtp ? 'Security Verification' : 'Booking Manager & Admin Portal'}
             </h2>
             <p className="text-sm text-slate-400 mt-1">
               {requiresOtp
-                ? 'An email with a verification code has been sent to the admin address.'
+                ? 'A 6-digit verification code has been sent to your registered email address.'
                 : 'Sign in to manage bookings, sales, reports, and analytics'}
             </p>
           </div>
@@ -168,6 +193,12 @@ const Login = () => {
               </div>
             )}
 
+            {resendMessage && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-4 py-3 rounded-lg text-sm text-center">
+                {resendMessage}
+              </div>
+            )}
+
             {requiresOtp && (
               <button
                 type="submit"
@@ -179,14 +210,29 @@ const Login = () => {
             )}
 
             {requiresOtp && (
-              <div className="text-center mt-4">
+              <div className="flex items-center justify-between text-xs text-slate-400 mt-4">
                 <button
                   type="button"
-                  onClick={() => setRequiresOtp(false)}
-                  className="text-sm text-cyan-400 hover:underline"
+                  onClick={() => {
+                    setRequiresOtp(false);
+                    setOtp('');
+                    setError('');
+                    setResendMessage('');
+                  }}
+                  className="text-cyan-400 hover:underline"
                 >
                   ← Back to Login
                 </button>
+                {otpUsername && (
+                  <button
+                    type="button"
+                    disabled={resending}
+                    onClick={handleResendOtp}
+                    className="text-amber-400 hover:underline disabled:opacity-50"
+                  >
+                    {resending ? 'Sending...' : 'Resend Code'}
+                  </button>
+                )}
               </div>
             )}
           </form>

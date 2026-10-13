@@ -78,17 +78,19 @@ const login = async (username, password) => {
   return response.data;
 };
 
-// TEMP: OTP flow disabled for testing. verifyOTP/sendOTP kept for re-wiring later.
-const verifyOTP = async (otpId, otp) => {
-  const response = await axios.post('/api/auth/otp/verify', { otpId, otp });
-  sessionStorage.setItem('token', response.data.token);
-  setUser(response.data.user);
-  return response.data;
-};
+  const verifyOTP = async (otpId, otp) => {
+    const response = await axios.post('/api/auth/otp/verify', { otpId, otp });
+    if (response.data.token && response.data.user) {
+      sessionStorage.setItem('token', response.data.token);
+      setUser(response.data.user);
+    }
+    return response.data;
+  };
 
-const sendOTP = async (username) => {
-  await axios.post('/api/auth/otp/send', { username });
-};
+  const sendOTP = async (username) => {
+    const response = await axios.post('/api/auth/otp/send', { username });
+    return response.data;
+  };
 
 const loginWithGoogle = useCallback(async (credential) => {
   const response = await googleAuthService.verifyCredential(credential);

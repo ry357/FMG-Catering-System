@@ -37,16 +37,16 @@ function createTransporter() {
   });
 }
 
-async function sendOTP(email, otp) {
+async function sendOTP(email, otp, title = 'Verification') {
   const transporter = createTransporter();
   const mailOptions = {
     from: process.env.EMAIL_FROM || 'FMG Catering Services <fmgcateringservices@gmail.com>',
     to: email,
-    subject: 'FMG Catering — Admin Login OTP',
-    text: `Your FMG Catering admin login OTP is: ${otp}\n\nThis code expires in 5 minutes.\nIf you did not request this, please ignore this email.`,
+    subject: `FMG Catering — ${title} Login OTP`,
+    text: `Your FMG Catering ${title.toLowerCase()} login OTP is: ${otp}\n\nThis code expires in 5 minutes.\nIf you did not request this, please ignore this email.`,
     html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;">
       <h2 style="color:#B8921F;">FMG Catering</h2>
-      <p>Your admin login verification code is:</p>
+      <p>Your ${title.toLowerCase()} login verification code is:</p>
       <div style="font-size:32px;font-weight:bold;color:#1C1C1C;letter-spacing:8px;margin:20px 0;">${otp}</div>
       <p>This code expires in 5 minutes.</p>
       <p>If you did not request this, please ignore this email.</p>
@@ -86,17 +86,23 @@ router.post('/login', validateLogin, async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    if (user.role === 'admin') {
+    // Both Admin and Staff (Booking Manager) require OTP
+    if (user.role === 'admin' || user.role === 'staff') {
       const otp = generateOTP();
       const otpId = crypto.randomUUID();
       await saveOtp({ otpId, userId: user.id, otp });
-      await sendOTP(ADMIN_EMAIL, otp);
+
+      const targetEmail = user.role === 'admin'
+        ? (process.env.ADMIN_EMAIL || user.email || ADMIN_EMAIL)
+        : user.email;
+      const title = user.role === 'admin' ? 'Admin' : 'Booking Manager';
+      await sendOTP(targetEmail, otp, title);
 
       return res.json({
         success: true,
         requiresOtp: true,
         otpId,
-        message: 'OTP required for admin login',
+        message: `OTP required for ${title.toLowerCase()} login`,
         username: user.username,
       });
     }
@@ -110,7 +116,7 @@ router.post('/login', validateLogin, async (req, res) => {
     await logActivity({
       action: 'user_login',
       category: 'auth',
-      description: `Staff "${user.username}" signed in`,
+      description: `User "${user.username}" signed in`,
       performed_by: user.username,
       details: { userId: user.id, role: user.role, email: user.email },
     });
@@ -132,29 +138,34 @@ router.post('/login', validateLogin, async (req, res) => {
   }
 });
 
-// Send OTP (for admin login)
+// Send OTP (for admin and booking manager login)
 router.post('/otp/send', async (req, res) => {
   try {
     const { username } = req.body;
 
     const user = await queryOne(
-      'SELECT id, username, email, password_hash, role FROM Users WHERE username = ?',
-      [username]
+      'SELECT id, username, email, password_hash, role FROM Users WHERE username = ? OR email = ?',
+      [username, username]
     );
 
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Admin only' });
+    if (!user || !['admin', 'staff'].includes(user.role)) {
+      return res.status(403).json({ success: false, error: 'Unauthorized' });
     }
 
     const otp = generateOTP();
     const otpId = crypto.randomUUID();
     await saveOtp({ otpId, userId: user.id, otp });
 
-    await sendOTP(ADMIN_EMAIL, otp);
+    const targetEmail = user.role === 'admin'
+      ? (process.env.ADMIN_EMAIL || user.email || ADMIN_EMAIL)
+      : user.email;
+    const title = user.role === 'admin' ? 'Admin' : 'Booking Manager';
+    await sendOTP(targetEmail, otp, title);
 
     res.json({
       success: true,
-      message: `OTP sent to ${ADMIN_EMAIL}`,
+      otpId,
+      message: `OTP sent to ${targetEmail}`,
     });
   } catch (error) {
     console.error('OTP send error:', error);
@@ -162,7 +173,7 @@ router.post('/otp/send', async (req, res) => {
   }
 });
 
-// Verify OTP and complete admin login
+// Verify OTP and complete login
 router.post('/otp/verify', async (req, res) => {
   try {
     const { otpId, otp } = req.body;
@@ -189,7 +200,7 @@ router.post('/otp/verify', async (req, res) => {
 
     if (hashOTP(otp) !== otpData.otp_hash) {
       await execute('UPDATE OtpSessions SET attempts = ? WHERE id = ?', [newAttempts, otpId]);
-      return res.json({ success: false, message: 'Incorrect OTP. Please try again.' });
+      return res.status(400).json({ success: false, error: 'Incorrect OTP. Please try again.' });
     }
 
     // OTP verified — consume it and create JWT token
@@ -210,10 +221,11 @@ router.post('/otp/verify', async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    const roleLabel = user.role === 'admin' ? 'Admin' : 'Booking Manager';
     await logActivity({
       action: 'user_login',
       category: 'auth',
-      description: `Admin "${user.username}" signed in via OTP`,
+      description: `${roleLabel} "${user.username}" signed in via OTP`,
       performed_by: user.username,
       details: { userId: user.id, role: user.role, email: user.email },
     });
