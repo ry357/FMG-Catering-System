@@ -83,49 +83,6 @@ export default function FoodDishCard({
           </div>
         )}
 
-        {/* Selection Checkbox / Quantity Pill */}
-        {selectable && (
-          <div className="absolute top-2 right-2 z-20">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (disabled) return;
-                if (isSelected) {
-                  if (onSelect) onSelect(dish);
-                  else if (onDecrease) onDecrease();
-                } else {
-                  if (onIncrease) onIncrease();
-                  else if (onSelect) onSelect(dish);
-                }
-              }}
-              title={isSelected ? `Unselect ${dishName}` : `Select ${dishName}`}
-              aria-label={isSelected ? `Unselect ${dishName}` : `Select ${dishName}`}
-              className={`flex items-center justify-center transition-all ${
-                isSelected
-                  ? currentQuantity > 1
-                    ? 'h-6 px-2 rounded-full border border-gold-500 bg-gold-500 text-white shadow-md text-xs font-bold'
-                    : 'h-6 w-6 rounded-full border border-gold-500 bg-gold-500 text-white shadow-md'
-                  : 'h-6 w-6 rounded-full border border-gray-300 bg-white/90 text-transparent hover:border-gold-400 shadow-sm'
-              }`}
-            >
-              {isSelected ? (
-                currentQuantity > 1 ? (
-                  <span>{currentQuantity}×</span>
-                ) : (
-                  <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 20 20">
-                    <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                  </svg>
-                )
-              ) : (
-                <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 20 20">
-                  <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                </svg>
-              )}
-            </button>
-          </div>
-        )}
-
         {/* Category tag / badge */}
         {dish?.sub && (
           <span className="absolute bottom-2 left-2 z-20 rounded-md bg-charcoal/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">

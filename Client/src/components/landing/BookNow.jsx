@@ -219,7 +219,7 @@ function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle, o
           <span className="text-sm sm:text-base font-bold text-black bg-gray-100 px-3 py-1 rounded-full border border-gray-300">
             {selected.length < limit
               ? `${selected.length}/${limit} included in set`
-              : `${limit} included in set${selected.length > limit ? ` · +${selected.length - limit} extra` : ''}`}
+              : `${limit} included in set${selected.length > limit ? ` · +${selected.length - limit} quantity` : ''}`}
           </span>
         ) : (
           <span className="text-sm sm:text-base font-bold text-black bg-gray-100 px-3 py-1 rounded-full border border-gray-300">
@@ -238,9 +238,9 @@ function ChoiceGroup({ title, categoryKey, choices, selected, limit, onToggle, o
           let sublabel;
           if (hasLimit) {
             if (!checked) {
-              sublabel = selected.length < limit ? 'Included in set' : `Extra · +${formatCurrency(price)}`;
+              sublabel = selected.length < limit ? 'Included in set' : `Quantity · +${formatCurrency(price)}`;
             } else if (quantity === 1) {
-              sublabel = isExtra ? `Extra · +${formatCurrency(price)}` : 'Included in set';
+              sublabel = isExtra ? `Quantity · +${formatCurrency(price)}` : 'Included in set';
             } else {
               sublabel = `${quantity} selected${isExtra ? ` · +${formatCurrency(price * (quantity - Math.max(0, limit - (selected.length - quantity))))}` : ''}`;
             }
