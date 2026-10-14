@@ -43,9 +43,12 @@ export default function DashboardCalendar({ role, onBack }) {
         .filter(b => b.status !== 'cancelled') 
         .map(b => {
           const eventDate = new Date(b.event_date);
+          const eventType = (b.booking_category || '').toLowerCase() === 'drop-off' || (b.event_type || '').toLowerCase() === 'drop off' || (b.event_type || '').toLowerCase() === 'drop-off'
+            ? 'Drop Off'
+            : (b.event_type || 'Event');
           return {
             id: b.id,
-            title: `${b.event_type} - ${b.customer_name}`,
+            title: `${eventType} - ${b.customer_name}`,
             start: eventDate, // Assuming event_date is midnight or includes time
             end: new Date(eventDate.getTime() + 4 * 60 * 60 * 1000), // Default 4 hours later
             allDay: false,

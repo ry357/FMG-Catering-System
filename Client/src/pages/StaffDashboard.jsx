@@ -303,9 +303,13 @@ const StaffDashboard = () => {
                             <p className="text-[11px] text-slate-500">{booking.customer_email}</p>
                             <p className="text-[11px] text-slate-500">{booking.customer_phone}</p>
                           </td>
-                          <td className="py-3 px-4 text-slate-300">{booking.event_type}</td>
+                          <td className="py-3 px-4 text-slate-300">
+                            {(booking.booking_category || '').toLowerCase() === 'drop-off' || (booking.event_type || '').toLowerCase() === 'drop off' || (booking.event_type || '').toLowerCase() === 'drop-off'
+                              ? 'Drop Off'
+                              : (booking.event_type || 'N/A')}
+                          </td>
                           <td className="py-3 px-4 text-right text-slate-300 tabular-nums">
-                            {booking.number_of_guests?.toLocaleString()}
+                            {(booking.booking_category || '').toLowerCase() === 'drop-off' ? '—' : (booking.number_of_guests?.toLocaleString() || '—')}
                           </td>
                           <td className="py-3 px-4 text-right font-medium text-cyan-300 tabular-nums">
                             {booking.total_amount ? formatCurrency(booking.total_amount) : (booking.budget ? formatCurrency(booking.budget) : 'N/A')}
@@ -519,7 +523,11 @@ const StaffDashboard = () => {
                         <td className="py-2.5 px-4 whitespace-nowrap">{new Date(sale.sale_date).toLocaleDateString()}</td>
                         <td className="py-2.5 px-4">{sale.customer_name}</td>
                         <td className="py-2.5 px-4">
-                          <p className="text-white font-medium">{sale.event_type}</p>
+                          <p className="text-white font-medium">
+                            {(sale.booking_category || '').toLowerCase() === 'drop-off' || (sale.event_type || '').toLowerCase() === 'drop off' || (sale.event_type || '').toLowerCase() === 'drop-off'
+                              ? 'Drop Off'
+                              : (sale.event_type || 'N/A')}
+                          </p>
                           {sale.booking_ref && (
                             <p className="text-[11px] text-slate-500 font-mono">{sale.booking_ref}</p>
                           )}

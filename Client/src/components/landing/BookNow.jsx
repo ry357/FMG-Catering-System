@@ -386,7 +386,10 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
   const urlCategory = searchParams.get('category');
   const presetCategory = initialMenuBooking?.category || urlCategory || '';
 
-  const [form, setForm] = useState(INITIAL_FORM);
+  const [form, setForm] = useState(() => ({
+    ...INITIAL_FORM,
+    eventType: presetCategory === 'drop-off' ? 'Drop Off' : INITIAL_FORM.eventType,
+  }));
   const [category, setCategory] = useState(presetCategory);
   const [tier, setTier] = useState('');
   const [selectedOffer, setSelectedOffer] = useState(null);
@@ -451,7 +454,10 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
         const rep = JSON.parse(replicateRaw);
         if (rep.replicate) {
           if (rep.bookingCategory) setCategory(rep.bookingCategory);
-          if (rep.eventType) {
+          if (rep.bookingCategory === 'drop-off') {
+            setForm((prev) => ({ ...prev, eventType: 'Drop Off' }));
+            setCustomEventType('');
+          } else if (rep.eventType) {
             const isPredefined = EVENT_TYPES.includes(rep.eventType);
             if (isPredefined) {
               setForm((prev) => ({ ...prev, eventType: rep.eventType }));
@@ -508,6 +514,7 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
       numberOfGuests: plCategory === 'drop-off' ? '' : String(guests ?? ''),
       preferredPackageId: packageId ? String(packageId) : prev.preferredPackageId,
       packageBooking: Boolean(packageId),
+      eventType: plCategory === 'drop-off' ? 'Drop Off' : prev.eventType,
     }));
     if (offerTier && plCategory !== 'drop-off') setTier(offerTier);
     if (offer) setSelectedOffer(offer);
@@ -573,7 +580,11 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     setDropOffSelections(INITIAL_DROP_OFF_SELECTIONS);
     setPlatters(INITIAL_PLATTERS);
     setIncludeChafer(false);
-    setErrors((prev) => ({ ...prev, category: undefined, tier: undefined, offer: undefined, platters: undefined, dropOffSelections: undefined }));
+    if (nextCategory === 'drop-off') {
+      setForm((prev) => ({ ...prev, eventType: 'Drop Off', numberOfGuests: '' }));
+      setCustomEventType('');
+    }
+    setErrors((prev) => ({ ...prev, category: undefined, tier: undefined, offer: undefined, platters: undefined, dropOffSelections: undefined, eventType: undefined, customEventType: undefined }));
   };
 
   const chooseTier = (nextTier) => {
@@ -686,9 +697,11 @@ export default function BookNow({ initialMenuBooking, onBackToPackages }) {
     goToStep('details', 'right');
   };
 
-  const effectiveEventType = form.eventType === 'Other' && customEventType.trim()
-    ? customEventType.trim()
-    : form.eventType;
+  const effectiveEventType = isDropOff
+    ? 'Drop Off'
+    : (form.eventType === 'Other' && customEventType.trim()
+      ? customEventType.trim()
+      : form.eventType);
 
   const handleContinueToFood = (e) => {
     e.preventDefault();

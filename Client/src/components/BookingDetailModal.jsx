@@ -209,8 +209,14 @@ export default function BookingDetailModal({ booking, sale, onClose }) {
               {booking.booking_category === 'drop-off' ? 'Drop-Off Catering' : 'Full Service Catering'}
             </DetailRow>
             <DetailRow label="Event Date"> {new Date(booking.event_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</DetailRow>
-            <DetailRow label="Event Type">{booking.event_type}</DetailRow>
-            <DetailRow label="Number of Guests">{booking.number_of_guests?.toLocaleString()}</DetailRow>
+            <DetailRow label="Event Type">
+              {(booking.booking_category || '').toLowerCase() === 'drop-off' || (booking.event_type || '').toLowerCase() === 'drop off' || (booking.event_type || '').toLowerCase() === 'drop-off'
+                ? 'Drop Off'
+                : (booking.event_type || 'N/A')}
+            </DetailRow>
+            <DetailRow label="Number of Guests">
+              {(booking.booking_category || '').toLowerCase() === 'drop-off' ? '— (Platter Delivery)' : (booking.number_of_guests?.toLocaleString() || '—')}
+            </DetailRow>
             {booking.preferred_package && (
               <DetailRow label="Package">
                 {(() => {

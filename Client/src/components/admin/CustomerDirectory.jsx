@@ -311,9 +311,13 @@ export default function CustomerDirectory() {
                       <li key={b.id} className="rounded-lg border border-[#1E2A45] bg-[#101A2E] p-4">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div>
-                            <p className="font-medium text-white">{b.event_type || 'Event'}</p>
+                            <p className="font-medium text-white">
+                              {(b.booking_category || '').toLowerCase() === 'drop-off' || (b.event_type || '').toLowerCase() === 'drop off' || (b.event_type || '').toLowerCase() === 'drop-off'
+                                ? 'Drop Off'
+                                : (b.event_type || 'Event')}
+                            </p>
                             <p className="text-xs text-slate-400">
-                              {b.booking_ref || `#${b.id}`} · {formatDate(b.event_date)} · {b.number_of_guests} guests
+                              {b.booking_ref || `#${b.id}`} · {formatDate(b.event_date)} · {(b.booking_category || '').toLowerCase() === 'drop-off' ? 'Platters' : `${b.number_of_guests} guests`}
                             </p>
                           </div>
                           <Badge cls={BOOKING_STATUS[b.status] || BOOKING_STATUS.pending}>{b.status}</Badge>

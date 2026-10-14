@@ -82,12 +82,15 @@ router.post('/', bookingLimiter, validateBooking, async (req, res) => {
       );
     }
 
+    const isDropOff = String(booking_category || '').toLowerCase() === 'drop-off';
+    const effectiveType = isDropOff ? 'Drop Off' : (event_type || 'Event');
+
     await logActivity({
       action: 'booking_created',
       category: 'bookings',
-      description: `New booking submitted by ${name} (${email}) for ${event_type} on ${event_date} — Ref: ${bookingRef}`,
+      description: `New booking submitted by ${name} (${email}) for ${effectiveType} on ${event_date} — Ref: ${bookingRef}`,
       performed_by: email,
-      details: { bookingId, bookingRef, event_type, event_date, number_of_guests, amount: finalAmount },
+      details: { bookingId, bookingRef, event_type: effectiveType, event_date, number_of_guests, amount: finalAmount },
     });
 
     res.json({ success: true, bookingId, bookingRef });

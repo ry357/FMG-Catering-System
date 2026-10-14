@@ -12,6 +12,8 @@ const EVENT_TYPE_NORMALIZE = {
   anniversary: 'Anniversary',
   gala: 'Gala',
   other: 'Other',
+  'drop off': 'Drop Off',
+  'drop-off': 'Drop Off',
 };
 
 function normalizeEventType(value) {
@@ -142,7 +144,9 @@ export async function createBooking(data = {}) {
 
   const customerId = await findOrCreateCustomer({ name, email, phone, address });
   const ref = booking_ref || generateBookingRef();
-  const guests = booking_category === 'drop-off' ? 0 : Number(number_of_guests) || 1;
+  const isDropOff = String(booking_category || '').toLowerCase() === 'drop-off';
+  const effectiveEventType = isDropOff ? 'Drop Off' : normalizeEventType(event_type);
+  const guests = isDropOff ? 0 : Number(number_of_guests) || 1;
   const itemsTotal = calculateItemsTotal(selected_menu_items, guests);
   const finalTotal = Number(total_amount) || itemsTotal || Number(budget) || 0;
   const finalBudget = budget !== undefined && budget !== null && budget !== '' ? Number(budget) : (finalTotal || null);
@@ -161,7 +165,7 @@ export async function createBooking(data = {}) {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, 'pending')`,
     [
       customerId,
-      normalizeEventType(event_type),
+      effectiveEventType,
       event_date,
       guests,
       finalBudget,
@@ -169,7 +173,7 @@ export async function createBooking(data = {}) {
       additional_requests || null,
       menuItemsJson,
       menuPreferenceJson,
-      booking_category === 'drop-off' ? 'drop-off' : 'natural',
+      isDropOff ? 'drop-off' : 'natural',
       ref,
       payment_type,
       Number(down_payment_amount) || 0,
@@ -178,7 +182,7 @@ export async function createBooking(data = {}) {
   );
 
   if (name && email) {
-    sendBookingConfirmationEmail(name, email, ref, normalizeEventType(event_type), event_date)
+    sendBookingConfirmationEmail(name, email, ref, effectiveEventType, event_date)
       .catch((emailError) => console.error('Failed to send booking confirmation email:', emailError));
   }
 
